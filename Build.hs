@@ -4,7 +4,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall #-}
 
-module Main (main) where
+module Build (main) where
 
 import Control.Monad
 import Data.Char
@@ -24,6 +24,7 @@ main = shakeArgs shakeOpts do
                 cmd_
                     "ghc"
                     hs
+                    ["-main-is", takeBaseName hs]
                     ["-outputdir", "build" </> takeBaseName out]
                     ["-o", out]
                     "-fdiagnostics-color=always"

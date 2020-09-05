@@ -11,7 +11,7 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wincomplete-uni-patterns #-}
 
-module Main where
+module WorkspaceManager (main) where
 
 import Control.Monad
 import Data.List
