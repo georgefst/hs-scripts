@@ -25,11 +25,11 @@ main = shakeArgs shakeOpts do
                     "ghc"
                     hs
                     ["-main-is", takeBaseName hs]
-                    ["-outputdir", "build" </> takeBaseName out]
+                    ["-outputdir", ".build"]
                     ["-o", out]
                     "-fdiagnostics-color=always"
 
-    "clean" ~> forM_ ["dist", "build"] \d -> do
+    "clean" ~> forM_ ["dist", ".build"] \d -> do
         putInfo $ "Removing " <> d
         removeFilesAfter d ["//*"]
 
