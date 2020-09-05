@@ -15,15 +15,10 @@ module WorkspaceManager (main) where
 
 import Control.Monad
 import Data.List
-import Data.Text.Lazy qualified as T
-import Data.Time
 import Options.Generic
-import System.Directory
-import System.FilePath
-import System.IO.Unsafe qualified as Unsafe
 import System.Process
-import Text.Pretty.Simple
 import Text.Read
+import Util.Error qualified as Error
 
 data Args = Args
     { action :: Action
@@ -94,13 +89,5 @@ wmctrl = flip (readProcess "wmctrl") ""
 wmctrl_ :: [String] -> IO ()
 wmctrl_ = callProcess "wmctrl"
 
-{-# NOINLINE err #-}
 err :: Show a => String -> a -> b
-err s x = Unsafe.unsafePerformIO do
-    tmp <- getTemporaryDirectory
-    time <- getCurrentTime
-    let logDir = tmp </> "hs-script-logs"
-        logFile = logDir </> "workspace-manager.log"
-    createDirectoryIfMissing False logDir
-    appendFile logFile $ unlines [show time, s, T.unpack $ pShow x, ""]
-    error $ "Failed: see log at: " <> logFile
+err = Error.err "workspace-manager"
