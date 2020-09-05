@@ -14,13 +14,14 @@ import System.FilePath
 main :: IO ()
 main = shakeArgs shakeOpts do
     sources <- liftIO $ getDirectoryFilesIO "." ["*.hs"]
+    utilSources <- liftIO $ map ("Util" </>) <$> getDirectoryFilesIO "Util" ["//*.hs"]
 
     want $ map inToOut sources
 
     forM_ sources \hs ->
         let out = inToOut hs
          in out %> \_ -> do
-                need [hs]
+                need $ hs : utilSources
                 cmd_
                     "ghc"
                     hs
