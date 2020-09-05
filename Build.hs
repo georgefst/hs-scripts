@@ -29,7 +29,7 @@ main = shakeArgs shakeOpts do
                     ["-o", out]
                     "-fdiagnostics-color=always"
 
-    "clean" ~> forM_ ["dist", ".build"] \d -> do
+    "clean" ~> forM_ ["dist", ".build", ".shake"] \d -> do
         putInfo $ "Removing " <> d
         removeFilesAfter d ["//*"]
 
