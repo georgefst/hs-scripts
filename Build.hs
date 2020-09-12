@@ -1,19 +1,23 @@
 #!/usr/bin/env runghc
 
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall #-}
 
 module Build (main) where
 
 import Control.Monad
+import Control.Monad.Extra (whenM)
 import Data.Char
+import Data.List.Extra
 import Development.Shake
+import System.Directory qualified as Dir
 import System.FilePath
 
 main :: IO ()
 main = shakeArgs shakeOpts do
-    sources <- liftIO $ getDirectoryFilesIO "." ["*.hs"]
+    sources <- liftIO $ filter (/= "Template.hs") <$> getDirectoryFilesIO "." ["*.hs"]
     utilSources <- liftIO $ map ("Util" </>) <$> getDirectoryFilesIO "Util" ["//*.hs"]
 
     want $ map inToOut sources
@@ -29,6 +33,15 @@ main = shakeArgs shakeOpts do
                     ["-outputdir", ".build"]
                     ["-o", out]
                     "-fdiagnostics-color=always"
+
+    -- create new source file from template
+    "*.hs" %> \name -> liftIO $ whenM (not <$> Dir.doesFileExist name) do
+        let moduleName = dropExtension name
+        template <- readFile "Template.hs"
+        writeFile name
+            . replace "module Template" ("module " <> moduleName)
+            . replace "progName = _" ("progName = \"" <> camelToHyphen moduleName <> "\"")
+            $ template
 
     "clean" ~> forM_ ["dist", ".build", ".shake"] \d -> do
         putInfo $ "Removing " <> d
