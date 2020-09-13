@@ -36,12 +36,14 @@ import Bag (Bag)
 import Data.Foldable (Foldable (toList), traverse_)
 import Data.IORef (IORef, atomicWriteIORef, newIORef, readIORef)
 import Data.List (stripPrefix)
+import Data.Maybe (fromMaybe)
 import EnumSet (EnumSet)
 import EnumSet qualified
 import Lexer (P (unP), PState (PState), ParseResult (..), ParserFlags (ParserFlags), mkPState)
 import Options.Generic (Generic, ParseRecord, getRecord)
 import Parser qualified
 import StringBuffer (stringToStringBuffer)
+import System.Console.ANSI (getTerminalSize)
 import System.IO.Unsafe (unsafePerformIO)
 import TcEvidence (HsWrapper (..))
 import Text.Pretty.Simple.Internal (Expr (StringLit), Expr (ErrorExpr), defaultPostProcess, makePostProcessor)
@@ -74,15 +76,18 @@ main = do
             . unP Parser.parseModule
             . mkPState dynFlags (stringToStringBuffer contents)
             $ mkRealSrcLoc (mkFastString inFile) 1 1
-    pPrintOpt NoCheckColorTty printOpts pr
+    termSize <- getTerminalSize
+    pPrintOpt NoCheckColorTty (printOpts $ snd <$> termSize) pr
 
-printOpts :: OutputOptions
-printOpts =
-    defaultOutputOptionsDarkBg
+printOpts :: Maybe Int -> OutputOptions
+printOpts width =
+    def
         { outputOptionsCompact = True,
-          outputOptionsPageWidth = 200,
+          outputOptionsPageWidth = fromMaybe (outputOptionsPageWidth def) width,
           outputOptionsPostProcess = defaultPostProcess EscapeNonPrintable . myPostProcess
         }
+    where
+        def = defaultOutputOptionsDarkBg
 
 --TODO hmm, not sure I like 'makePostProcessor'
 myPostProcess :: [Expr] -> [Expr]
