@@ -125,7 +125,9 @@ instance Show a => Show (Bag a) where
 instance (Enum a, Show a) => Show (EnumSet a) where
     show b = "EnumSet.fromList" ++ show (EnumSet.toList b)
 instance Show a => Show (Located a) where
-    show (L s x) = if showLocs $ args globalState then unwords ["L", "(", show s, ")", "", "(", show x, ")"] else show x
+    show (L s x) =
+        unwords $ (++ ["(", show x, ")"]) $
+            if showLocs $ args globalState then ["L", "(", show s, ")", ""] else []
 
 instance Show OccName where show = showOutputable
 instance Show ModuleName where show = showOutputable
