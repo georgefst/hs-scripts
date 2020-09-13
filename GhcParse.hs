@@ -56,6 +56,7 @@ import Text.Pretty.Simple
 data Args = Args
     { inFile :: String
     , printDerives :: Maybe FilePath
+    , showLocs :: Bool
     }
     deriving (Eq, Ord, Show, Generic, ParseRecord)
 
@@ -123,7 +124,8 @@ instance Show a => Show (Bag a) where
     show b = "Bag.listToBag " ++ show (toList b)
 instance (Enum a, Show a) => Show (EnumSet a) where
     show b = "EnumSet.fromList" ++ show (EnumSet.toList b)
-deriving instance Show a => Show (Located a)
+instance Show a => Show (Located a) where
+    show (L s x) = if showLocs $ args globalState then unwords ["L", "(", show s, ")", "", "(", show x, ")"] else show x
 
 instance Show OccName where show = showOutputable
 instance Show ModuleName where show = showOutputable
