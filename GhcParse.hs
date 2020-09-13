@@ -90,7 +90,7 @@ instance {-# OVERLAPPABLE #-} Typeable a => Show a where
     show = const $ show $ "ERROR" <> typeRep' @a
 
 instance Show a => Show (DynFlags -> a) where
-    show f = show $ f unsafeGlobalDynFlags
+    show = show . ($ unsafeGlobalDynFlags)
 instance Show a => Show (Bag a) where
     show b = "Bag.listToBag " ++ show (toList b)
 instance (Enum a, Show a) => Show (EnumSet a) where
