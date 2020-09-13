@@ -13,6 +13,7 @@
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE RankNTypes #-}
@@ -32,7 +33,8 @@
 module GhcParse (main) where
 
 import Bag (Bag)
-import Data.Foldable (Foldable (toList))
+import Data.Foldable (Foldable (toList), traverse_)
+import Data.IORef (IORef, atomicWriteIORef, newIORef, readIORef)
 import Data.List (stripPrefix)
 import EnumSet (EnumSet)
 import EnumSet qualified
@@ -51,17 +53,28 @@ import Text.Pretty.Simple
 
 data Args = Args
     { inFile :: String
+    , printDerives :: Maybe FilePath
     }
     deriving (Eq, Ord, Show, Generic, ParseRecord)
 
+data GlobalState = GlobalState
+    { dynFlags :: DynFlags
+    , args :: Args
+    }
+
 main :: IO ()
 main = do
-    Args {..} <- getRecord "ghc-parse"
+    args@(Args {..}) <- getRecord "ghc-parse"
     contents <- readFile inFile
-    let parseRes = unP Parser.parseModule parseState
-        location = mkRealSrcLoc (mkFastString inFile) 1 1
-        parseState = mkPState unsafeGlobalDynFlags (stringToStringBuffer contents) location
-    pPrintOpt NoCheckColorTty printOpts parseRes
+    --TODO don't hardcode path - see 'initGhcMonad' haddock
+    pr <- runGhc (Just "/home/gthomas/.ghcup/ghc/8.10.2/lib/ghc-8.10.2") do
+        dynFlags <- getDynFlags
+        liftIO $ atomicWriteIORef globalStateRef GlobalState {..}
+        pure
+            . unP Parser.parseModule
+            . mkPState dynFlags (stringToStringBuffer contents)
+            $ mkRealSrcLoc (mkFastString inFile) 1 1
+    pPrintOpt NoCheckColorTty printOpts pr
 
 printOpts :: OutputOptions
 printOpts =
@@ -78,11 +91,21 @@ myPostProcess = makePostProcessor \case
     _ -> Nothing
 
 showOutputable :: Outputable a => a -> String
-showOutputable = show . flip (renderWithStyle unsafeGlobalDynFlags) (mkCodeStyle CStyle) . ppr
+showOutputable = show . flip (renderWithStyle $ dynFlags globalState) (mkCodeStyle CStyle) . ppr
+
+-- | We need this for very similar reasons to why 'GHC.unsafeGlobalDynFlags' exists
+{-# NOINLINE globalState #-}
+globalState :: GlobalState
+globalState = unsafePerformIO $ readIORef globalStateRef
+{-# NOINLINE globalStateRef #-}
+globalStateRef :: IORef GlobalState
+globalStateRef = unsafePerformIO $ newIORef $ error "globalStateRef uninitialised"
 
 {-# NOINLINE typeRep' #-}
 typeRep' :: forall a. Typeable a => String
-typeRep' = unsafePerformIO $ appendFile "tmp" ("\nderiving instance Show (" <> t <> ")") >> pure t
+typeRep' = unsafePerformIO do
+    traverse_ @Maybe (flip appendFile ("\nderiving instance Show (" <> t <> ")")) $ printDerives $ args globalState
+    pure t
     where
         t = show $ typeRep @a
 
@@ -90,7 +113,7 @@ instance {-# OVERLAPPABLE #-} Typeable a => Show a where
     show = const $ show $ "ERROR" <> typeRep' @a
 
 instance Show a => Show (DynFlags -> a) where
-    show = show . ($ unsafeGlobalDynFlags)
+    show = show . ($ dynFlags globalState)
 instance Show a => Show (Bag a) where
     show b = "Bag.listToBag " ++ show (toList b)
 instance (Enum a, Show a) => Show (EnumSet a) where
