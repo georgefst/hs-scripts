@@ -107,16 +107,16 @@ globalState = unsafePerformIO $ readIORef globalStateRef
 globalStateRef :: IORef GlobalState
 globalStateRef = unsafePerformIO $ newIORef $ error "globalStateRef uninitialised"
 
-{-# NOINLINE typeRep' #-}
-typeRep' :: forall a. Typeable a => String
-typeRep' = unsafePerformIO do
+{-# NOINLINE showTypeable #-}
+showTypeable :: forall a. Typeable a => String
+showTypeable = unsafePerformIO do
     traverse_ @Maybe (flip appendFile ("\nderiving instance Show (" <> t <> ")")) $ printDerives $ args globalState
     pure t
     where
         t = show $ typeRep @a
 
 instance {-# OVERLAPPABLE #-} Typeable a => Show a where
-    show = const $ show $ "ERROR" <> typeRep' @a
+    show = const $ show $ "ERROR" <> showTypeable @a
 
 instance Show a => Show (DynFlags -> a) where
     show = show . ($ dynFlags globalState)
