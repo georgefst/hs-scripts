@@ -42,6 +42,7 @@ import Data.Text qualified as T
 import Data.Text.Lazy.IO qualified as TL
 import EnumSet (EnumSet)
 import EnumSet qualified
+import GHC.Hs.Dump (BlankSrcSpan (BlankSrcSpan), showAstData)
 import Lexer (P (unP), PState (PState), ParseResult (..), ParserFlags (ParserFlags), mkPState)
 import Options.Generic (Generic, ParseRecord, getRecord)
 import Parser qualified
@@ -65,6 +66,7 @@ data Args = Args
     , printDerives :: Maybe FilePath
     , outHtml :: Maybe FilePath
     , showLocs :: Bool
+    , useDataDump :: Bool
     }
     deriving (Eq, Ord, Show, Generic, ParseRecord)
 
@@ -89,7 +91,12 @@ main = do
     printOpts <- mkPrintOpts . fmap snd <$> getTerminalSize
     forM_ outHtml \f ->
         TL.writeFile f . renderText . body_ [style_ "background-color: #2c2f33; color: white"] $ pPrintHtml printOpts pr
-    pPrintOpt NoCheckColorTty printOpts pr
+    if useDataDump then
+        case pr of
+            POk _ p -> pPrintStringOpt NoCheckColorTty printOpts . renderDoc $ showAstData BlankSrcSpan p
+            PFailed _ -> putStrLn "Error: parsing failed"
+    else
+        pPrintOpt NoCheckColorTty printOpts pr
 
 mkPrintOpts :: Maybe Int -> OutputOptions
 mkPrintOpts width =
@@ -125,8 +132,11 @@ pPrintHtml opts = renderHtml . fmap renderStyle . treeForm . layoutString opts .
                 Just (c, _i) -> span_ [style_ $ renderColor c]
         renderColor c = "color:" <> T.pack (show c)
 
+renderDoc :: SDoc -> String
+renderDoc d = renderWithStyle (dynFlags globalState) d (mkCodeStyle CStyle)
+
 showOutputable :: Outputable a => a -> String
-showOutputable = show . ("OUTPUTTABLE" ++) . flip (renderWithStyle $ dynFlags globalState) (mkCodeStyle CStyle) . ppr
+showOutputable = show . ("OUTPUTTABLE" ++) . renderDoc . ppr
 
 -- | We need this for very similar reasons to why 'GHC.unsafeGlobalDynFlags' exists
 {-# NOINLINE globalState #-}
