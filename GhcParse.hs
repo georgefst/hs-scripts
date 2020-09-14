@@ -33,9 +33,10 @@
 module GhcParse (main) where
 
 import Bag (Bag)
+import Data.Char (isSpace)
 import Data.Foldable (Foldable (toList), traverse_)
 import Data.IORef (IORef, atomicWriteIORef, newIORef, readIORef)
-import Data.List (stripPrefix)
+import Data.List (dropWhileEnd, stripPrefix)
 import Data.Maybe (fromMaybe)
 import EnumSet (EnumSet)
 import EnumSet qualified
@@ -45,6 +46,7 @@ import Parser qualified
 import StringBuffer (stringToStringBuffer)
 import System.Console.ANSI (getTerminalSize)
 import System.IO.Unsafe (unsafePerformIO)
+import System.Process (readProcess)
 import TcEvidence (HsWrapper (..))
 import Text.Pretty.Simple.Internal (Expr (StringLit), Expr (CustomExpr), defaultPostProcess, makePostProcessor)
 import Type.Reflection (Typeable, typeRep)
@@ -69,8 +71,9 @@ main :: IO ()
 main = do
     args@(Args {..}) <- getRecord "ghc-parse"
     contents <- readFile inFile
-    --TODO don't hardcode path - see 'initGhcMonad' haddock
-    pr <- runGhc (Just "/home/gthomas/.ghcup/ghc/8.10.2/lib/ghc-8.10.2") do
+    ghcLibDir <- readProcess "ghc" ["--print-libdir"] ""
+    --TODO this might not always be exactly what we want - see 'initGhcMonad' haddock
+    pr <- runGhc (Just $ dropWhileEnd isSpace ghcLibDir) do
         dynFlags <- getDynFlags
         liftIO $ atomicWriteIORef globalStateRef GlobalState {..}
         pure
