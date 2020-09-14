@@ -34,30 +34,36 @@ module GhcParse (main) where
 
 import Bag (Bag)
 import Data.Char (isSpace)
-import Data.Foldable (Foldable (toList), traverse_)
+import Data.Foldable (forM_, Foldable (toList), traverse_)
 import Data.IORef (IORef, atomicWriteIORef, newIORef, readIORef)
 import Data.List (dropWhileEnd, stripPrefix)
 import Data.Maybe (fromMaybe)
+import Data.Text qualified as T
+import Data.Text.Lazy.IO qualified as TL
 import EnumSet (EnumSet)
 import EnumSet qualified
 import Lexer (P (unP), PState (PState), ParseResult (..), ParserFlags (ParserFlags), mkPState)
 import Options.Generic (Generic, ParseRecord, getRecord)
 import Parser qualified
+import Prettyprinter.Lucid (renderHtml)
+import Prettyprinter.Render.Util.SimpleDocTree (treeForm)
 import StringBuffer (stringToStringBuffer)
 import System.Console.ANSI (getTerminalSize)
 import System.IO.Unsafe (unsafePerformIO)
 import System.Process (readProcess)
 import TcEvidence (HsWrapper (..))
-import Text.Pretty.Simple.Internal (Expr (StringLit), Expr (CustomExpr), defaultPostProcess, makePostProcessor)
+import Text.Pretty.Simple.Internal (Expr (StringLit), Expr (CustomExpr), defaultPostProcess, layoutString, makePostProcessor)
 import Type.Reflection (Typeable, typeRep)
 
 import GHC
 import GhcPlugins hiding ((<>), Expr)
+import Lucid
 import Text.Pretty.Simple
 
 data Args = Args
     { inFile :: String
     , printDerives :: Maybe FilePath
+    , outHtml :: Maybe FilePath
     , showLocs :: Bool
     }
     deriving (Eq, Ord, Show, Generic, ParseRecord)
@@ -80,11 +86,13 @@ main = do
             . unP Parser.parseModule
             . mkPState dynFlags (stringToStringBuffer contents)
             $ mkRealSrcLoc (mkFastString inFile) 1 1
-    termSize <- getTerminalSize
-    pPrintOpt NoCheckColorTty (printOpts $ snd <$> termSize) pr
+    printOpts <- mkPrintOpts . fmap snd <$> getTerminalSize
+    forM_ outHtml \f ->
+        TL.writeFile f . renderText . body_ [style_ "background-color: #2c2f33; color: white"] $ pPrintHtml printOpts pr
+    pPrintOpt NoCheckColorTty printOpts pr
 
-printOpts :: Maybe Int -> OutputOptions
-printOpts width =
+mkPrintOpts :: Maybe Int -> OutputOptions
+mkPrintOpts width =
     def
         { outputOptionsCompact = True,
           outputOptionsPageWidth = fromMaybe (outputOptionsPageWidth def) width,
@@ -107,6 +115,15 @@ myPostProcess = makePostProcessor \case
 
 colour :: Color -> Style
 colour c = colorNull {styleColor = Just (c, Vivid), styleBold = True}
+
+pPrintHtml :: Show a => OutputOptions -> a -> Html ()
+pPrintHtml opts = renderHtml . fmap renderStyle . treeForm . layoutString opts . show
+    where
+        renderStyle (Style mc b _i _u) =
+            (if b then b_ else id) . case mc of
+                Nothing -> id
+                Just (c, _i) -> span_ [style_ $ renderColor c]
+        renderColor c = "color:" <> T.pack (show c)
 
 showOutputable :: Outputable a => a -> String
 showOutputable = show . ("OUTPUTTABLE" ++) . flip (renderWithStyle $ dynFlags globalState) (mkCodeStyle CStyle) . ppr
