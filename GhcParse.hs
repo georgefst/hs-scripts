@@ -46,7 +46,7 @@ import StringBuffer (stringToStringBuffer)
 import System.Console.ANSI (getTerminalSize)
 import System.IO.Unsafe (unsafePerformIO)
 import TcEvidence (HsWrapper (..))
-import Text.Pretty.Simple.Internal (Expr (StringLit), Expr (ErrorExpr), defaultPostProcess, makePostProcessor)
+import Text.Pretty.Simple.Internal (Expr (StringLit), Expr (CustomExpr), defaultPostProcess, makePostProcessor)
 import Type.Reflection (Typeable, typeRep)
 
 import GHC
@@ -85,19 +85,28 @@ printOpts width =
     def
         { outputOptionsCompact = True,
           outputOptionsPageWidth = fromMaybe (outputOptionsPageWidth def) width,
-          outputOptionsPostProcess = defaultPostProcess EscapeNonPrintable . myPostProcess
+          outputOptionsPostProcess = defaultPostProcess EscapeNonPrintable . myPostProcess,
+          outputOptionsColorOptions =
+              Just
+                  defaultColorOptionsDarkBg
+                      { -- all the other colours are used for something
+                        colorRainbowParens = [colour Magenta, colour Yellow]
+                      }
         }
     where
-        def = defaultOutputOptionsDarkBg
+        def = defaultOutputOptionsNoColor
 
---TODO hmm, not sure I like 'makePostProcessor'
 myPostProcess :: [Expr] -> [Expr]
 myPostProcess = makePostProcessor \case
-    StringLit (stripPrefix "ERROR" -> Just s) -> Just $ ErrorExpr s
-    _ -> Nothing
+    StringLit (stripPrefix "ERROR" -> Just s) -> CustomExpr (colour Red) s
+    StringLit (stripPrefix "OUTPUTTABLE" -> Just s) -> CustomExpr (colour Cyan) s
+    x -> x
+
+colour :: Color -> Style
+colour c = colorNull {styleColor = Just (c, Vivid), styleBold = True}
 
 showOutputable :: Outputable a => a -> String
-showOutputable = show . flip (renderWithStyle $ dynFlags globalState) (mkCodeStyle CStyle) . ppr
+showOutputable = show . ("OUTPUTTABLE" ++) . flip (renderWithStyle $ dynFlags globalState) (mkCodeStyle CStyle) . ppr
 
 -- | We need this for very similar reasons to why 'GHC.unsafeGlobalDynFlags' exists
 {-# NOINLINE globalState #-}
