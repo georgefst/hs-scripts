@@ -3,7 +3,7 @@
 rm .ghc.env*
 
 cabal install --package-env . --lib \
-    ansi-terminal-0.11\
+    ansi-terminal-0.11 \
     directory-1.3.6.1 \
     extra-1.7.7 \
     lucid-2.9.12 \
