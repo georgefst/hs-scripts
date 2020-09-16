@@ -39,6 +39,8 @@ cabal-env -n scripts \
     process \
     safe \
     shake \
+    streamly \
+    streamly-fsnotify \
     text \
     time \
     unix \
