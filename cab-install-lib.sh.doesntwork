@@ -1,0 +1,53 @@
+#!/bin/bash
+
+#TODO move this stuff in to Build.hs
+
+HS_SCRIPT_DIR=$(pwd)
+
+rm .ghc.env*
+rm -rf git-deps
+mkdir git-deps
+
+#TODO --lib is just broken right now: https://github.com/haskell/cabal/issues/6394
+    # use 'cabal-env' - linked in that issue?
+function nasty {
+    #TODO for i in $()
+    for i in binary bytestring containers directory filepath process unix
+    do
+        sed -i '/'$i'/d' ./.ghc.env*
+    done
+}
+
+function cab-git-install {
+    cd git-deps
+    git clone $1
+    cd $2
+    git checkout $3
+    cabal install --lib --package-env $HS_SCRIPT_DIR
+    cd $HS_SCRIPT_DIR
+    # nasty
+}
+
+cabal install --package-env . --lib \
+    ansi-terminal-0.11 \
+    extra-1.7.7 \
+    lucid-2.9.12 \
+    optparse-generic-1.4.3 \
+    prettyprinter-1.7.0 \
+    prettyprinter-lucid-0.1.0.1 \
+    filepath \
+    safe-0.3.19 \
+    shake-0.19.1 \
+    streamly-0.7.2 \
+    streamly-fsnotify-1.1.1.0 \
+    time-1.9.3 \
+    turtle-1.5.21 \
+    # directory \
+    # bytestring \
+    # unix \
+    # process \
+
+sed -i '/binary/d' ./.ghc.env*
+
+cab-git-install https://github.com/cdepillabout/pretty-simple pretty-simple ae8d2f17ba78edba02b83aed9296a461ebec5f79
+# cab-git-install https://github.com/georgefst/evdev evdev/evdev a3959e51d3e4274ca96c945e81ef7cbb0453511e
