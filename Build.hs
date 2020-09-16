@@ -15,6 +15,15 @@ import Development.Shake
 import System.Directory qualified as Dir
 import System.FilePath
 
+{- cabal:
+build-depends:
+    base >= 4.14,
+    shake ^>= 0.19.1,
+    directory ^>= 1.3.6.0,
+    extra ^>= 1.7.8,
+    filepath ^>= 1.4.2.1,
+-}
+
 main :: IO ()
 main = shakeArgs shakeOpts do
     sources <- liftIO $ filter (/= "Template.hs") <$> getDirectoryFilesIO "." ["*.hs"]
