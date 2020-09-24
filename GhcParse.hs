@@ -61,6 +61,8 @@ import GhcPlugins hiding ((<>), Expr)
 import Lucid
 import Text.Pretty.Simple
 
+import Util.Util
+
 data Args = Args
     { inFile :: String
     , printDerives :: Maybe FilePath
@@ -89,7 +91,7 @@ main = do
     ghcLibDir <- readProcess "ghc" ["--print-libdir"] ""
     --TODO this might not always be exactly what we want - see 'initGhcMonad' haddock
     pr <- runGhc (Just $ dropWhileEnd isSpace ghcLibDir) do
-        dynFlags <- applyWhen haddock (setGeneralFlag' GHC.Opt_Haddock) <$> getDynFlags
+        dynFlags <- haddock $? setGeneralFlag' GHC.Opt_Haddock <$> getDynFlags
         liftIO $ atomicWriteIORef globalStateRef GlobalState {..}
         pure
             . unP Parser.parseModule
