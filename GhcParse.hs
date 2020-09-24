@@ -44,7 +44,7 @@ import EnumSet (EnumSet)
 import EnumSet qualified
 import GHC.Hs.Dump (BlankSrcSpan (BlankSrcSpan), showAstData)
 import Lexer (P (unP), PState (PState), ParseResult (..), ParserFlags (ParserFlags), mkPState)
-import Options.Generic (Generic, ParseRecord, getRecord)
+import Options.Generic (Generic, ParseField, ParseFields, ParseRecord, getRecord)
 import Parser qualified
 import Prettyprinter.Lucid (renderHtml)
 import Prettyprinter.Render.Util.SimpleDocTree (treeForm)
@@ -65,10 +65,17 @@ data Args = Args
     { inFile :: String
     , printDerives :: Maybe FilePath
     , outHtml :: Maybe FilePath
-    , showLocs :: Bool
-    , useDataDump :: Bool
+    , hideLocs :: Bool
+    , haddock :: Bool
+    , mode :: Mode
     }
     deriving (Eq, Ord, Show, Generic, ParseRecord)
+
+data Mode
+    = Normal
+    | DataDump
+    | LocsOnly
+    deriving (Eq, Ord, Show, Read, Generic, ParseRecord, ParseField, ParseFields)
 
 data GlobalState = GlobalState
     { dynFlags :: DynFlags
@@ -82,7 +89,7 @@ main = do
     ghcLibDir <- readProcess "ghc" ["--print-libdir"] ""
     --TODO this might not always be exactly what we want - see 'initGhcMonad' haddock
     pr <- runGhc (Just $ dropWhileEnd isSpace ghcLibDir) do
-        dynFlags <- getDynFlags
+        dynFlags <- applyWhen haddock (setGeneralFlag' GHC.Opt_Haddock) <$> getDynFlags
         liftIO $ atomicWriteIORef globalStateRef GlobalState {..}
         pure
             . unP Parser.parseModule
@@ -91,12 +98,13 @@ main = do
     printOpts <- mkPrintOpts . fmap snd <$> getTerminalSize
     forM_ outHtml \f ->
         TL.writeFile f . renderText . body_ [style_ "background-color: #2c2f33; color: white"] $ pPrintHtml printOpts pr
-    if useDataDump then
-        case pr of
-            POk _ p -> pPrintStringOpt NoCheckColorTty printOpts . renderDoc $ showAstData BlankSrcSpan p
-            PFailed _ -> putStrLn "Error: parsing failed"
-    else
-        pPrintOpt NoCheckColorTty printOpts pr
+    case pr of
+        PFailed _ -> putStrLn "Error: parsing failed"
+        POk _ p ->
+            case mode of
+                DataDump -> pPrintStringOpt NoCheckColorTty printOpts . renderDoc $ showAstData BlankSrcSpan p
+                Normal -> pPrintOpt NoCheckColorTty printOpts p
+                LocsOnly -> pPrintOpt NoCheckColorTty printOpts . map getLoc . hsmodDecls $ unLoc p
 
 mkPrintOpts :: Maybe Int -> OutputOptions
 mkPrintOpts width =
@@ -166,7 +174,7 @@ instance (Enum a, Show a) => Show (EnumSet a) where
 instance Show a => Show (Located a) where
     show (L s x) =
         unwords $ (++ ["(", show x, ")"]) $
-            if showLocs $ args globalState then ["L", "(", show s, ")", ""] else []
+            if hideLocs $ args globalState then [] else ["L", "(", show s, ")", ""]
 
 instance Show OccName where show = showOutputable
 instance Show ModuleName where show = showOutputable
