@@ -59,10 +59,10 @@ main = shakeArgs shakeOpts do
 shakeOpts :: ShakeOptions
 shakeOpts =
     shakeOptions
-        { shakeColor = True,
-          shakeThreads = 4,
-          shakeLint = Just LintBasic,
-          shakeProgress = progressSimple
+        { shakeColor = True
+        , shakeThreads = 4
+        , shakeLint = Just LintBasic
+        , shakeProgress = progressSimple
         }
 
 -- >>> inToOut "NewWorkspace.hs"

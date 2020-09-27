@@ -32,7 +32,7 @@ data Args = Args
 
 main :: IO ()
 main = do
-    Args {..} <- getRecord progName
+    Args{..} <- getRecord progName
     _
 
 progName :: Text

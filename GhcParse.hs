@@ -34,7 +34,7 @@ module GhcParse (main) where
 
 import Bag (Bag)
 import Data.Char (isSpace)
-import Data.Foldable (forM_, Foldable (toList), traverse_)
+import Data.Foldable (forM_, toList, traverse_)
 import Data.IORef (IORef, atomicWriteIORef, newIORef, readIORef)
 import Data.List (dropWhileEnd, stripPrefix)
 import Data.Maybe (fromMaybe)
@@ -53,11 +53,11 @@ import System.Console.ANSI (getTerminalSize)
 import System.IO.Unsafe (unsafePerformIO)
 import System.Process (readProcess)
 import TcEvidence (HsWrapper (..))
-import Text.Pretty.Simple.Internal (Expr (StringLit), Expr (CustomExpr), defaultPostProcess, layoutString, makePostProcessor)
+import Text.Pretty.Simple.Internal (Expr (CustomExpr, StringLit), defaultPostProcess, layoutString, makePostProcessor)
 import Type.Reflection (Typeable, typeRep)
 
 import GHC
-import GhcPlugins hiding ((<>), Expr)
+import GhcPlugins hiding (Expr, (<>))
 import Lucid
 import Text.Pretty.Simple
 
@@ -86,13 +86,13 @@ data GlobalState = GlobalState
 
 main :: IO ()
 main = do
-    args@(Args {..}) <- getRecord "ghc-parse"
+    args@(Args{..}) <- getRecord "ghc-parse"
     contents <- readFile inFile
     ghcLibDir <- readProcess "ghc" ["--print-libdir"] ""
     --TODO this might not always be exactly what we want - see 'initGhcMonad' haddock
     pr <- runGhc (Just $ dropWhileEnd isSpace ghcLibDir) do
         dynFlags <- haddock $? setGeneralFlag' GHC.Opt_Haddock <$> getDynFlags
-        liftIO $ atomicWriteIORef globalStateRef GlobalState {..}
+        liftIO $ atomicWriteIORef globalStateRef GlobalState{..}
         pure
             . unP Parser.parseModule
             . mkPState dynFlags (stringToStringBuffer contents)
@@ -111,18 +111,18 @@ main = do
 mkPrintOpts :: Maybe Int -> OutputOptions
 mkPrintOpts width =
     def
-        { outputOptionsCompact = True,
-          outputOptionsPageWidth = fromMaybe (outputOptionsPageWidth def) width,
-          outputOptionsPostProcess = defaultPostProcess EscapeNonPrintable . myPostProcess,
-          outputOptionsColorOptions =
+        { outputOptionsCompact = True
+        , outputOptionsPageWidth = fromMaybe (outputOptionsPageWidth def) width
+        , outputOptionsPostProcess = defaultPostProcess EscapeNonPrintable . myPostProcess
+        , outputOptionsColorOptions =
               Just
                   defaultColorOptionsDarkBg
                       { -- all the other colours are used for something
                         colorRainbowParens = [colour Magenta, colour Yellow]
                       }
         }
-    where
-        def = defaultOutputOptionsNoColor
+  where
+    def = defaultOutputOptionsNoColor
 
 myPostProcess :: [Expr] -> [Expr]
 myPostProcess = makePostProcessor \case
@@ -131,16 +131,16 @@ myPostProcess = makePostProcessor \case
     x -> x
 
 colour :: Color -> Style
-colour c = colorNull {styleColor = Just (c, Vivid), styleBold = True}
+colour c = colorNull{styleColor = Just (c, Vivid), styleBold = True}
 
 pPrintHtml :: Show a => OutputOptions -> a -> Html ()
 pPrintHtml opts = renderHtml . fmap renderStyle . treeForm . layoutString opts . show
-    where
-        renderStyle (Style mc b _i _u) =
-            (if b then b_ else id) . case mc of
-                Nothing -> id
-                Just (c, _i) -> span_ [style_ $ renderColor c]
-        renderColor c = "color:" <> T.pack (show c)
+  where
+    renderStyle (Style mc b _i _u) =
+        (if b then b_ else id) . case mc of
+            Nothing -> id
+            Just (c, _i) -> span_ [style_ $ renderColor c]
+    renderColor c = "color:" <> T.pack (show c)
 
 renderDoc :: SDoc -> String
 renderDoc d = renderWithStyle (dynFlags globalState) d (mkCodeStyle CStyle)
@@ -161,8 +161,8 @@ showTypeable :: forall a. Typeable a => String
 showTypeable = unsafePerformIO do
     traverse_ @Maybe (flip appendFile ("\nderiving instance Show (" <> t <> ")")) $ printDerives $ args globalState
     pure t
-    where
-        t = show $ typeRep @a
+  where
+    t = show $ typeRep @a
 
 instance {-# OVERLAPPABLE #-} Typeable a => Show a where
     show = const $ show $ "ERROR" <> showTypeable @a
@@ -175,8 +175,9 @@ instance (Enum a, Show a) => Show (EnumSet a) where
     show b = "EnumSet.fromList" ++ show (EnumSet.toList b)
 instance Show a => Show (Located a) where
     show (L s x) =
-        unwords $ (++ ["(", show x, ")"]) $
-            if hideLocs $ args globalState then [] else ["L", "(", show s, ")", ""]
+        unwords $
+            (++ ["(", show x, ")"]) $
+                if hideLocs $ args globalState then [] else ["L", "(", show s, ")", ""]
 
 instance Show OccName where show = showOutputable
 instance Show ModuleName where show = showOutputable
