@@ -7,8 +7,7 @@
 
 module Build (main) where
 
-import Control.Monad
-import Control.Monad.Extra (whenM)
+import Control.Monad.Extra
 import Data.Char
 import Data.List.Extra
 import Development.Shake
