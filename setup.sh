@@ -30,13 +30,16 @@ cabal-env -n scripts \
     directory \
     extra \
     filepath \
+    filepath-bytestring \
     ghc \
+    hinotify \
     lucid \
     optparse-generic \
     prettyprinter \
     prettyprinter-lucid \
     pretty-simple \
     process \
+    rawfilepath \
     safe \
     shake \
     text \
