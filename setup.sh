@@ -7,9 +7,8 @@ ARCH_VER=x86_64-linux-8.10.2
 ENV_DIR=/home/gthomas/.ghc/$ARCH_VER/environments/
 
 rm $ENV_DIR/scripts
-
-rm -rf git-deps
-mkdir git-deps
+rm $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
+rm -rf git-deps ; mkdir git-deps
 
 function cabal-env-git {
     cd git-deps
@@ -46,4 +45,4 @@ cabal-env -n scripts \
     time \
     unix \
 
-cp $ENV_DIR/scripts $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
+ln -s $ENV_DIR/scripts $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
