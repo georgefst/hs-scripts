@@ -22,9 +22,6 @@
 {-# OPTIONS_GHC -fdefer-typed-holes #-}
 {-# OPTIONS_GHC -threaded #-}
 
-{- | Watches /tmp and copies out env files to current directory.
-Set this running before using 'cabal run --write-ghc-environment-files=always' on a script.
--}
 module CabScriptWatchEnv (main) where
 
 import Control.Concurrent
@@ -44,8 +41,8 @@ import Prelude hiding (lines, putStrLn, readFile, unlines, writeFile)
 
 main :: IO ()
 main = do
-    putStrLn "This program will look for GHC environment files created in /tmp, and copy them in to the current directory."
-    putStrLn "It is the workaround mentioned by: https://github.com/haskell/cabal/issues/6999"
+    putStrLn "This will find a GHC environment file created by a cabal script, and copy it in to the current directory."
+    putStrLn "It is the workaround mentioned at: https://github.com/haskell/cabal/issues/6999"
     m <- newEmptyMVar
     tmp <- getTemporaryDirectory
     inot <- initINotify
