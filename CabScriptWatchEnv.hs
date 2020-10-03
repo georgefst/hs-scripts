@@ -12,11 +12,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TupleSections #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 {-# OPTIONS_GHC -fdefer-typed-holes #-}
 {-# OPTIONS_GHC -threaded #-}
 
@@ -25,6 +27,7 @@ Set this running before using 'cabal run --write-ghc-environment-files=always' o
 -}
 module CabScriptWatchEnv (main) where
 
+import Control.Concurrent
 import Control.Monad
 import Data.ByteString.Char8 (
     isPrefixOf,
@@ -35,7 +38,6 @@ import Data.ByteString.Char8 (
  )
 import Data.ByteString.RawFilePath (readFile, writeFile)
 import RawFilePath
-import System.Exit
 import System.FilePath.ByteString
 import System.INotify
 import Prelude hiding (lines, putStrLn, readFile, unlines, writeFile)
@@ -44,13 +46,23 @@ main :: IO ()
 main = do
     putStrLn "This program will look for GHC environment files created in /tmp, and copy them in to the current directory."
     putStrLn "It is the workaround mentioned by: https://github.com/haskell/cabal/issues/6999"
+    m <- newEmptyMVar
     tmp <- getTemporaryDirectory
-    void $ withINotify \inot -> addWatch inot [Create] tmp \case
-        Created _ p -> do
-            let name = takeFileName p
-            when (".ghc.environment." `isPrefixOf` name && not (".tmp" `isSuffixOf` name)) do
-                putStrLn $ "Found: " <> p
-                contents <- readFile p
-                writeFile name $ unlines $ filter (not . ("package-db dist-newstyle" `isPrefixOf`)) $ lines contents
-                exitSuccess
-        _ -> error "Really shouldn't happen - we only subscribe to 'Create' events..."
+    inot <- initINotify
+    addWatch inot [Create] tmp \case
+        Created isDir p -> do
+            when (isDir && "cabal-repl." `isPrefixOf` p) $
+                void $ addWatch inot [MoveIn] (tmp </> p) \case
+                    MovedIn _ p' _ -> do
+                        when (".ghc.environment." `isPrefixOf` p' && not (".tmp" `isSuffixOf` p')) do
+                            putStrLn $ "Found: " <> p'
+                            putMVar m (tmp </> p </> p')
+                    _ -> err MoveIn
+        _ -> err Create
+    envFile <- takeMVar m
+    contents <- readFile envFile
+    writeFile (takeFileName envFile) $ unlines $ filter (not . ("package-db dist-newstyle" `isPrefixOf`)) $ lines contents
+
+deriving instance Show EventVariety
+err :: EventVariety -> a
+err e = error $ "Really shouldn't happen - we only subscribe to '" ++ show e ++ "' events..."
