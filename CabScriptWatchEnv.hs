@@ -46,7 +46,7 @@ main = do
     m <- newEmptyMVar
     tmp <- getTemporaryDirectory
     inot <- initINotify
-    addWatch inot [Create] tmp \case
+    void $ addWatch inot [Create] tmp \case
         Created isDir p -> do
             when (isDir && "cabal-repl." `isPrefixOf` p) $
                 void $ addWatch inot [MoveIn] (tmp </> p) \case
