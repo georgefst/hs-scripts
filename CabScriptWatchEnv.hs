@@ -35,6 +35,7 @@ import Data.ByteString.Char8 (
  )
 import Data.ByteString.RawFilePath (readFile, writeFile)
 import RawFilePath
+import System.Exit
 import System.FilePath.ByteString
 import System.INotify
 import Prelude hiding (lines, putStrLn, readFile, unlines, writeFile)
@@ -51,4 +52,5 @@ main = do
                 putStrLn $ "Found: " <> p
                 contents <- readFile p
                 writeFile name $ unlines $ filter (not . ("package-db dist-newstyle" `isPrefixOf`)) $ lines contents
+                exitSuccess
         _ -> error "Really shouldn't happen - we only subscribe to 'Create' events..."
