@@ -34,6 +34,7 @@ cabal-env -n scripts \
     ghc \
     hinotify \
     lucid \
+    monadlist \
     optparse-generic \
     prettyprinter \
     prettyprinter-lucid \
