@@ -86,7 +86,7 @@ data GlobalState = GlobalState
 
 main :: IO ()
 main = do
-    args@(Args{..}) <- getRecord "ghc-parse"
+    args@Args{..} <- getRecord "ghc-parse"
     contents <- readFile inFile
     ghcLibDir <- readProcess "ghc" ["--print-libdir"] ""
     --TODO this might not always be exactly what we want - see 'initGhcMonad' haddock
@@ -160,7 +160,7 @@ globalStateRef = unsafePerformIO $ newIORef $ error "globalStateRef uninitialise
 {-# NOINLINE showTypeable #-}
 showTypeable :: forall a. Typeable a => String
 showTypeable = unsafePerformIO do
-    traverse_ @Maybe (flip appendFile ("\nderiving instance Show (" <> t <> ")")) $ printDerives $ args globalState
+    traverse_ @Maybe (`appendFile` ("\nderiving instance Show (" <> t <> ")")) $ printDerives $ args globalState
     pure t
   where
     t = show $ typeRep @a
@@ -183,9 +183,9 @@ instance Show a => Show (Located a) where
 instance Show OccName where show = showOutputable
 instance Show ModuleName where show = showOutputable
 
-deriving instance Show (DocDecl)
-deriving instance Show (ForallVisFlag)
-deriving instance Show (GhcPs)
+deriving instance Show DocDecl
+deriving instance Show ForallVisFlag
+deriving instance Show GhcPs
 deriving instance Show (GRHS (GhcPass 'Parsed) (GenLocated SrcSpan (HsExpr (GhcPass 'Parsed))))
 deriving instance Show (GRHSs (GhcPass 'Parsed) (GenLocated SrcSpan (HsExpr (GhcPass 'Parsed))))
 deriving instance Show (HsBind GhcPs)
@@ -199,27 +199,27 @@ deriving instance Show (HsModule GhcPs)
 deriving instance Show (HsOverLit (GhcPass 'Parsed))
 deriving instance Show (HsRecField' (AmbiguousFieldOcc (GhcPass 'Parsed)) (GenLocated SrcSpan (HsExpr (GhcPass 'Parsed))))
 deriving instance Show (HsRecFields (GhcPass 'Parsed) (GenLocated SrcSpan (HsExpr (GhcPass 'Parsed))))
-deriving instance Show (HsTupleSort)
+deriving instance Show HsTupleSort
 deriving instance Show (HsType (GhcPass 'Parsed))
 deriving instance Show (HsTyVarBndr (GhcPass 'Parsed))
 deriving instance Show (HsWildCardBndrs (GhcPass 'Parsed) (HsImplicitBndrs (GhcPass 'Parsed) (GenLocated SrcSpan (HsType (GhcPass 'Parsed)))))
-deriving instance Show (HsWrapper)
+deriving instance Show HsWrapper
 deriving instance Show (IE GhcPs)
-deriving instance Show (IEWildcard)
+deriving instance Show IEWildcard
 deriving instance Show (IEWrappedName RdrName)
-deriving instance Show (LexicalFixity)
+deriving instance Show LexicalFixity
 deriving instance Show (Match (GhcPass 'Parsed) (GenLocated SrcSpan (HsExpr (GhcPass 'Parsed))))
 deriving instance Show (MatchGroup (GhcPass 'Parsed) (GenLocated SrcSpan (HsExpr (GhcPass 'Parsed))))
-deriving instance Show (NoExtCon)
-deriving instance Show (NoExtField)
-deriving instance Show (Origin)
-deriving instance Show (OverLitVal)
+deriving instance Show NoExtCon
+deriving instance Show NoExtField
+deriving instance Show Origin
+deriving instance Show OverLitVal
 deriving instance Show (ParseResult (Located (HsModule GhcPs)))
-deriving instance Show (ParserFlags)
-deriving instance Show (PromotionFlag)
-deriving instance Show (PState)
-deriving instance Show (RdrName)
+deriving instance Show ParserFlags
+deriving instance Show PromotionFlag
+deriving instance Show PState
+deriving instance Show RdrName
 deriving instance Show (Sig (GhcPass 'Parsed))
-deriving instance Show (SrcStrictness)
-deriving instance Show (StringLiteral)
-deriving instance Show (WarningTxt)
+deriving instance Show SrcStrictness
+deriving instance Show StringLiteral
+deriving instance Show WarningTxt
