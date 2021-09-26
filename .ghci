@@ -1,7 +1,0 @@
-:seti -XImportQualifiedPost
-
-import Data.Text (Text)
-import Data.Text qualified as T
-import Data.Text.IO qualified as T
-
-:set -interactive-print Text.Pretty.Simple.pPrint
