@@ -28,6 +28,7 @@ cabal-env -n scripts \
     bytestring \
     directory \
     evdev \
+    evdev-streamly \
     extra \
     filepath \
     filepath-bytestring \
@@ -41,6 +42,7 @@ cabal-env -n scripts \
     rawfilepath \
     safe \
     shake \
+    streamly \
     text \
     time \
     unix \
