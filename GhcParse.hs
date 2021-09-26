@@ -30,6 +30,7 @@
 {-# OPTIONS_GHC -fdefer-typed-holes #-}
 {-# OPTIONS_GHC -threaded #-}
 
+-- | A souped up version of: `ghc -fno-code -ddump-parsed-ast "$1" | pretty-simple`
 module GhcParse (main) where
 
 import Bag (Bag)

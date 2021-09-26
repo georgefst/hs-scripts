@@ -22,6 +22,9 @@
 {-# OPTIONS_GHC -fdefer-typed-holes #-}
 {-# OPTIONS_GHC -threaded #-}
 
+{- | This will find a GHC environment file created by a cabal script, and copy it in to the current directory.
+It is the workaround mentioned [here](https://github.com/haskell/cabal/issues/6999).
+-}
 module CabScriptWatchEnv (main) where
 
 import Control.Concurrent
@@ -41,8 +44,6 @@ import Prelude hiding (lines, putStrLn, readFile, unlines, writeFile)
 
 main :: IO ()
 main = do
-    putStrLn "This will find a GHC environment file created by a cabal script, and copy it in to the current directory."
-    putStrLn "It is the workaround mentioned at: https://github.com/haskell/cabal/issues/6999"
     m <- newEmptyMVar
     tmp <- getTemporaryDirectory
     inot <- initINotify
