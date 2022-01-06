@@ -19,6 +19,7 @@ function cabal-env-git {
     cd $SCRIPTS_DIR
 }
 
+#TODO https://github.com/cdepillabout/pretty-simple/pull/80
 cabal-env-git https://github.com/cdepillabout/pretty-simple pretty-simple pretty-simple ae8d2f17ba78edba02b83aed9296a461ebec5f79
 
 #TODO versions - not sure currently possible with cabal-env
