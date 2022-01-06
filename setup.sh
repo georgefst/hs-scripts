@@ -55,4 +55,4 @@ ln -s $ENV_DIR/scripts $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
 
 #TODO these don't build with GHC 9.2
     # prettyprinter-graphviz \
-        # requires --allow-newer=graphviz:bytestring,wl-pprint-text:text,polyparse:text
+        # requires `--allow-newer=graphviz:bytestring`: https://github.com/ivan-m/graphviz/pull/53
