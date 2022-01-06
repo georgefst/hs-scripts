@@ -40,6 +40,7 @@ cabal-env -n scripts \
     lucid \
     optparse-generic \
     prettyprinter \
+    prettyprinter-graphviz \
     prettyprinter-lucid \
     process \
     safe \
