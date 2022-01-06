@@ -3,7 +3,7 @@
 #TODO move this stuff in to Build.hs
 
 SCRIPTS_DIR=$(pwd)
-ARCH_VER=x86_64-linux-8.10.7
+ARCH_VER=x86_64-linux-9.2.1
 ENV_DIR=/home/gthomas/.ghc/$ARCH_VER/environments/
 
 rm $ENV_DIR/scripts
@@ -21,6 +21,8 @@ function cabal-env-git {
 
 #TODO https://github.com/cdepillabout/pretty-simple/pull/80
 cabal-env-git https://github.com/cdepillabout/pretty-simple pretty-simple pretty-simple ae8d2f17ba78edba02b83aed9296a461ebec5f79
+#TODO https://github.com/xtendo-org/rawfilepath/pull/5
+cabal-env-git https://github.com/georgefst/rawfilepath rawfilepath rawfilepath f609f22e82de36e0e62a9fc6b1368b50614bf3d1
 
 #TODO versions - not sure currently possible with cabal-env
     # (but in that case what does '--any' mean?)
@@ -40,7 +42,6 @@ cabal-env -n scripts \
     prettyprinter \
     prettyprinter-lucid \
     process \
-    rawfilepath \
     safe \
     shake \
     streamly \
