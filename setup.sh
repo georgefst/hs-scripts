@@ -3,7 +3,7 @@
 #TODO move this stuff in to Build.hs
 
 SCRIPTS_DIR=$(pwd)
-ARCH_VER=x86_64-linux-9.2.1
+ARCH_VER=$(uname -m)-$(uname -s | tr '[:upper:]' '[:lower:]')-9.2.1
 ENV_DIR=/home/gthomas/.ghc/$ARCH_VER/environments/
 
 rm $ENV_DIR/scripts
