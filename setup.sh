@@ -40,7 +40,6 @@ cabal-env -n scripts \
     lucid \
     optparse-generic \
     prettyprinter \
-    prettyprinter-graphviz \
     prettyprinter-lucid \
     process \
     safe \
@@ -51,3 +50,7 @@ cabal-env -n scripts \
     unix \
 
 ln -s $ENV_DIR/scripts $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
+
+#TODO these don't build with GHC 9.2
+    # prettyprinter-graphviz \
+        # requires --allow-newer=graphviz:bytestring,wl-pprint-text:text,polyparse:text
