@@ -38,6 +38,7 @@ cabal-env -n scripts \
     filepath-bytestring \
     ghc \
     hinotify \
+    lens \
     lucid \
     optics \
     optparse-generic \
