@@ -24,16 +24,15 @@ module Scratch where
 import Control.Concurrent
 import Control.Monad
 import Control.Monad.IO.Class
-import Control.Monad.State
 import Lifx.Lan
-import System.Random
+import System.Random.Stateful
 
 pauseSecs :: Double
 pauseSecs = 0.5
 dev = deviceFromAddress (192, 168, 1, 71)
 pause = liftIO $ threadDelay $ round $ pauseSecs * 1_000_000
-main = fmap fst . runLifx . flip runStateT (mkStdGen 42) $ forever do
-    hue <- state uniform
+main = runLifx $ forever do
+    hue <- uniformM globalStdGen
     let color =
             HSBK
                 { hue
