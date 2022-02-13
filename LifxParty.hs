@@ -1,3 +1,4 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DataKinds #-}
@@ -7,6 +8,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -24,13 +26,15 @@ module Scratch where
 import Control.Concurrent
 import Control.Monad
 import Control.Monad.IO.Class
+import Data.Fixed
+import Data.Proxy
+import Data.Time
 import Lifx.Lan
 import System.Random.Stateful
 
-pauseSecs :: Double
-pauseSecs = 0.5
+pauseTime = MkFixed 500 :: Milli
 dev = deviceFromAddress (192, 168, 1, 71)
-pause = liftIO $ threadDelay $ round $ pauseSecs * 1_000_000
+pause = liftIO $ threadDelay $ round $ toRational pauseTime * toRational (resolution $ Proxy @E6)
 main = runLifx $ forever do
     hue <- uniformM globalStdGen
     let color =
@@ -40,5 +44,5 @@ main = runLifx $ forever do
                 , brightness = maxBound
                 , kelvin = maxBound
                 }
-    sendMessage dev $ SetColor color $ realToFrac pauseSecs
+    sendMessage dev $ SetColor color $ secondsToNominalDiffTime $ realToFrac pauseTime
     pause
