@@ -22,8 +22,9 @@
 module Scratch where
 
 import Control.Concurrent
+import Control.Monad
 import Control.Monad.IO.Class
-import Control.Monad.Loops
+import Control.Monad.State
 import Lifx.Lan
 import System.Random
 
@@ -31,9 +32,9 @@ pauseSecs :: Double
 pauseSecs = 0.5
 dev = deviceFromAddress (192, 168, 1, 71)
 pause = liftIO $ threadDelay $ round $ pauseSecs * 1_000_000
-main = runLifx $ flip iterateM_ (mkStdGen 42) \g -> do
-    let (hue, g') = uniform g
-        color =
+main = fmap fst . runLifx . flip runStateT (mkStdGen 42) $ forever do
+    hue <- state uniform
+    let color =
             HSBK
                 { hue
                 , saturation = maxBound
@@ -42,4 +43,3 @@ main = runLifx $ flip iterateM_ (mkStdGen 42) \g -> do
                 }
     sendMessage dev $ SetColor color $ realToFrac pauseSecs
     pause
-    pure g'
