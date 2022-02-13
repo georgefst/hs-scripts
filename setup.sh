@@ -39,17 +39,23 @@ cabal-env -n scripts \
     ghc \
     hinotify \
     lens \
+    lifx-lan \
     lucid \
+    monad-loops \
+    mtl \
+    mwc-random \
     optics \
     optparse-generic \
     prettyprinter \
     prettyprinter-lucid \
     process \
+    random \
     safe \
     shake \
     streamly \
     text \
     time \
+    transformers \
     unix \
 
 ln -s $ENV_DIR/scripts $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
