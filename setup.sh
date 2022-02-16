@@ -29,6 +29,7 @@ cabal-env-git https://github.com/georgefst/rawfilepath rawfilepath rawfilepath f
 cabal-env -n scripts \
     ansi-terminal \
     bytestring \
+    colour \
     composition \
     directory \
     evdev \
