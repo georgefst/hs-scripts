@@ -21,7 +21,7 @@
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 {-# OPTIONS_GHC -fdefer-type-errors #-}
 
-module Scratch where
+module LifxParty where
 
 import Control.Concurrent
 import Control.Monad
