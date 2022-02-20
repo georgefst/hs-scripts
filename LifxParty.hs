@@ -1,6 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE GHC2021 #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
@@ -15,12 +16,16 @@ import Data.Fixed
 import Data.Proxy
 import Data.Time
 import Lifx.Lan
+import Lifx.Lan.Mock.Terminal
 import System.Random.Stateful
 
 pauseTime = MkFixed 500 :: Milli
 dev = deviceFromAddress (192, 168, 1, 71)
 pause = liftIO $ threadDelay $ round $ toRational pauseTime * toRational (resolution $ Proxy @E6)
-main = runLifx $ forever do
+
+main = runLifx party
+mock = runMock [(dev, "Lamp")] party
+party = forever do
     hue <- uniformM globalStdGen
     let color =
             HSBK
