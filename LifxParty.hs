@@ -19,9 +19,8 @@ import Lifx.Lan
 import Lifx.Lan.Mock.Terminal
 import System.Random.Stateful
 
-pauseTime = MkFixed 500 :: Milli
 dev = deviceFromAddress (192, 168, 1, 71)
-pause = liftIO $ threadDelay $ round $ toRational pauseTime * toRational (resolution $ Proxy @E6)
+pause t = liftIO $ threadDelay $ round $ toRational t * toRational (resolution $ Proxy @E6)
 
 main = runLifx party
 mock = runMock [(dev, "Lamp")] party
@@ -34,5 +33,22 @@ party = forever do
                 , brightness = maxBound
                 , kelvin = maxBound
                 }
+    sendMessage dev $ SetColor color $ secondsToNominalDiffTime $ realToFrac $ pauseTime
+    pause pauseTime
+  where
+    pauseTime = MkFixed 500 :: Milli
+
+candle = forever do
+    power <- randomIO
+    let color =
+            HSBK
+                { hue = 0
+                , saturation = minBound
+                , brightness = 55978
+                , kelvin = 2328
+                }
     sendMessage dev $ SetColor color $ secondsToNominalDiffTime $ realToFrac pauseTime
-    pause
+    sendMessage dev $ SetPower power
+    pause pauseTime
+  where
+    pauseTime = MkFixed 10 :: Milli
