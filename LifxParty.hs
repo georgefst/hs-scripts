@@ -38,17 +38,17 @@ party = forever do
   where
     pauseTime = MkFixed 500 :: Milli
 
-candle = forever do
-    power <- randomIO
+candle = do
     let color =
             HSBK
                 { hue = 0
-                , saturation = minBound
+                , saturation = 0
                 , brightness = 55978
                 , kelvin = 2328
                 }
-    sendMessage dev $ SetColor color $ secondsToNominalDiffTime $ realToFrac pauseTime
-    sendMessage dev $ SetPower power
-    pause pauseTime
+    sendMessage dev $ SetColor color 0
+    forever do
+        sendMessage dev . SetPower =<< randomIO
+        pause pauseTime
   where
     pauseTime = MkFixed 10 :: Milli
