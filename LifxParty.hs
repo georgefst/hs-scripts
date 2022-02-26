@@ -12,6 +12,7 @@ module LifxParty where
 import Control.Concurrent
 import Control.Monad
 import Control.Monad.IO.Class
+import Control.Monad.State
 import Data.Fixed
 import Data.Proxy
 import Data.Time
@@ -38,7 +39,7 @@ party = forever do
   where
     pauseTime = MkFixed 500 :: Milli
 
-candle = do
+candle = flip runStateT True do
     let color =
             HSBK
                 { hue = 0
@@ -48,7 +49,8 @@ candle = do
                 }
     sendMessage dev $ SetColor color 0
     forever do
-        sendMessage dev . SetPower =<< randomIO
+        modify not
+        sendMessage dev . SetPower =<< get
         pause pauseTime
   where
-    pauseTime = MkFixed 10 :: Milli
+    pauseTime = MkFixed 30 :: Milli
