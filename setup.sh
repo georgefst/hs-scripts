@@ -58,6 +58,7 @@ cabal-env -n scripts \
     time \
     transformers \
     unix \
+    vector \
 
 ln -s $ENV_DIR/scripts $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
 
