@@ -31,6 +31,7 @@ cabal-env -n scripts \
     bytestring \
     colour \
     composition \
+    containers \
     directory \
     evdev \
     evdev-streamly \
