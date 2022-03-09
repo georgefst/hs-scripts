@@ -4,7 +4,7 @@
 
 SCRIPTS_DIR=$(pwd)
 ARCH_VER=$(uname -m)-$(uname -s | tr '[:upper:]' '[:lower:]')-9.2.1
-ENV_DIR=/home/gthomas/.ghc/$ARCH_VER/environments/
+ENV_DIR=/home/gthomas/.ghc/$ARCH_VER/environments
 
 rm $ENV_DIR/scripts
 rm $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
