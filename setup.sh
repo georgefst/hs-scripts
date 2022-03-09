@@ -38,6 +38,7 @@ cabal-env -n scripts \
     extra \
     filepath \
     filepath-bytestring \
+    generic-optics \
     ghc \
     hinotify \
     lens \
@@ -58,6 +59,7 @@ cabal-env -n scripts \
     text \
     time \
     transformers \
+    uniplate \
     unix \
     vector \
 
