@@ -23,6 +23,7 @@ function cabal-env-git {
 cabal-env-git https://github.com/cdepillabout/pretty-simple pretty-simple pretty-simple ae8d2f17ba78edba02b83aed9296a461ebec5f79
 #TODO https://github.com/xtendo-org/rawfilepath/pull/5
 cabal-env-git https://github.com/georgefst/rawfilepath rawfilepath rawfilepath f609f22e82de36e0e62a9fc6b1368b50614bf3d1
+#TODO https://github.com/georgefst/lifx-lan/issues/22
 cabal-env-git https://github.com/georgefst/lifx-lan lifx-lan lifx-lan 4c6596b45c1c82888b3cf486a9618a7a04d8580c
 
 #TODO versions - not sure currently possible with cabal-env
