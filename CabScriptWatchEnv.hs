@@ -55,12 +55,8 @@ main = do
                         when (".ghc.environment." `isPrefixOf` p' && not (".tmp" `isSuffixOf` p')) do
                             putStrLn $ "Found: " <> p'
                             putMVar m (tmp </> p </> p')
-                    _ -> err MoveIn
-        _ -> err Create
+                    _ -> pure ()
+        _ -> pure ()
     envFile <- takeMVar m
     contents <- readFile envFile
     writeFile (takeFileName envFile) $ unlines $ filter (not . ("package-db dist-newstyle" `isPrefixOf`)) $ lines contents
-
-deriving instance Show EventVariety
-err :: EventVariety -> a
-err e = error $ "Really shouldn't happen - we only subscribe to '" ++ show e ++ "' events..."

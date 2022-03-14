@@ -4,7 +4,7 @@
 
 SCRIPTS_DIR=$(pwd)
 ARCH_VER=$(uname -m)-$(uname -s | tr '[:upper:]' '[:lower:]')-9.2.1
-ENV_DIR=/home/gthomas/.ghc/$ARCH_VER/environments/
+ENV_DIR=/home/gthomas/.ghc/$ARCH_VER/environments
 
 rm $ENV_DIR/scripts
 rm $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
@@ -33,12 +33,14 @@ cabal-env -n scripts \
     bytestring \
     colour \
     composition \
+    containers \
     directory \
     evdev \
     evdev-streamly \
     extra \
     filepath \
     filepath-bytestring \
+    generic-optics \
     ghc \
     hinotify \
     lens \
@@ -58,7 +60,9 @@ cabal-env -n scripts \
     text \
     time \
     transformers \
+    uniplate \
     unix \
+    vector \
 
 ln -s $ENV_DIR/scripts $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
 
