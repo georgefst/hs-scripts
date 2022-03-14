@@ -23,6 +23,7 @@ dev = deviceFromAddress (192, 168, 1, 71)
 pause t = liftIO $ threadDelay $ round $ toRational t * toRational (resolution $ Proxy @E6)
 
 main = runLifx party
+
 mock = runMock [(dev, "Lamp")] party
 party = forever do
     hue <- uniformM globalStdGen
