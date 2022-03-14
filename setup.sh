@@ -24,7 +24,7 @@ cabal-env-git https://github.com/cdepillabout/pretty-simple pretty-simple pretty
 #TODO https://github.com/xtendo-org/rawfilepath/pull/5
 cabal-env-git https://github.com/georgefst/rawfilepath rawfilepath rawfilepath f609f22e82de36e0e62a9fc6b1368b50614bf3d1
 #TODO https://github.com/georgefst/lifx-lan/issues/22
-cabal-env-git https://github.com/georgefst/lifx-lan lifx-lan lifx-lan d5d515f463237d4e4fd1708382f3f112cc1eeb7e
+cabal-env-git https://github.com/georgefst/lifx-lan lifx-lan lifx-lan 2f09eca9657cdde2f766a584d9220fa662a636b0
 
 #TODO versions - not sure currently possible with cabal-env
     # (but in that case what does '--any' mean?)

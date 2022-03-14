@@ -12,15 +12,12 @@ module LifxParty where
 import Control.Concurrent
 import Control.Monad
 import Control.Monad.IO.Class
-import Data.Fixed
-import Data.Proxy
 import Data.Time
 import Lifx.Lan
 import Lifx.Lan.Mock.Terminal
 import System.Random.Stateful
 
 dev = deviceFromAddress (192, 168, 1, 71)
-pause t = liftIO $ threadDelay $ round $ toRational t * toRational (resolution $ Proxy @E6)
 
 main = runLifx party
 
@@ -34,10 +31,7 @@ party = forever do
                 , brightness = maxBound
                 , kelvin = maxBound
                 }
-    sendMessage dev $ SetColor color $ secondsToNominalDiffTime $ realToFrac $ pauseTime
-    pause pauseTime
-  where
-    pauseTime = MkFixed 500 :: Milli
+    sendMessageAndWait dev $ SetColor color $ secondsToNominalDiffTime 0.5
 
 candle = do
     let color =
@@ -50,6 +44,4 @@ candle = do
     sendMessage dev $ SetColor color 0
     forever do
         sendMessage dev . SetPower =<< randomIO
-        pause pauseTime
-  where
-    pauseTime = MkFixed 10 :: Milli
+        liftIO $ threadDelay 10_000
