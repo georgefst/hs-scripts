@@ -8,19 +8,6 @@ ENV_DIR=/home/gthomas/.ghc/$ARCH_VER/environments
 
 rm $ENV_DIR/scripts
 rm $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
-rm -rf git-deps ; mkdir git-deps
-
-function cabal-env-git {
-    cd git-deps
-    git clone $1
-    cd $2
-    git checkout $4
-    cabal-env --local $3 -n scripts
-    cd $SCRIPTS_DIR
-}
-
-#TODO https://github.com/xtendo-org/rawfilepath/pull/5
-cabal-env-git https://github.com/georgefst/rawfilepath rawfilepath rawfilepath f609f22e82de36e0e62a9fc6b1368b50614bf3d1
 
 #TODO versions - not sure currently possible with cabal-env
     # (but in that case what does '--any' mean?)
