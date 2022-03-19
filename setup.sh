@@ -19,8 +19,6 @@ function cabal-env-git {
     cd $SCRIPTS_DIR
 }
 
-#TODO https://github.com/cdepillabout/pretty-simple/pull/80
-cabal-env-git https://github.com/cdepillabout/pretty-simple pretty-simple pretty-simple ae8d2f17ba78edba02b83aed9296a461ebec5f79
 #TODO https://github.com/xtendo-org/rawfilepath/pull/5
 cabal-env-git https://github.com/georgefst/rawfilepath rawfilepath rawfilepath f609f22e82de36e0e62a9fc6b1368b50614bf3d1
 
@@ -51,6 +49,7 @@ cabal-env -n scripts \
     optparse-generic \
     prettyprinter \
     prettyprinter-lucid \
+    pretty-simple \
     process \
     random \
     safe \
