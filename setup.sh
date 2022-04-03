@@ -44,6 +44,7 @@ cabal-env -n scripts \
     ghc \
     hinotify \
     lens \
+    lifx-lan \
     lucid \
     monad-loops \
     mtl \
