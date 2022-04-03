@@ -19,13 +19,6 @@ function cabal-env-git {
     cd $SCRIPTS_DIR
 }
 
-#TODO https://github.com/cdepillabout/pretty-simple/pull/80
-cabal-env-git https://github.com/cdepillabout/pretty-simple pretty-simple pretty-simple ae8d2f17ba78edba02b83aed9296a461ebec5f79
-#TODO https://github.com/xtendo-org/rawfilepath/pull/5
-cabal-env-git https://github.com/georgefst/rawfilepath rawfilepath rawfilepath f609f22e82de36e0e62a9fc6b1368b50614bf3d1
-#TODO https://github.com/georgefst/lifx-lan/issues/22
-cabal-env-git https://github.com/georgefst/lifx-lan lifx-lan lifx-lan 2f09eca9657cdde2f766a584d9220fa662a636b0
-
 #TODO versions - not sure currently possible with cabal-env
     # (but in that case what does '--any' mean?)
 cabal-env -n scripts \
