@@ -33,6 +33,7 @@ cabal-env -n scripts \
     mtl \
     mwc-random \
     optics \
+    optparse-applicative \
     optparse-generic \
     prettyprinter \
     prettyprinter-lucid \
