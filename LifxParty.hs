@@ -23,7 +23,7 @@ main = runLifx party
 
 mock = runMock [(dev, "Lamp")] party
 party = forever do
-    hue <- uniformM globalStdGen
+    hue <- randomIO
     let color =
             HSBK
                 { hue
