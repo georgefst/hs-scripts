@@ -19,7 +19,7 @@ import System.Random.Stateful
 
 dev = deviceFromAddress (192, 168, 1, 71)
 
-main = runLifx party
+main = runLifx $ sendMessage dev (SetPower True) >> party
 
 mock = runMock [(dev, "Lamp")] party
 party = forever do
