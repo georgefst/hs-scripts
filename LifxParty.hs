@@ -27,11 +27,11 @@ party = forever do
     let color =
             HSBK
                 { hue
-                , saturation = maxBound
+                , saturation = maxBound `div` 2
                 , brightness = maxBound
-                , kelvin = maxBound
+                , kelvin = minBound
                 }
-    sendMessageAndWait dev $ SetColor color $ secondsToNominalDiffTime 0.5
+    sendMessageAndWait dev $ SetColor color $ secondsToNominalDiffTime 3
 
 candle = do
     let color =
