@@ -18,6 +18,9 @@ cabal-env -n scripts \
     composition \
     containers \
     directory \
+    diagrams-core \
+    diagrams-lib \
+    diagrams-svg \
     evdev \
     evdev-streamly \
     extra \
