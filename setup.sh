@@ -2,8 +2,9 @@
 
 #TODO move this stuff in to Build.hs
 
+GHC_VER=$(ghc -V | rev | cut -d ' ' -f 1 | rev)
 SCRIPTS_DIR=$(pwd)
-ARCH_VER=$(uname -m)-$(uname -s | tr '[:upper:]' '[:lower:]')-9.2.1
+ARCH_VER=$(uname -m)-$(uname -s | tr '[:upper:]' '[:lower:]')-$GHC_VER
 ENV_DIR=/home/gthomas/.ghc/$ARCH_VER/environments
 
 rm $ENV_DIR/scripts
