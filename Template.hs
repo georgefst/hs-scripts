@@ -38,6 +38,7 @@ main = do
     (args :: Args) <- getRecord progName
     _
 
+--TODO just use getProgName
 progName :: Text
 progName = _
 
