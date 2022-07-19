@@ -7,6 +7,7 @@ Developed for some stems I was sent by Jacob as it makes it easier to see the tr
 -}
 module StripCommonPrefix where
 
+import Control.Monad (zipWithM_)
 import Data.Function (on)
 import Data.Functor ((<&>))
 import Data.Text (Text, commonPrefixes)
@@ -27,9 +28,7 @@ main =
                     putStrLn $ "common prefix found: " <> show p
                     confirm >>= \case
                         False -> exitFailure
-                        True -> do
-                            sequence_ $ zipWith (renameFile `on` ((dir </>) . T.unpack)) fs fs'
-                            pure ()
+                        True -> zipWithM_ (renameFile `on` ((dir </>) . T.unpack)) fs fs'
             pure ()
         _ -> error "bad args"
 
