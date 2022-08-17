@@ -5,7 +5,7 @@
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall #-}
 
-module Build (main) where
+module Main (main) where
 
 import Control.Monad.Extra
 import Data.Char
@@ -25,7 +25,7 @@ build-depends:
 
 main :: IO ()
 main = shakeArgs shakeOpts do
-    sources <- liftIO $ filter (/= "Template.hs") <$> getDirectoryFilesIO "." ["*.hs"]
+    sources <- liftIO $ filter (`notElem` ["Template.hs", "Build.hs"]) <$> getDirectoryFilesIO "." ["*.hs"]
     utilSources <- liftIO $ map ("Util" </>) <$> getDirectoryFilesIO "Util" ["//*.hs"]
 
     want $ map inToOut sources
