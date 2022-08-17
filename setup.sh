@@ -44,6 +44,7 @@ cabal-env -n scripts \
     pretty-simple \
     process \
     random \
+    rawfilepath \
     safe \
     shake \
     streamly \
