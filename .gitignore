@@ -5,3 +5,4 @@ dist
 tmp
 git-deps
 Scratch.hs
+dist-newstyle/cache/compiler
