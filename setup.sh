@@ -46,6 +46,7 @@ cabal-env -n scripts \
     random \
     rawfilepath \
     safe \
+    sbv \
     shake \
     streamly \
     text \
