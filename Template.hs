@@ -1,3 +1,5 @@
+{- HLINT ignore "Unused LANGUAGE pragma" -}
+{- HLINT ignore "Use newtype instead of data" -}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveFoldable #-}
