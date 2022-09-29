@@ -1,11 +1,11 @@
-#!/usr/bin/env cabal
+#!/usr/bin/env runghc
 
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall #-}
 
-module Main (main) where
+module Build (main) where
 
 import Control.Monad.Extra
 import Data.Char
@@ -13,15 +13,6 @@ import Data.List.Extra
 import Development.Shake
 import System.Directory qualified as Dir
 import System.FilePath
-
-{- cabal:
-build-depends:
-    base >= 4.14,
-    directory ^>= 1.3.6.0,
-    extra ^>= 1.7.8,
-    filepath ^>= 1.4.2.1,
-    shake ^>= 0.19.1,
--}
 
 main :: IO ()
 main = shakeArgs shakeOpts do
