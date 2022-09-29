@@ -1,4 +1,4 @@
-#!/usr/bin/env runghc
+#!/usr/bin/env cabal
 
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ImportQualifiedPost #-}
