@@ -16,6 +16,7 @@ cabal-env -n scripts \
     ansi-terminal \
     bytestring \
     colour \
+    comonad \
     composition \
     containers \
     directory \
@@ -49,6 +50,7 @@ cabal-env -n scripts \
     sbv \
     shake \
     streamly \
+    streams \
     text \
     time \
     transformers \
