@@ -12,7 +12,10 @@ module LifxParty where
 import Control.Concurrent
 import Control.Monad
 import Control.Monad.IO.Class
+import Data.Colour.RGBSpace.HSV qualified as HSV
+import Data.Colour.SRGB
 import Data.Time
+import Data.Word
 import Lifx.Lan
 import Lifx.Lan.Mock.Terminal
 import System.Random.Stateful
@@ -45,3 +48,25 @@ candle = do
     forever do
         sendMessage dev . SetPower =<< randomIO
         liftIO $ threadDelay 10_000
+
+romania = forever do
+    set $ fromHex "#012b7f"
+    pause
+    set $ fromHex "#fdd116"
+    pause
+    set $ fromHex "#ce1127"
+    pause
+  where
+    set c = sendMessageAndWait dev $ SetColor c $ secondsToNominalDiffTime 0
+    pause = liftIO $ threadDelay 1_000_000
+    fromHex = rgbToHsbk . toSRGB . sRGB24read
+
+-- will be in next lifx-lan release
+rgbToHsbk :: RGB Float -> HSBK
+rgbToHsbk c =
+    HSBK
+        { hue = floor $ HSV.hue c * fromIntegral (maxBound @Word16 `div` 360)
+        , saturation = floor $ HSV.saturation c * fromIntegral (maxBound @Word16)
+        , brightness = floor $ HSV.value c * fromIntegral (maxBound @Word16)
+        , kelvin = 0
+        }
