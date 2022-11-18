@@ -5,9 +5,10 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
+{-# OPTIONS_GHC -Wno-unused-top-binds #-}
 {-# OPTIONS_GHC -fdefer-type-errors #-}
 
-module LifxParty where
+module LifxParty (main) where
 
 import Control.Concurrent
 import Control.Monad
