@@ -38,17 +38,15 @@ party = forever do
     sendMessageAndWait dev $ SetColor color $ secondsToNominalDiffTime 3
 
 candle = do
-    let color =
+    let color brightness =
             HSBK
                 { hue = 0
                 , saturation = 0
-                , brightness = 55978
+                , brightness
                 , kelvin = 2328
                 }
-    sendMessage dev $ SetColor color 0
-    forever do
-        sendMessage dev . SetPower =<< randomIO
-        liftIO $ threadDelay 10_000
+    forever $
+        sendMessageAndWait dev . flip SetColor 0.2 . color =<< randomRIO (32000, 45000)
 
 romania = forever do
     set $ fromHex "#012b7f"
