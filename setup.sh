@@ -15,6 +15,8 @@ rm $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
 cabal-env -n scripts \
     ansi-terminal \
     bytestring \
+    Chart \
+    Chart-diagrams \
     colour \
     comonad \
     composition \
