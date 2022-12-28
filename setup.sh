@@ -13,6 +13,7 @@ rm $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
 #TODO versions - not sure currently possible with cabal-env
     # (but in that case what does '--any' mean?)
 cabal-env -n scripts \
+    aeson \
     ansi-terminal \
     bytestring \
     Chart \
@@ -22,6 +23,7 @@ cabal-env -n scripts \
     composition \
     containers \
     directory \
+    dhall \
     diagrams-core \
     diagrams-lib \
     diagrams-svg \
@@ -59,6 +61,7 @@ cabal-env -n scripts \
     uniplate \
     unix \
     vector \
+    yaml \
 
 ln -s $ENV_DIR/scripts $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
 
