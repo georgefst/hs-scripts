@@ -27,6 +27,7 @@ main = shakeArgs shakeOpts do
                 need $ hs : utilSources
                 cmd_
                     "ghc"
+                    -- "aarch64-none-linux-gnu-ghc-9.2"
                     hs
                     ["-main-is", takeBaseName hs]
                     ["-outputdir", ".build"]

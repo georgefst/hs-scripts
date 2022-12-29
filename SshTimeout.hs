@@ -15,13 +15,11 @@ import System.Timeout
 main :: IO ()
 main = do
     print =<< getCurrentTime
-    -- ssh -i/home/gthomas/.ssh/id_rsa -oUserKnownHostsFile=/home/gthomas/.ssh/known_hosts gthomas@billy systemctl suspend
+    -- ssh pi echo 42
     let cmd =
             callProcess
                 "ssh"
-                [ "-i/home/gthomas/.ssh/id_rsa"
-                , "-oUserKnownHostsFile=/home/gthomas/.ssh/known_hosts"
-                , "gthomas@billy"
-                , "systemctl suspend"
+                [ "pi"
+                , "echo 42"
                 ]
     maybe (error "SSH timeout") pure =<< timeout (2 * 1_000_000) cmd
