@@ -15,6 +15,7 @@ rm $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
 cabal-env -n scripts \
     aeson \
     ansi-terminal \
+    async \
     bytestring \
     Chart \
     Chart-diagrams \
