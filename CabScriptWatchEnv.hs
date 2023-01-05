@@ -15,6 +15,7 @@ module CabScriptWatchEnv (main) where
 
 import Control.Monad
 import Data.ByteString.Char8 (
+    isInfixOf,
     isPrefixOf,
     lines,
     putStrLn,
@@ -30,10 +31,16 @@ import Prelude hiding (lines, putStrLn, readFile, unlines, writeFile)
 
 main :: IO ()
 main = do
-    p <-
+    scriptFile <-
         getArgs >>= \case
-            [p] -> pure p
-            _ -> putStrLn "Provide a script-build folder" >> exitFailure
+            [scriptFile] -> pure scriptFile
+            _ -> putStrLn "Provide a cabal script file" >> exitFailure
+    (_exitCode, out, _err) <-
+        readProcessWithExitCode $
+            proc "cabal" ["build", "-v", scriptFile, "--write-ghc-environment-files=always"]
+    p <- case find ("script-builds" `isInfixOf`) $ lines out of -- TODO this may be a brittle heuristic
+        Just p -> pure p
+        Nothing -> putStrLn "Failed to parse cabal output" >> exitFailure
     envFiles <- filter (".ghc.environment." `isPrefixOf`) <$> listDirectory p
     if null envFiles
         then putStrLn "No environment files found" >> exitFailure
