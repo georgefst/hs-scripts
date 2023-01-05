@@ -41,4 +41,7 @@ main = do
     for_ envFiles \envFile -> do
         putStrLn envFile
         contents <- readFile $ p </> envFile
-        writeFile (takeFileName envFile) $ unlines $ filter (not . ("package-db dist-newstyle" `isPrefixOf`)) $ lines contents
+        writeFile (takeFileName envFile)
+            . unlines
+            . filter (not . ("package-db dist-newstyle" `isPrefixOf`))
+            $ lines contents
