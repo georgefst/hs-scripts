@@ -11,7 +11,7 @@
 {- | This will find a GHC environment file created by a cabal script, and copy it in to the current directory.
 It is the workaround mentioned [here](https://github.com/haskell/cabal/issues/6999).
 -}
-module CabScriptWatchEnv (main) where
+module CabScriptExtractEnv (main) where
 
 import Control.Monad
 import Data.ByteString.Char8 (
