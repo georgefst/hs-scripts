@@ -4,8 +4,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
-{-# OPTIONS_GHC -Wno-orphans #-}
-{-# OPTIONS_GHC -fdefer-typed-holes #-}
 {-# OPTIONS_GHC -threaded #-}
 
 {- | This will find a GHC environment file created by a cabal script, and copy it in to the current directory.
