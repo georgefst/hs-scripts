@@ -13,7 +13,6 @@ It is the workaround mentioned [here](https://github.com/haskell/cabal/issues/69
 -}
 module CabScriptExtractEnv (main) where
 
-import Control.Monad
 import Data.ByteString.Char8 (
     isInfixOf,
     isPrefixOf,
@@ -22,11 +21,11 @@ import Data.ByteString.Char8 (
     unlines,
  )
 import Data.ByteString.RawFilePath (readFile, writeFile)
-import Data.Foldable
-import RawFilePath
-import System.Exit
-import System.FilePath.ByteString
-import System.Posix.ByteString
+import Data.Foldable (find, for_)
+import RawFilePath (listDirectory, proc, readProcessWithExitCode)
+import System.Exit (exitFailure)
+import System.FilePath.ByteString (takeFileName, (</>))
+import System.Posix.ByteString (getArgs)
 import Prelude hiding (lines, putStrLn, readFile, unlines, writeFile)
 
 main :: IO ()
