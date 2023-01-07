@@ -36,6 +36,7 @@ cabal-env -n scripts \
     generic-optics \
     ghc \
     hinotify \
+    JuicyPixels \
     lens \
     lifx-lan \
     lucid \
@@ -62,6 +63,7 @@ cabal-env -n scripts \
     uniplate \
     unix \
     vector \
+    X11 \
     yaml \
 
 ln -s $ENV_DIR/scripts $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
