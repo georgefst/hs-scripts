@@ -1,4 +1,5 @@
 {- TODO everything in this file (other than this comment and the extensions pragmas) is taken verbatim from lifx-manager
+or at least, it was when this file was first committed
 factor out somehow
 -}
 {-# LANGUAGE BlockArguments #-}
@@ -27,6 +28,7 @@ import Data.Word
 import Graphics.X11 hiding (Window)
 import Graphics.X11 qualified as X11
 import Graphics.X11.Xlib.Extras
+import Text.Pretty.Simple
 
 data Window = Window X11.Window Display
     deriving (Eq, Ord)
@@ -34,16 +36,16 @@ data Window = Window X11.Window Display
 findByName ::
     -- | substring which must appear in the window title
     Text ->
-    IO Window
+    IO [Window]
 findByName name = do
     d <- openDisplay ""
-    Just (w, _) <- do
+    ws <- do
         nET_CLIENT_LIST <- internAtom d "_NET_CLIENT_LIST" True
         Just ids <- getWindowProperty32 d nET_CLIENT_LIST (defaultRootWindow d)
-        find ((name `T.isInfixOf`) . snd) <$> for ids \(fromIntegral -> i) -> do
+        filter ((name `T.isInfixOf`) . snd) <$> for ids \(fromIntegral -> i) -> do
             Just cs <- getWindowProperty8 d wM_NAME i
             pure (i, decodeLatin1 . BS.pack $ map fromIntegral cs)
-    pure $ Window w d
+    pure [Window w d | (w, _) <- ws]
 
 setTitle :: Window -> Text -> IO ()
 setTitle (Window w d) t = do

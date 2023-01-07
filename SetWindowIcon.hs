@@ -32,4 +32,4 @@ data Args = Args
 main :: IO ()
 main = do
     (args :: Args) <- getRecord . T.pack =<< getProgName
-    join $ setIcon <$> findByName args.window <*> BS.readFile args.png
+    join $ foldMap setIcon <$> findByName args.window <*> BS.readFile args.png
