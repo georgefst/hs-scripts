@@ -23,11 +23,11 @@ cabal-env -n scripts \
     comonad \
     composition \
     containers \
-    directory \
     dhall \
     diagrams-core \
     diagrams-lib \
     diagrams-svg \
+    directory \
     evdev \
     evdev-streamly \
     extra \
@@ -45,9 +45,9 @@ cabal-env -n scripts \
     optics \
     optparse-applicative \
     optparse-generic \
+    pretty-simple \
     prettyprinter \
     prettyprinter-lucid \
-    pretty-simple \
     process \
     random \
     rawfilepath \
