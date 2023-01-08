@@ -38,11 +38,15 @@ findByName ::
     Text ->
     IO [Window]
 findByName name = do
+    -- this is a bit ad-hoc, but we need a way to target untitled windows,
+    -- and being able to target all windows isn't very useful
+    let f = if T.null name then T.null else (name `T.isInfixOf`)
+
     d <- openDisplay ""
     ws <- do
         nET_CLIENT_LIST <- internAtom d "_NET_CLIENT_LIST" True
         Just ids <- getWindowProperty32 d nET_CLIENT_LIST (defaultRootWindow d)
-        filter ((name `T.isInfixOf`) . snd) <$> for ids \(fromIntegral -> i) -> do
+        filter (f . snd) <$> for ids \(fromIntegral -> i) -> do
             Just cs <- getWindowProperty8 d wM_NAME i
             pure (i, decodeLatin1 . BS.pack $ map fromIntegral cs)
     pure [Window w d | (w, _) <- ws]
