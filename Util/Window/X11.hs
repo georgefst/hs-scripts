@@ -9,7 +9,7 @@ factor out somehow
 
 module Util.Window.X11 (
     Window, -- it's important that the implementation is hidden here, since it will vary between platforms
-    findByName,
+    findWindows,
     setTitle,
     setIcon,
 ) where
@@ -33,20 +33,15 @@ import Text.Pretty.Simple
 data Window = Window X11.Window Display
     deriving (Eq, Ord)
 
-findByName ::
-    -- | substring which must appear in the window title
-    Text ->
+findWindows ::
+    (Text -> Bool) ->
     IO [Window]
-findByName name = do
-    -- this is a bit ad-hoc, but we need a way to target untitled windows,
-    -- and being able to target all windows isn't very useful
-    let f = if T.null name then T.null else (name `T.isInfixOf`)
-
+findWindows matcher = do
     d <- openDisplay ""
     ws <- do
         nET_CLIENT_LIST <- internAtom d "_NET_CLIENT_LIST" True
         Just ids <- getWindowProperty32 d nET_CLIENT_LIST (defaultRootWindow d)
-        filter (f . snd) <$> for ids \(fromIntegral -> i) -> do
+        filter (matcher . snd) <$> for ids \(fromIntegral -> i) -> do
             Just cs <- getWindowProperty8 d wM_NAME i
             pure (i, decodeLatin1 . BS.pack $ map fromIntegral cs)
     pure [Window w d | (w, _) <- ws]

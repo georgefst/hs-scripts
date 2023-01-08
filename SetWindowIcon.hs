@@ -19,21 +19,33 @@ module SetWindowIcon (main) where
 import Data.ByteString qualified as BS
 import Data.Foldable (for_)
 import Data.Text qualified as T
-import Options.Generic (Generic, ParseRecord, Text, getRecord)
+import Options.Generic (Generic, ParseField, ParseFields, ParseRecord, Text, getRecord)
 import System.Environment (getProgName)
-import Util.Window.X11 (findByName, setIcon, setTitle)
+import Util.Window.X11 (findWindows, setIcon, setTitle)
+
+data MatchMode
+    = Exact
+    | Prefix
+    | Suffix
+    | Infix
+    deriving (Eq, Ord, Show, Read, Generic, ParseRecord, ParseField, ParseFields)
 
 data Args = Args
     { window :: Text
     , title :: Maybe Text
     , png :: Maybe FilePath
+    , match :: MatchMode
     }
     deriving (Eq, Ord, Show, Generic, ParseRecord)
 
 main :: IO ()
 main = do
     (args :: Args) <- getRecord . T.pack =<< getProgName
-    ws <- findByName args.window
+    ws <- findWindows $ ($ args.window) case args.match of
+        Exact -> (==)
+        Prefix -> T.isPrefixOf
+        Suffix -> T.isSuffixOf
+        Infix -> T.isInfixOf
     png <- traverse BS.readFile args.png
     for_ ws \w -> do
         maybe mempty (setTitle w) args.title
