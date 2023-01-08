@@ -46,6 +46,7 @@ main = do
         Prefix -> T.isPrefixOf
         Suffix -> T.isSuffixOf
         Infix -> T.isInfixOf
+    putStrLn $ "Found " ++ show (length ws) ++ " windows"
     png <- traverse BS.readFile args.png
     for_ ws \w -> do
         maybe mempty (setTitle w) args.title
