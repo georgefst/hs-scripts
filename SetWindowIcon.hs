@@ -21,11 +21,12 @@ import Data.Foldable (for_)
 import Data.Text qualified as T
 import Options.Generic (Generic, ParseRecord, Text, getRecord)
 import System.Environment (getProgName)
-import Util.Window.X11 (findByName, setIcon)
+import Util.Window.X11 (findByName, setIcon, setTitle)
 
 data Args = Args
     { window :: Text
-    , png :: FilePath
+    , title :: Maybe Text
+    , png :: Maybe FilePath
     }
     deriving (Eq, Ord, Show, Generic, ParseRecord)
 
@@ -33,5 +34,7 @@ main :: IO ()
 main = do
     (args :: Args) <- getRecord . T.pack =<< getProgName
     ws <- findByName args.window
-    png <- BS.readFile args.png
-    for_ ws \w -> setIcon w png
+    png <- traverse BS.readFile args.png
+    for_ ws \w -> do
+        maybe mempty (setTitle w) args.title
+        maybe mempty (setIcon w) png
