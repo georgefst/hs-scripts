@@ -16,8 +16,8 @@
 
 module SetWindowIcon (main) where
 
-import Control.Monad (join)
 import Data.ByteString qualified as BS
+import Data.Foldable (for_)
 import Data.Text qualified as T
 import Options.Generic (Generic, ParseRecord, Text, getRecord)
 import System.Environment (getProgName)
@@ -32,4 +32,6 @@ data Args = Args
 main :: IO ()
 main = do
     (args :: Args) <- getRecord . T.pack =<< getProgName
-    join $ foldMap setIcon <$> findByName args.window <*> BS.readFile args.png
+    ws <- findByName args.window
+    png <- BS.readFile args.png
+    for_ ws \w -> setIcon w png
