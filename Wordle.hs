@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
@@ -7,11 +8,15 @@
 
 module Wordle where
 
+import Control.Monad
+import Data.Char
 import Data.Foldable
 import Data.Function
 import Data.List
+import Data.Maybe
 import Data.Ord
 import Data.Traversable
+import Text.Pretty.Simple
 import Util.WordleLists qualified as W
 
 ws = sort $ W.answers <> W.guesses
@@ -52,3 +57,28 @@ pogGeorge =
     filter (hasNDifferentVowels 3)
         . startingWith 'c'
         $ ws
+
+main = main' =<< replicateM 5 getLine
+example =
+    main'
+        [ "canoe  "
+        , "gui lt"
+        , "p  ri se  "
+        ]
+main' ls = pPrintForceColor $ foldr (process . parse) W.answers ls
+  where
+    parse =
+        zip [0 ..]
+            . map
+                ( \case
+                    [x, ' ', ' '] -> (x, Just True)
+                    [x, ' '] -> (x, Just False)
+                    [x] -> (x, Nothing)
+                    _ -> error "bad input"
+                )
+            . groupBy (const isSpace)
+    process line =
+        matches (mapMaybe (\case (i, (c, Just True)) -> Just (i, c); _ -> Nothing) line)
+            . unmatches (mapMaybe (\case (i, (c, Just False)) -> Just (i, c); _ -> Nothing) line)
+            . with (mapMaybe (\case (_i, (c, Just False)) -> Just c; _ -> Nothing) line)
+            . without (mapMaybe (\case (_i, (c, Nothing)) -> Just c; _ -> Nothing) line)
