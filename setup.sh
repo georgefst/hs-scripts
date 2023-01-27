@@ -36,6 +36,8 @@ cabal-env -n scripts \
     generic-optics \
     ghc \
     hinotify \
+    http-client \
+    http-client-tls \
     JuicyPixels \
     lens \
     lifx-lan \
