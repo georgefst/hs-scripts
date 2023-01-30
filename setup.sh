@@ -16,7 +16,7 @@ SCRIPTS_DIR=$(pwd)
 ARCH_VER=aarch64-$(uname -s | tr '[:upper:]' '[:lower:]')-$GHC_VER
 ENV_DIR=/home/gthomas/.ghc/$ARCH_VER/environments
 
-rm .ghc.environment.$ARCH_VER
+rm $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
 
 #TODO versions - not sure currently possible with cabal-env
     # (but in that case what does '--any' mean?)
@@ -72,26 +72,25 @@ cabal install --package-env . --lib \
     uniplate \
     unix \
     vector \
-    X11 \
     yaml \
 
-# ln -s $ENV_DIR/scripts $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
 
 #TODO these don't build with GHC 9.2
     # prettyprinter-graphviz \
         # requires `--allow-newer=graphviz:bytestring`: https://github.com/ivan-m/graphviz/pull/53
 
-#TODO duplicates (boot packages - unnecessary with --lib)
-    # bytestring \
-    # directory \
-    # filepath \
-    # ghc \
-    # process \
-    # text \
-    # time \
-    # unix \
+# remove boot packages - unnecessary with --lib and causes "Ambiguous module name" errors
+for PKG in \
+    bytestring \
+    directory \
+    filepath \
+    ghc \
+    process \
+    text \
+    time \
+    unix \
 
-#TODO Linux only
-    # evdev \
-    # evdev-streamly \
-    # hinotify \
+do
+    PKG_NOVOWELS=$(echo $PKG | sed 's/[aeiou]//g')
+    sed -E -i '' "/package-id $PKG_NOVOWELS-([0-9]|.)*$/d" .ghc.environment.$ARCH_VER
+done
