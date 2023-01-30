@@ -33,6 +33,7 @@ cabal-env -n scripts \
     extra \
     filepath \
     filepath-bytestring \
+    freer-simple \
     generic-optics \
     ghc \
     hinotify \
