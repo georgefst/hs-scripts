@@ -14,6 +14,7 @@ rm $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
     # (but in that case what does '--any' mean?)
 cabal-env -n scripts \
     aeson \
+    aeson-pretty \
     ansi-terminal \
     async \
     bytestring \
