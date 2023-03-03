@@ -55,6 +55,7 @@ cabal-env -n scripts \
     prettyprinter-lucid \
     process \
     random \
+    raw-strings-qq \
     rawfilepath \
     safe \
     sbv \
