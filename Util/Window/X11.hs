@@ -1,6 +1,5 @@
-{- TODO everything in this file (other than this comment and the extensions pragmas) is taken verbatim from lifx-manager
-or at least, it was when this file was first committed
-factor out somehow
+{- TODO When possible, use Hackage version of `window-utils`, instead of effectively vendoring this PR:
+https://github.com/georgefst/window-utils/pull/1.
 -}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE LambdaCase #-}
