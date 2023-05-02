@@ -47,6 +47,8 @@ cabal-env -n scripts \
     monad-loops \
     mtl \
     mwc-random \
+    network \
+    network-uri \
     optics \
     optparse-applicative \
     optparse-generic \
