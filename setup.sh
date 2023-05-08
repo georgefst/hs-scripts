@@ -10,6 +10,11 @@ ENV_DIR=/home/gthomas/.ghc/$ARCH_VER/environments
 rm $ENV_DIR/scripts
 rm $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
 
+#TODO without this, `cabal-env` complains about the config file not existent, i.e. it hasn't been updated for XDG
+mkdir $HOME/.cabal
+cp $HOME/.config/cabal/config $HOME/.cabal/config
+echo "store-dir: $HOME/.local/state/cabal/store" >> $HOME/.cabal/config
+
 #TODO versions - not sure currently possible with cabal-env
     # (but in that case what does '--any' mean?)
 cabal-env -n scripts \
@@ -72,6 +77,9 @@ cabal-env -n scripts \
     vector \
     X11 \
     yaml \
+
+#TODO see `mkdir $HOME/.cabal`, above
+gio trash $HOME/.cabal
 
 ln -s $ENV_DIR/scripts $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
 
