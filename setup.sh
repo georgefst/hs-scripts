@@ -42,6 +42,8 @@ cabal-env -n scripts \
     freer-simple \
     generic-optics \
     ghc \
+    hashable \
+    hashtables \
     hinotify \
     http-client \
     http-client-tls \
@@ -57,6 +59,7 @@ cabal-env -n scripts \
     optics \
     optparse-applicative \
     optparse-generic \
+    parsec \
     pretty-simple \
     prettyprinter \
     prettyprinter-graphviz \
@@ -67,7 +70,10 @@ cabal-env -n scripts \
     rawfilepath \
     safe \
     sbv \
+    scientific \
     shake \
+    split \
+    stm \
     streamly \
     streams \
     text \
@@ -75,7 +81,9 @@ cabal-env -n scripts \
     transformers \
     uniplate \
     unix \
+    unordered-containers \
     vector \
+    vector-algorithms \
     X11 \
     yaml \
 
