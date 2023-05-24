@@ -14,9 +14,12 @@ import Development.Shake
 import System.Directory qualified as Dir
 import System.FilePath
 
+macBroken :: [String]
+macBroken = ["CabScriptWatchEnv.hs"]
+
 main :: IO ()
 main = shakeArgs shakeOpts do
-    sources <- liftIO $ filter (`notElem` ["Template.hs", "Build.hs"]) <$> getDirectoryFilesIO "." ["*.hs"]
+    sources <- liftIO $ filter (`notElem` (["Template.hs", "Build.hs"] <> macBroken)) <$> getDirectoryFilesIO "." ["*.hs"]
     utilSources <- liftIO $ map ("Util" </>) <$> getDirectoryFilesIO "Util" ["//*.hs"]
 
     want $ map inToOut sources

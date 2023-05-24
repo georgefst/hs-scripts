@@ -1,23 +1,24 @@
 #!/bin/bash
 
+#TODO support fully on Darwin, and delete this branch
+# need a way to specify that some libs are Linux-only (evdev, hinotify...)
+# `cabal-env` difficult to build due to C deps of a cabal-env dependency
+    # https://github.com/haskell-hvr/lzma/issues/21
+        # `nix-shell -p xz` doesn't make a difference
+        # note that `xz` is the successor to `lzma`
+    # so maybe just wait until `cabal env` is implemented
+    # this is the reason for almost all of the changes in this file
+
 #TODO move this stuff in to Build.hs
 
 GHC_VER=$(ghc -V | rev | cut -d ' ' -f 1 | rev)
 SCRIPTS_DIR=$(pwd)
-ARCH_VER=$(uname -m)-$(uname -s | tr '[:upper:]' '[:lower:]')-$GHC_VER
+ARCH_VER=aarch64-$(uname -s | tr '[:upper:]' '[:lower:]')-$GHC_VER
 ENV_DIR=/home/gthomas/.ghc/$ARCH_VER/environments
 
-rm $ENV_DIR/scripts
 rm $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
 
-#TODO without this, `cabal-env` complains about the config file not existent, i.e. it hasn't been updated for XDG
-mkdir $HOME/.cabal
-cp $HOME/.config/cabal/config $HOME/.cabal/config
-echo "store-dir: $HOME/.local/state/cabal/store" >> $HOME/.cabal/config
-
-#TODO versions - not sure currently possible with cabal-env
-    # (but in that case what does '--any' mean?)
-cabal-env -n scripts \
+cabal install --package-env . --lib \
     aeson \
     aeson-pretty \
     ansi-terminal \
@@ -34,8 +35,6 @@ cabal-env -n scripts \
     diagrams-lib \
     diagrams-svg \
     directory \
-    evdev \
-    evdev-streamly \
     extra \
     filepath \
     filepath-bytestring \
@@ -44,7 +43,6 @@ cabal-env -n scripts \
     ghc \
     hashable \
     hashtables \
-    hinotify \
     http-client \
     http-client-tls \
     JuicyPixels \
@@ -84,10 +82,20 @@ cabal-env -n scripts \
     unordered-containers \
     vector \
     vector-algorithms \
-    X11 \
     yaml \
 
-#TODO see `mkdir $HOME/.cabal`, above
-gio trash $HOME/.cabal
+# remove boot packages - unnecessary with --lib and causes "Ambiguous module name" errors
+for PKG in \
+    bytestring \
+    directory \
+    filepath \
+    ghc \
+    process \
+    text \
+    time \
+    unix \
 
-ln -s $ENV_DIR/scripts $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
+do
+    PKG_NOVOWELS=$(echo $PKG | sed 's/[aeiou]//g')
+    sed -E -i '' "/package-id $PKG_NOVOWELS-([0-9]|.)*$/d" .ghc.environment.$ARCH_VER
+done
