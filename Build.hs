@@ -3,6 +3,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall #-}
 
 module Build (main) where
@@ -11,6 +12,7 @@ import Control.Monad.Extra
 import Data.Char
 import Data.Foldable
 import Data.List.Extra
+import Data.Maybe
 import Development.Shake
 import System.Directory qualified as Dir
 import System.FilePath
@@ -23,13 +25,16 @@ main = shakeArgs shakeOpts do
     want $ map (("dist" </>) . inToOut) sources
 
     for_ sources \hs ->
-        ("dist" </> inToOut hs) %> \out -> do
+        ["dist" </> inToOut hs, "dist" </> "*" </> inToOut hs] |%> \out -> do
             need $ hs : utilSources
+            let ghc = case splitPath out of
+                    [_, init -> t, _] -> Just t
+                    _ -> Nothing
             cmd_
-                "ghc"
+                (fromMaybe "ghc" ghc)
                 hs
                 ["-main-is", takeBaseName hs]
-                ["-outputdir", ".build"]
+                ["-outputdir", ".build" </> fromMaybe "standard" ghc]
                 ["-o", out]
                 "-fdiagnostics-color=always"
 
