@@ -9,6 +9,7 @@
 module Build (main) where
 
 import Control.Monad.Extra
+import Data.Bool
 import Data.Char
 import Data.Foldable
 import Data.List.Extra
@@ -51,6 +52,94 @@ main = shakeArgs shakeOpts do
         putInfo $ "Removing " <> d
         removeFilesAfter d ["//*"]
 
+    -- TODO make this a proper dependency, rather than a phony? probably not feasible due to no-op taking almost 10s
+    let deps ghc allDeps = cmd_
+            "cabal"
+            "install"
+            (maybe mempty ((["--disable-documentation", "-w"] <>) . pure) ghc)
+            -- TODO this isn't really what we want - better to just delete the old env file (how?)
+            "--force-reinstalls"
+            "--package-env ."
+            "--lib"
+            -- TODO versions? maybe via a `cabal.project.freeze`
+            "aeson-pretty"
+            "aeson"
+            "ansi-terminal"
+            "async"
+            "base"
+            "bytestring"
+            "colour"
+            "comonad"
+            "composition"
+            "containers"
+            "directory"
+            "extra"
+            "filepath-bytestring"
+            "filepath"
+            "freer-simple"
+            "generic-optics"
+            "ghc"
+            "hashable"
+            "hashtables"
+            "hinotify"
+            "http-client-tls"
+            "http-client"
+            "JuicyPixels"
+            "lens"
+            "lifx-lan"
+            "lucid"
+            "monad-loops"
+            "mtl"
+            "mwc-random"
+            "network-uri"
+            "network"
+            "optics"
+            "optparse-applicative"
+            "optparse-generic"
+            "parsec"
+            "prettyprinter-lucid"
+            "prettyprinter"
+            "process"
+            "random"
+            "raw-strings-qq"
+            "safe"
+            "scientific"
+            "shake"
+            "split"
+            "stm"
+            "streamly"
+            "streams"
+            "text"
+            "time"
+            "transformers"
+            "uniplate"
+            "unix"
+            "unordered-containers"
+            "vector-algorithms"
+            "vector"
+            "yaml"
+            $ mwhen
+                -- TODO try to get all of these building everywhere
+                allDeps
+                [ "Chart-diagrams"
+                , "Chart"
+                , "dhall"
+                , "diagrams-core"
+                , "diagrams-lib"
+                , "diagrams-svg"
+                , "evdev-streamly"
+                , "evdev"
+                , "graphviz"
+                , "pretty-simple"
+                , "prettyprinter-graphviz"
+                , "rawfilepath"
+                , "sbv"
+                , "X11"
+                ]
+    -- TODO support arbitrary compilers somehow, rather than hardcoding
+    "deps" ~> deps Nothing True
+    "deps-arm-linux" ~> deps (Just "aarch64-none-linux-gnu-ghc-9.2.7") False
+
 shakeOpts :: ShakeOptions
 shakeOpts =
     shakeOptions
@@ -73,3 +162,6 @@ camelToHyphen =
             [] -> []
             c : cs -> (if isUpper c && not start then ('-' :) else id) $ toLower c : go False cs
      in go True
+
+mwhen :: (Monoid c) => Bool -> c -> c
+mwhen = flip $ bool mempty
