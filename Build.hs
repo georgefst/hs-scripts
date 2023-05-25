@@ -9,6 +9,7 @@ module Build (main) where
 
 import Control.Monad.Extra
 import Data.Char
+import Data.Foldable
 import Data.List.Extra
 import Development.Shake
 import System.Directory qualified as Dir
@@ -21,7 +22,7 @@ main = shakeArgs shakeOpts do
 
     want $ map inToOut sources
 
-    forM_ sources \hs ->
+    for_ sources \hs ->
         inToOut hs %> \out -> do
             need $ hs : utilSources
             cmd_
