@@ -20,10 +20,10 @@ main = shakeArgs shakeOpts do
     sources <- liftIO $ filter (`notElem` ["Template.hs", "Build.hs"]) <$> getDirectoryFilesIO "." ["*.hs"]
     utilSources <- liftIO $ map ("Util" </>) <$> getDirectoryFilesIO "Util" ["//*.hs"]
 
-    want $ map inToOut sources
+    want $ map (("dist" </>) . inToOut) sources
 
     for_ sources \hs ->
-        inToOut hs %> \out -> do
+        ("dist" </> inToOut hs) %> \out -> do
             need $ hs : utilSources
             cmd_
                 "ghc"
@@ -56,9 +56,9 @@ shakeOpts =
         }
 
 -- >>> inToOut "NewWorkspace.hs"
--- "dist/new-workspace"
+-- "new-workspace"
 inToOut :: FilePath -> FilePath
-inToOut f = "dist" </> camelToHyphen (takeBaseName f)
+inToOut = camelToHyphen . takeBaseName
 
 -- >>> camelToHyphen "BigBeatsAreTheBest"
 -- "big-beats-are-the-best"
