@@ -22,16 +22,15 @@ main = shakeArgs shakeOpts do
     want $ map inToOut sources
 
     forM_ sources \hs ->
-        let out = inToOut hs
-         in out %> \_ -> do
-                need $ hs : utilSources
-                cmd_
-                    "ghc"
-                    hs
-                    ["-main-is", takeBaseName hs]
-                    ["-outputdir", ".build"]
-                    ["-o", out]
-                    "-fdiagnostics-color=always"
+        inToOut hs %> \out -> do
+            need $ hs : utilSources
+            cmd_
+                "ghc"
+                hs
+                ["-main-is", takeBaseName hs]
+                ["-outputdir", ".build"]
+                ["-o", out]
+                "-fdiagnostics-color=always"
 
     -- create new source file from template
     "*.hs" %> \name -> liftIO $ whenM (not <$> Dir.doesFileExist name) do
