@@ -42,7 +42,7 @@ main = shakeArgs shakeOpts do
             . replace "progName = _" ("progName = \"" <> camelToHyphen moduleName <> "\"")
             $ template
 
-    "clean" ~> forM_ ["dist", ".build", ".shake"] \d -> do
+    "clean" ~> for_ ["dist", ".build", ".shake"] \d -> do
         putInfo $ "Removing " <> d
         removeFilesAfter d ["//*"]
 
