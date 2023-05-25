@@ -42,6 +42,7 @@ cabal-env -n scripts \
     freer-simple \
     generic-optics \
     ghc \
+    graphviz \
     hashable \
     hashtables \
     hinotify \
