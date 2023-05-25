@@ -1,27 +1,14 @@
 #!/bin/bash
 
 #TODO move this stuff in to Build.hs
-
-GHC_VER=$(ghc -V | rev | cut -d ' ' -f 1 | rev)
-SCRIPTS_DIR=$(pwd)
-ARCH_VER=$(uname -m)-$(uname -s | tr '[:upper:]' '[:lower:]')-$GHC_VER
-ENV_DIR=/home/gthomas/.ghc/$ARCH_VER/environments
-
-rm $ENV_DIR/scripts
-rm $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
-
-#TODO without this, `cabal-env` complains about the config file not existent, i.e. it hasn't been updated for XDG
-mkdir $HOME/.cabal
-cp $HOME/.config/cabal/config $HOME/.cabal/config
-echo "store-dir: $HOME/.local/state/cabal/store" >> $HOME/.cabal/config
-
-#TODO versions - not sure currently possible with cabal-env
-    # (but in that case what does '--any' mean?)
-cabal-env -n scripts \
+#TODO versions
+#TODO `--force-reinstalls` isn't what we want - better to just delete the old env file
+cabal install --force-reinstalls --package-env . --lib \
     aeson \
     aeson-pretty \
     ansi-terminal \
     async \
+    base \
     bytestring \
     Chart \
     Chart-diagrams \
@@ -87,8 +74,3 @@ cabal-env -n scripts \
     vector-algorithms \
     X11 \
     yaml \
-
-#TODO see `mkdir $HOME/.cabal`, above
-gio trash $HOME/.cabal
-
-ln -s $ENV_DIR/scripts $SCRIPTS_DIR/.ghc.environment.$ARCH_VER
