@@ -2,9 +2,8 @@
 
 #TODO move this stuff in to Build.hs
 
-GHC_VER=$(ghc -V | rev | cut -d ' ' -f 1 | rev)
 SCRIPTS_DIR=$(pwd)
-ARCH_VER=$(uname -m)-$(uname -s | tr '[:upper:]' '[:lower:]')-$GHC_VER
+ARCH_VER=aarch64-linux-9.2.7 #TODO don't hardcode
 ENV_DIR=/home/gthomas/.ghc/$ARCH_VER/environments
 
 rm $ENV_DIR/scripts
@@ -17,7 +16,7 @@ echo "store-dir: $HOME/.local/state/cabal/store" >> $HOME/.cabal/config
 
 #TODO versions - not sure currently possible with cabal-env
     # (but in that case what does '--any' mean?)
-cabal-env -n scripts \
+cabal-env -w aarch64-none-linux-gnu-ghc-9.2.7 -n scripts \
     aeson \
     aeson-pretty \
     ansi-terminal \
