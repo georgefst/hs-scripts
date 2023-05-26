@@ -2,7 +2,4 @@
 dist
 .build
 .shake
-tmp
-git-deps
 Scratch.hs
-dist-newstyle/cache/compiler
