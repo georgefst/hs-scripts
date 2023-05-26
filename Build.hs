@@ -92,6 +92,7 @@ main = shakeArgs shakeOpts do
     -- TODO make this a proper dependency, rather than a phony? probably not feasible due to no-op taking almost 10s
     "deps" ~> do
         maybeTarget <- getEnv "TARGET"
+        let cross = isJust maybeTarget
         cmd_
             "cabal"
             "--builddir=.build/cabal"
@@ -163,24 +164,19 @@ main = shakeArgs shakeOpts do
             "vector-algorithms"
             "vector"
             "yaml"
-            ( mwhen
-                -- TODO try to get all of these building everywhere
-                (isNothing maybeTarget)
-                -- incompatible with `unix-2.7` - need revisions, weird knock-ons...
-                [ "rawfilepath" --
-                -- template haskell? ghc: Couldn't find a target code interpreter. Try with -fexternal-interpreter
-                , "Chart" --
-                , "diagrams-lib" -- due to active dependency
-                , "diagrams-svg" -- ditto
-                -- failures ultimately from build dependencies, which we shouldn't actually be cross-compiling...
-                , "evdev" -- language-c fails - dependency of c2hs
-                , "exceptions" -- some weird knock-on effect involving hsc2hs and network
-                , "sbv" -- hsc2hs fails - needed for due to libBF
-                -- blocked on above failures (at least)
-                , "evdev-streamly" -- evdev
-                , "Chart-diagrams" -- Chart
-                ]
-            )
+            -- TODO try to get all of these building everywhere
+            (munless cross "rawfilepath") -- incompatible with `unix-2.7` - need revisions, weird knock-ons...
+            -- template haskell? ghc: Couldn't find a target code interpreter. Try with -fexternal-interpreter
+            (munless cross "Chart") --
+            (munless cross "diagrams-lib") -- due to active dependency
+            (munless cross "diagrams-svg") -- ditto
+            -- failures ultimately from build dependencies, which we shouldn't actually be cross-compiling...
+            (munless cross "evdev") -- language-c fails - dependency of c2hs
+            (munless cross "exceptions") -- some weird knock-on effect involving hsc2hs and network
+            (munless cross "sbv") -- hsc2hs fails - needed for due to libBF
+            -- blocked on above failures (at least)
+            (munless cross "Chart-diagrams") -- Chart
+            (munless cross "evdev-streamly") -- evdev
 
 shakeOpts :: ShakeOptions
 shakeOpts =
@@ -208,6 +204,8 @@ camelToHyphen =
 
 mwhen :: (Monoid c) => Bool -> c -> c
 mwhen = flip $ bool mempty
+munless :: (Monoid c) => Bool -> c -> c
+munless = flip $ flip bool mempty
 
 splitHost :: String -> (String, String)
 splitHost s = case splitOn ":" s of
