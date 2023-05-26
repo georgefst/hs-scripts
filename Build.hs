@@ -72,6 +72,11 @@ rules wanted maybeTarget = do
                 ["-o", out]
                 "-fdiagnostics-color=always"
 
+    -- install
+    "/**" %> \p ->
+        let (dir, bin) = splitFileName p
+         in copyFileChanged ("dist" </> bin) (dir </> bin)
+
     -- create new source file from template
     "*.hs" %> \name -> liftIO $ whenM (not <$> Dir.doesFileExist name) do
         let moduleName = dropExtension name
