@@ -31,20 +31,14 @@ import System.Directory qualified as Dir
 import System.Process.Extra
 
 main :: IO ()
-main = shakeArgsWith shakeOpts [] \_ wanted ->
-    pure $ pure $ rules wanted
-
-rules :: [String] -> Rules ()
-rules wanted = do
+main = shakeArgs shakeOpts do
     sources <- liftIO $ filter (`notElem` ["Template.hs"]) <$> getDirectoryFilesIO "." ["*.hs"]
     utilSources <- liftIO $ map ("Util" </>) <$> getDirectoryFilesIO "Util" ["//*.hs"]
 
     -- when nothing requested, compile all
     action do
         maybeTarget <- getEnv "TARGET"
-        need case wanted of
-            [] -> map ((("dist" </> concat maybeTarget) </>) . inToOut) sources
-            _ -> wanted
+        need $ map ((("dist" </> concat maybeTarget) </>) . inToOut) sources
 
     -- compile
     for_ sources \hs ->
