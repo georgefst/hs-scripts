@@ -149,8 +149,8 @@ main = shakeArgs shakeOpts do
                 , "sbv"
                 , "X11"
                 ]
-    -- TODO support arbitrary compilers somehow, rather than hardcoding
     "deps" ~> deps Nothing True
+    -- TODO support arbitrary compilers somehow, rather than hardcoding
     "deps-arm-linux" ~> deps (Just "aarch64-none-linux-gnu-ghc-9.2.7") False
 
 shakeOpts :: ShakeOptions
