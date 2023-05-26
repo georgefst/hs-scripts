@@ -21,44 +21,30 @@ import Control.Monad.Extra
 import Data.Bifunctor
 import Data.Bool
 import Data.Char
-import Data.Either.Extra
 import Data.Foldable
 import Data.Functor
 import Data.List.Extra
 import Data.Maybe
 import Development.Shake
 import Development.Shake.FilePath
-import System.Console.GetOpt
 import System.Directory qualified as Dir
 import System.Process.Extra
 
-newtype Args
-    = Target String
-    deriving (Show)
-optDescrs :: [OptDescr (Either String Args)]
-optDescrs =
-    [ Option
-        []
-        ["target"]
-        (OptArg (maybeToEither "--target requires an argument" . fmap Target) "triple")
-        "Useful for cross compilation. Expects a suitably-prefixed `ghc` to be available."
-    ]
-
 main :: IO ()
-main = shakeArgsWith shakeOpts optDescrs \args wanted ->
-    pure $ pure $ rules wanted case args of
-        Target s : _ -> Just s
-        [] -> Nothing
+main = shakeArgsWith shakeOpts [] \_ wanted ->
+    pure $ pure $ rules wanted
 
-rules :: [String] -> Maybe String -> Rules ()
-rules wanted maybeTarget = do
+rules :: [String] -> Rules ()
+rules wanted = do
     sources <- liftIO $ filter (`notElem` ["Template.hs"]) <$> getDirectoryFilesIO "." ["*.hs"]
     utilSources <- liftIO $ map ("Util" </>) <$> getDirectoryFilesIO "Util" ["//*.hs"]
 
     -- when nothing requested, compile all
-    want case wanted of
-        [] -> map ((("dist" </> concat maybeTarget) </>) . inToOut) sources
-        _ -> wanted
+    action do
+        maybeTarget <- getEnv "TARGET"
+        need case wanted of
+            [] -> map ((("dist" </> concat maybeTarget) </>) . inToOut) sources
+            _ -> wanted
 
     -- compile
     for_ sources \hs ->
@@ -111,8 +97,9 @@ rules wanted maybeTarget = do
 
     -- install libraries to local environment
     -- TODO make this a proper dependency, rather than a phony? probably not feasible due to no-op taking almost 10s
-    "deps"
-        ~> cmd_
+    "deps" ~> do
+        maybeTarget <- getEnv "TARGET"
+        cmd_
             "cabal"
             "install"
             (maybe mempty ((["--disable-documentation", "-w"] <>) . pure . (<> "-ghc")) maybeTarget)
