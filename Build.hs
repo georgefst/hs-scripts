@@ -146,7 +146,7 @@ rules wanted maybeTarget = do
             "http-client"
             "JuicyPixels"
             "lens"
-            "lifx-lan"
+            "lifx-lan-0.8.0" -- TODO why do we need to force cabal not to use 0.6.2 on aarch64?
             "lucid"
             "monad-loops"
             "mtl"
