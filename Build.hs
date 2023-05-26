@@ -61,7 +61,7 @@ main = shakeArgs shakeOpts do
 
     -- install remotely
     ["*:**/*", "*://*"] |%> \p -> do
-        let (host, (_dir, bin)) = second splitFileName $ splitHost p
+        let (host, bin) = second takeFileName $ splitHost p
         target <-
             liftIO (trim <$> readProcess "ssh" [host, "gcc -dumpmachine"] "") <&> \case
                 -- TODO generalise - maybe generate a list of alternatives, then take first for which we find a GHC
