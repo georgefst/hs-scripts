@@ -167,7 +167,7 @@ main = shakeArgs shakeOpts do
             "yaml"
             -- TODO try to get all of these building everywhere
             -- template haskell? ghc: Couldn't find a target code interpreter. Try with -fexternal-interpreter
-            (munless cross "Chart") --
+            (munless cross "Chart")
             (munless cross "diagrams-lib") -- due to active dependency
             (munless cross "diagrams-svg") -- ditto
             -- failures ultimately from build dependencies, which we shouldn't actually be cross-compiling...
