@@ -52,10 +52,12 @@ rules wanted maybeTarget = do
     sources <- liftIO $ filter (`notElem` ["Template.hs"]) <$> getDirectoryFilesIO "." ["*.hs"]
     utilSources <- liftIO $ map ("Util" </>) <$> getDirectoryFilesIO "Util" ["//*.hs"]
 
+    -- when nothing requested, compile all
     want case wanted of
         [] -> map ((("dist" </> concat maybeTarget) </>) . inToOut) sources
         _ -> wanted
 
+    -- compile
     for_ sources \hs ->
         ["dist" </> inToOut hs, "dist" </> "*" </> inToOut hs] |%> \out -> do
             need $ hs : utilSources
@@ -79,6 +81,7 @@ rules wanted maybeTarget = do
             . replace "progName = _" ("progName = \"" <> camelToHyphen moduleName <> "\"")
             $ template
 
+    -- remove everything temporary - rarely necessary
     "clean" ~> do
         for_ ["dist", ".build", ".shake"] \d -> do
             putInfo $ "Removing " <> d
@@ -86,6 +89,7 @@ rules wanted maybeTarget = do
         putInfo "Removing GHC environment files"
         removeFilesAfter "." [".ghc.environment.*"]
 
+    -- install libraries to local environment
     -- TODO make this a proper dependency, rather than a phony? probably not feasible due to no-op taking almost 10s
     "deps"
         ~> cmd_
