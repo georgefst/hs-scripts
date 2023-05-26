@@ -95,6 +95,7 @@ main = shakeArgs shakeOpts do
         cmd_
             "cabal"
             "--builddir=.build/cabal"
+            (maybe mempty ("--project-file=cabal.project." <>) maybeTarget)
             "install"
             (maybe mempty ((["--disable-documentation", "-w"] <>) . pure . (<> "-ghc")) maybeTarget)
             -- TODO this isn't really what we want - better to just delete the old env file (how?)
