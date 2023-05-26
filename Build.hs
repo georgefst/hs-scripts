@@ -176,7 +176,6 @@ main = shakeArgs shakeOpts do
                 , "evdev" -- language-c fails - dependency of c2hs
                 , "sbv" -- hsc2hs fails - needed for due to libBF
                 -- misc
-                , "X11" -- Missing (or bad) C libraries: Xss, Xinerama, Xext, X11, Xrandr, Xext
                 , "exceptions" -- some weird knock-on effect involving hsc2hs and network
                 -- blocked on above failures (at least)
                 , "evdev-streamly" -- evdev
