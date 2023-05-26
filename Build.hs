@@ -49,9 +49,12 @@ main = shakeArgs shakeOpts do
             . replace "progName = _" ("progName = \"" <> camelToHyphen moduleName <> "\"")
             $ template
 
-    "clean" ~> for_ ["dist", ".build", ".shake"] \d -> do
+    "clean" ~> do
+      for_ ["dist", ".build", ".shake"] \d -> do
         putInfo $ "Removing " <> d
         removeFilesAfter d ["//*"]
+      putInfo "Removing GHC environment files"
+      removeFilesAfter "." [".ghc.environment.*"]
 
     -- TODO make this a proper dependency, rather than a phony? probably not feasible due to no-op taking almost 10s
     let deps ghc allDeps = cmd_
