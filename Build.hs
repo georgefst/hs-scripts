@@ -21,31 +21,53 @@ module Main (main) where
 import Control.Monad.Extra
 import Data.Bool
 import Data.Char
+import Data.Either.Extra
 import Data.Foldable
 import Data.List.Extra
 import Data.Maybe
 import Development.Shake
+import System.Console.GetOpt
 import System.Directory qualified as Dir
 import System.FilePath
 
+newtype Args
+    = Target String
+    deriving (Show)
+optDescrs :: [OptDescr (Either String Args)]
+optDescrs =
+    [ Option
+        []
+        ["target"]
+        (OptArg (maybeToEither "--target requires an argument" . fmap Target) "triple")
+        "Useful for cross compilation. Expects a suitably-prefixed `ghc` to be available."
+    ]
+
 main :: IO ()
-main = shakeArgs shakeOpts do
+main = shakeArgsWith shakeOpts optDescrs \args wanted ->
+    pure $ pure $ rules wanted case args of
+        Target s : _ -> Just s
+        [] -> Nothing
+
+rules :: [String] -> Maybe String -> Rules ()
+rules wanted maybeTarget = do
     sources <- liftIO $ filter (`notElem` ["Template.hs"]) <$> getDirectoryFilesIO "." ["*.hs"]
     utilSources <- liftIO $ map ("Util" </>) <$> getDirectoryFilesIO "Util" ["//*.hs"]
 
-    want $ map (("dist" </>) . inToOut) sources
+    want case wanted of
+        [] -> map ((("dist" </> concat maybeTarget) </>) . inToOut) sources
+        _ -> wanted
 
     for_ sources \hs ->
         ["dist" </> inToOut hs, "dist" </> "*" </> inToOut hs] |%> \out -> do
             need $ hs : utilSources
-            let ghc = case splitPath out of
+            let target = case splitPath out of
                     [_, init -> t, _] -> Just t
                     _ -> Nothing
             cmd_
-                (fromMaybe "ghc" ghc)
+                (maybe "ghc" (<> "-ghc") target)
                 hs
                 (mwhen (hs /= "Build.hs") ["-main-is", takeBaseName hs])
-                ["-outputdir", ".build" </> fromMaybe "standard" ghc]
+                ["-outputdir", ".build" </> fromMaybe "standard" target]
                 ["-o", out]
                 "-fdiagnostics-color=always"
 
@@ -66,10 +88,11 @@ main = shakeArgs shakeOpts do
         removeFilesAfter "." [".ghc.environment.*"]
 
     -- TODO make this a proper dependency, rather than a phony? probably not feasible due to no-op taking almost 10s
-    let deps ghc allDeps = cmd_
+    "deps"
+        ~> cmd_
             "cabal"
             "install"
-            (maybe mempty ((["--disable-documentation", "-w"] <>) . pure) ghc)
+            (maybe mempty ((["--disable-documentation", "-w"] <>) . pure . (<> "-ghc")) maybeTarget)
             -- TODO this isn't really what we want - better to just delete the old env file (how?)
             "--force-reinstalls"
             "--package-env ."
@@ -130,9 +153,9 @@ main = shakeArgs shakeOpts do
             "vector-algorithms"
             "vector"
             "yaml"
-            $ mwhen
+            ( mwhen
                 -- TODO try to get all of these building everywhere
-                allDeps
+                (isNothing maybeTarget)
                 [ "Chart-diagrams"
                 , "Chart"
                 , "dhall"
@@ -148,9 +171,7 @@ main = shakeArgs shakeOpts do
                 , "sbv"
                 , "X11"
                 ]
-    "deps" ~> deps Nothing True
-    -- TODO support arbitrary compilers somehow, rather than hardcoding
-    "deps-arm-linux" ~> deps (Just "aarch64-none-linux-gnu-ghc-9.2.7") False
+            )
 
 shakeOpts :: ShakeOptions
 shakeOpts =
