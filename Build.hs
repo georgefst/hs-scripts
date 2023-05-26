@@ -91,7 +91,6 @@ main = shakeArgs shakeOpts do
             "filepath"
             "freer-simple"
             "generic-optics"
-            "ghc"
             "hashable"
             "hashtables"
             "hinotify"
