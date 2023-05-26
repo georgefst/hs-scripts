@@ -1,5 +1,14 @@
-#!/usr/bin/env runghc
+#!/usr/bin/env cabal
 
+{- cabal:
+build-depends:
+    base >= 4.16,
+    directory ^>= 1.3,
+    extra ^>= 1.7,
+    filepath ^>= 1.4,
+    pretty-simple ^>= 4.1,
+    shake ^>= 0.19,
+-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE LambdaCase #-}
@@ -7,7 +16,7 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
 
-module Build (main) where
+module Main (main) where
 
 import Control.Monad.Extra
 import Data.Bool
