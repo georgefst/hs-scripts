@@ -113,6 +113,7 @@ main = shakeArgs shakeOpts do
             "comonad"
             "composition"
             "containers"
+            "dhall"
             "diagrams-core"
             "directory"
             "extra"
@@ -178,7 +179,6 @@ main = shakeArgs shakeOpts do
                 , "X11" -- Missing (or bad) C libraries: Xss, Xinerama, Xext, X11, Xrandr, Xext
                 , "exceptions" -- some weird knock-on effect involving hsc2hs and network
                 -- blocked on above failures (at least)
-                , "dhall" -- pretty-simple
                 , "evdev-streamly" -- evdev
                 , "Chart-diagrams" -- Chart
                 ]
