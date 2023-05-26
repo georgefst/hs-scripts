@@ -18,16 +18,19 @@ build-depends:
 module Main (main) where
 
 import Control.Monad.Extra
+import Data.Bifunctor
 import Data.Bool
 import Data.Char
 import Data.Either.Extra
 import Data.Foldable
+import Data.Functor
 import Data.List.Extra
 import Data.Maybe
 import Development.Shake
 import Development.Shake.FilePath
 import System.Console.GetOpt
 import System.Directory qualified as Dir
+import System.Process.Extra
 
 newtype Args
     = Target String
@@ -76,6 +79,18 @@ rules wanted maybeTarget = do
     "/**" %> \p ->
         let (dir, bin) = splitFileName p
          in copyFileChanged ("dist" </> bin) (dir </> bin)
+
+    -- install remotely
+    ["*:**/*", "*://*"] |%> \p -> do
+        let (host, (_dir, bin)) = second splitFileName $ splitHost p
+        target <-
+            liftIO (trim <$> readProcess "ssh" [host, "gcc -dumpmachine"] "") <&> \case
+                -- TODO generalise - maybe generate a list of alternatives, then take first for which we find a GHC
+                "aarch64-linux-gnu" -> "aarch64-none-linux-gnu"
+                r -> r
+        let distBin = "dist" </> target </> bin
+        need [distBin]
+        liftIO $ callProcess "scp" [distBin, p]
 
     -- create new source file from template
     "*.hs" %> \name -> liftIO $ whenM (not <$> Dir.doesFileExist name) do
@@ -188,6 +203,7 @@ shakeOpts =
         , shakeThreads = 4
         , shakeLint = Just LintBasic
         , shakeProgress = progressSimple
+        , shakeCreationCheck = False -- TODO needed for targets on remote hosts, but we'd prefer a smaller hammer
         }
 
 -- >>> inToOut "NewWorkspace.hs"
@@ -206,3 +222,8 @@ camelToHyphen =
 
 mwhen :: (Monoid c) => Bool -> c -> c
 mwhen = flip $ bool mempty
+
+splitHost :: String -> (String, String)
+splitHost s = case splitOn ":" s of
+    [h, p] -> (h, p)
+    _ -> error "splitHost failed"
