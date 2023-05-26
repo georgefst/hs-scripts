@@ -165,7 +165,7 @@ main = shakeArgs shakeOpts do
             "vector"
             "yaml"
             -- TODO try to get all of these building everywhere
-            (munless cross "rawfilepath") -- incompatible with `unix-2.7` - need revisions, weird knock-ons...
+            (munless cross "rawfilepath") -- incompatible with `unix-2.8` - need revisions, weird knock-ons...
             -- template haskell? ghc: Couldn't find a target code interpreter. Try with -fexternal-interpreter
             (munless cross "Chart") --
             (munless cross "diagrams-lib") -- due to active dependency
