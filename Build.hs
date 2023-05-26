@@ -174,9 +174,8 @@ main = shakeArgs shakeOpts do
                 , "diagrams-svg" -- ditto
                 -- failures ultimately from build dependencies, which we shouldn't actually be cross-compiling...
                 , "evdev" -- language-c fails - dependency of c2hs
-                , "sbv" -- hsc2hs fails - needed for due to libBF
-                -- misc
                 , "exceptions" -- some weird knock-on effect involving hsc2hs and network
+                , "sbv" -- hsc2hs fails - needed for due to libBF
                 -- blocked on above failures (at least)
                 , "evdev-streamly" -- evdev
                 , "Chart-diagrams" -- Chart
