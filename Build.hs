@@ -94,6 +94,7 @@ main = shakeArgs shakeOpts do
         maybeTarget <- getEnv "TARGET"
         cmd_
             "cabal"
+            "--builddir=.build/cabal"
             "install"
             (maybe mempty ((["--disable-documentation", "-w"] <>) . pure . (<> "-ghc")) maybeTarget)
             -- TODO this isn't really what we want - better to just delete the old env file (how?)
@@ -137,6 +138,7 @@ main = shakeArgs shakeOpts do
             "optparse-applicative"
             "optparse-generic"
             "parsec"
+            "pretty-simple"
             "prettyprinter-graphviz"
             "prettyprinter-lucid"
             "prettyprinter"
@@ -162,10 +164,8 @@ main = shakeArgs shakeOpts do
             ( mwhen
                 -- TODO try to get all of these building everywhere
                 (isNothing maybeTarget)
-                -- known custom setup issue - use from git? maybe `--project-file` with `source-repository-package`
-                [ "pretty-simple" --
                 -- incompatible with `unix-2.7` - need revisions, weird knock-ons...
-                , "rawfilepath" --
+                [ "rawfilepath" --
                 -- template haskell? ghc: Couldn't find a target code interpreter. Try with -fexternal-interpreter
                 , "Chart" --
                 , "diagrams-lib" -- due to active dependency
