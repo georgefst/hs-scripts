@@ -1,4 +1,4 @@
-#!/usr/bin/env cabal
+#!/usr/bin/env runghc
 
 {- cabal:
 build-depends:
@@ -16,7 +16,7 @@ build-depends:
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
 
-module Main (main) where
+module Build (main) where
 
 import Control.Monad.Extra
 import Data.Bool
@@ -30,7 +30,7 @@ import System.FilePath
 
 main :: IO ()
 main = shakeArgs shakeOpts do
-    sources <- liftIO $ filter (`notElem` ["Template.hs", "Build.hs"]) <$> getDirectoryFilesIO "." ["*.hs"]
+    sources <- liftIO $ filter (`notElem` ["Template.hs"]) <$> getDirectoryFilesIO "." ["*.hs"]
     utilSources <- liftIO $ map ("Util" </>) <$> getDirectoryFilesIO "Util" ["//*.hs"]
 
     want $ map (("dist" </>) . inToOut) sources
