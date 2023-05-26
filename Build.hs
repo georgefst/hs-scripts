@@ -16,7 +16,7 @@ build-depends:
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
 
-module Build (main) where
+module Main (main) where
 
 import Control.Monad.Extra
 import Data.Bool
@@ -44,7 +44,7 @@ main = shakeArgs shakeOpts do
             cmd_
                 (fromMaybe "ghc" ghc)
                 hs
-                ["-main-is", takeBaseName hs]
+                (mwhen (hs /= "Build.hs") ["-main-is", takeBaseName hs])
                 ["-outputdir", ".build" </> fromMaybe "standard" ghc]
                 ["-o", out]
                 "-fdiagnostics-color=always"
