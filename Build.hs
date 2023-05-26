@@ -17,6 +17,7 @@ build-depends:
 
 module Main (main) where
 
+import Control.Arrow ((>>>))
 import Control.Monad.Extra
 import Data.Bifunctor
 import Data.Bool
@@ -56,9 +57,7 @@ main = shakeArgs shakeOpts do
                 "-fdiagnostics-color=always"
 
     -- install
-    "/**" %> \p ->
-        let (dir, bin) = splitFileName p
-         in copyFileChanged ("dist" </> bin) (dir </> bin)
+    "/**" %> (splitFileName >>> \(dir, bin) -> copyFileChanged ("dist" </> bin) (dir </> bin))
 
     -- install remotely
     ["*:**/*", "*://*"] |%> \p -> do
