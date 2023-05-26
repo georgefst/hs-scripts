@@ -182,17 +182,23 @@ rules wanted maybeTarget = do
             ( mwhen
                 -- TODO try to get all of these building everywhere
                 (isNothing maybeTarget)
-                [ "Chart-diagrams"
-                , "Chart"
-                , "dhall"
-                , "diagrams-lib"
-                , "diagrams-svg"
-                , "evdev-streamly"
-                , "evdev"
-                , "pretty-simple"
-                , "rawfilepath"
-                , "sbv"
-                , "X11"
+                -- known custom setup issue - use from git? maybe `--project-file` with `source-repository-package`
+                [ "pretty-simple" --
+                -- incompatible with `unix-2.7` - need revisions, weird knock-ons...
+                , "rawfilepath" --
+                -- template haskell? ghc: Couldn't find a target code interpreter. Try with -fexternal-interpreter
+                , "Chart" --
+                , "diagrams-lib" -- due to active dependency
+                , "diagrams-svg" -- ditto
+                -- failures ultimately from build dependencies, which we shouldn't actually be cross-compiling...
+                , "evdev" -- language-c fails - dependency of c2hs
+                , "sbv" -- hsc2hs fails - needed for due to libBF
+                -- misc
+                , "X11" -- Missing (or bad) C libraries: Xss, Xinerama, Xext, X11, Xrandr, Xext
+                -- blocked on above failures (at least)
+                , "dhall" -- pretty-simple
+                , "evdev-streamly" -- evdev
+                , "Chart-diagrams" -- Chart
                 ]
             )
 
