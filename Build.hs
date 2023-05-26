@@ -195,6 +195,7 @@ rules wanted maybeTarget = do
                 , "sbv" -- hsc2hs fails - needed for due to libBF
                 -- misc
                 , "X11" -- Missing (or bad) C libraries: Xss, Xinerama, Xext, X11, Xrandr, Xext
+                , "exceptions" -- some weird knock-on effect involving hsc2hs and network
                 -- blocked on above failures (at least)
                 , "dhall" -- pretty-simple
                 , "evdev-streamly" -- evdev
