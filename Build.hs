@@ -103,7 +103,7 @@ main = shakeArgs shakeOpts do
             "--force-reinstalls"
             "--package-env ."
             "--lib"
-            -- TODO versions? maybe via a `cabal.project.freeze`
+            -- TODO versions? maybe via a `cabal.project.freeze`, or just pinning `index-state`
             "aeson-pretty"
             "aeson"
             "ansi-terminal"
