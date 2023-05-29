@@ -96,9 +96,34 @@ main = shakeArgs shakeOpts do
         cmd_
             "cabal"
             "--builddir=.build/cabal"
-            (maybe mempty ("--project-file=cabal.project." <>) maybeTarget)
             "install"
-            (maybe mempty ((["--disable-documentation", "-w"] <>) . pure . (<> "-ghc")) maybeTarget)
+            ( flip (maybe []) maybeTarget \target ->
+                [ "--project-file=cabal.project." <> target
+                , "--disable-documentation"
+                , "--ghc-options=-no-haddock" --
+                -- TODO bit sketchy - e.g. this will work on my Arch machine but probably not on Mac
+                -- also is this even safe in general, or should we be using specific cross-friendly versions?
+                -- NB. this is essentially what's done with nixpkgs GHCJS: https://github.com/NixOS/nixpkgs/issues/7264
+                , "--with-alex=/bin/alex"
+                , "--with-c2hs=/bin/c2hs"
+                , "--with-happy=/bin/happy" --
+                -- TODO ideally Cabal would guess the rest of those from just specifying `ghc`
+                -- or maybe it should have a separate `--target` flag (look out for this with WASM etc.)
+                -- note that we don't need to specify `ghc-pkg` when global-default version matches
+                -- or, in other words, this also works when using GHC 9.2.7: "--with-hc-pkg=~/.ghcup/bin/ghc-pkg-9.2.7"
+                -- see https://github.com/haskell/cabal/issues/5632, https://github.com/haskell/cabal/issues/5760
+                -- those issues are also relevant to alex/c2hs etc.
+                , "-w" <> target <> "-ghc"
+                , "--with-hc-pkg=" <> target <> "-ghc-pkg"
+                , "--with-hsc2hs=" <> target <> "-hsc2hs"
+                ]
+                    <> map
+                        (\(lib, flags) -> "--constraint=" <> lib <> concatMap (" -" <>) flags)
+                        [ ("cborg", ["optimize-gmp"])
+                        , ("cryptonite", ["integer-gmp"])
+                        , ("haskeline", ["terminfo"])
+                        ]
+            )
             -- TODO this isn't really what we want - better to just delete the old env file (how?)
             "--force-reinstalls"
             "--package-env ."
@@ -117,6 +142,9 @@ main = shakeArgs shakeOpts do
             "dhall"
             "diagrams-core"
             "directory"
+            "evdev-streamly"
+            "evdev"
+            "exceptions"
             "extra"
             "filepath-bytestring"
             "filepath"
@@ -150,6 +178,7 @@ main = shakeArgs shakeOpts do
             "raw-strings-qq"
             "rawfilepath"
             "safe"
+            "sbv"
             "scientific"
             "shake"
             "split"
@@ -166,17 +195,12 @@ main = shakeArgs shakeOpts do
             "vector"
             "yaml"
             -- TODO try to get all of these building everywhere
-            -- template haskell? ghc: Couldn't find a target code interpreter. Try with -fexternal-interpreter
+            -- template haskell
             (munless cross "Chart")
             (munless cross "diagrams-lib") -- due to active dependency
             (munless cross "diagrams-svg") -- ditto
-            -- failures ultimately from build dependencies, which we shouldn't actually be cross-compiling...
-            (munless cross "evdev") -- language-c fails - dependency of c2hs
-            (munless cross "exceptions") -- some weird knock-on effect involving hsc2hs and network
-            (munless cross "sbv") -- hsc2hs fails - needed for due to libBF
             -- blocked on above failures (at least)
             (munless cross "Chart-diagrams") -- Chart
-            (munless cross "evdev-streamly") -- evdev
 
 shakeOpts :: ShakeOptions
 shakeOpts =
