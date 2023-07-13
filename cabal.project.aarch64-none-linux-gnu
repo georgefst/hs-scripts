@@ -6,8 +6,10 @@ source-repository-package
 
 -- https://github.com/georgefst/sbv/tree/cross
 -- https://github.com/LeventErkok/sbv/issues/659
--- https://github.com/LeventErkok/sbv/pull/660
+-- TODO we should be able to use the cleaner approach in https://github.com/georgefst/sbv/tree/cross-2,
+-- which moves the extra stuff to a separate library (instead of deleting it),
+-- but unfortunately, cabal refuses to ignore said library - https://github.com/haskell/cabal/issues/9075
 source-repository-package
     type: git
     location: https://github.com/georgefst/sbv
-    tag: ca04687a1ca146cb4358c59951d20f9e5762c07e
+    tag: 9a896816019a97b99e32db7ab0ab7d8d3e42d42a
