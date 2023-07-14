@@ -50,7 +50,7 @@ main = shakeArgs shakeOpts do
                     [_, init -> t, _] -> Just t
                     _ -> Nothing
             cmd_
-                (maybe "ghc" (<> "-ghc") target)
+                (maybe "" (<> "-") target <> "ghc")
                 hs
                 (mwhen (hs /= "Build.hs") ["-main-is", takeBaseName hs])
                 ["-outputdir", ".build" </> fromMaybe "standard" target]
@@ -96,7 +96,7 @@ main = shakeArgs shakeOpts do
         maybeTarget <- getEnv "TARGET"
         let cross = isJust maybeTarget
             web = maybe False (\t -> any (`isPrefixOf` t) ["wasm", "javascript"]) maybeTarget
-            ghc = maybe "ghc" (<> "-ghc") maybeTarget
+            ghc = maybe "" (<> "-") maybeTarget <> "ghc"
         projectFile <- let p = "cabal.project" <> maybe "" ("." <>) maybeTarget in (p <$) . guard <$> doesFileExist p
         version <- liftIO $ readProcess ghc ["--numeric-version"] ""
         let ghc96 = ((>=) `on` splitOn ".") version "9.6"
