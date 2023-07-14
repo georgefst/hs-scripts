@@ -91,6 +91,7 @@ main = shakeArgs shakeOpts do
 
     -- install libraries to local environment
     -- TODO make this a proper dependency, rather than a phony? probably not feasible due to no-op taking almost 10s
+    -- TODO alternatively, we could make these the rules for building the env file
     "deps" ~> do
         maybeTarget <- getEnv "TARGET"
         let cross = isJust maybeTarget
