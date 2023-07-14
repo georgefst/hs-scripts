@@ -93,13 +93,14 @@ main = shakeArgs shakeOpts do
     "deps" ~> do
         maybeTarget <- getEnv "TARGET"
         let cross = isJust maybeTarget
+        projectFile <- let p = "cabal.project" <> maybe "" ("." <>) maybeTarget in (p <$) . guard <$> doesFileExist p
         cmd_
             "cabal"
             "--builddir=.build/cabal"
             "install"
+            (maybe "" ("--project-file=" <>) projectFile)
             ( flip (maybe []) maybeTarget \target ->
-                [ "--project-file=cabal.project." <> target
-                , "--disable-documentation"
+                [ "--disable-documentation"
                 , "--ghc-options=-no-haddock" --
                 -- TODO bit sketchy - e.g. this will work on my Arch machine but probably not on Mac
                 -- also is this even safe in general, or should we be using specific cross-friendly versions?
