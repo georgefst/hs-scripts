@@ -50,7 +50,7 @@ main = shakeArgs shakeOpts do
                     [_, init -> t, _] -> Just t
                     _ -> Nothing
             cmd_
-                (maybe "" (<> "-") target <> "ghc")
+                (foldMap (<> "-") target <> "ghc")
                 hs
                 (mwhen (hs /= "Build.hs") ["-main-is", takeBaseName hs])
                 ["-outputdir", ".build" </> fromMaybe "standard" target]
@@ -96,17 +96,17 @@ main = shakeArgs shakeOpts do
         maybeTarget <- getEnv "TARGET"
         let cross = isJust maybeTarget
             web = maybe False (\t -> any (`isPrefixOf` t) ["wasm", "javascript"]) maybeTarget
-            ghc = maybe "" (<> "-") maybeTarget <> "ghc"
-        projectFile <- let p = "cabal.project" <> maybe "" ("." <>) maybeTarget in (p <$) . guard <$> doesFileExist p
+            ghc = foldMap (<> "-") maybeTarget <> "ghc"
+        projectFile <- let p = "cabal.project" <> foldMap ("." <>) maybeTarget in (p <$) . guard @Maybe <$> doesFileExist p
         version <- liftIO $ readProcess ghc ["--numeric-version"] ""
         let ghc96 = ((>=) `on` splitOn ".") version "9.6"
         cmd_
             "cabal"
             "--builddir=.build/cabal"
             "install"
-            (maybe "" ("--project-file=" <>) projectFile)
+            (foldMap ("--project-file=" <>) projectFile)
             ("-w" <> ghc)
-            ( flip (maybe []) maybeTarget \target ->
+            ( flip foldMap maybeTarget \target ->
                 [ "--disable-documentation"
                 , "--ghc-options=-no-haddock" --
                 -- TODO bit sketchy - e.g. this will work on my Arch machine but probably not on Mac
