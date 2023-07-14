@@ -236,7 +236,7 @@ camelToHyphen =
 mwhen :: (Monoid c) => Bool -> c -> c
 mwhen = flip $ bool mempty
 munless :: (Monoid c) => Bool -> c -> c
-munless = flip $ flip bool mempty
+munless = mwhen . not
 
 splitHost :: String -> (String, String)
 splitHost s = case splitOn ":" s of
