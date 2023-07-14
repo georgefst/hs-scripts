@@ -1,0 +1,15 @@
+import: cabal.project.cross
+
+constraints:
+    -- TODO shouldn't older versions have had Hackage revisions to stop them from being solved for on newer GHCs?
+    -- maybe it's usually fine because it's a boot library (see unix below)
+    containers == 0.6.7,
+    -- TODO is this matter of needing to bias the solver to choose a version installed with the compiler?
+    unix == 2.8.1.0,
+
+-- https://github.com/haskell/network/pull/565
+-- https://github.com/georgefst/network/tree/ghc-js-configured
+source-repository-package
+    type: git
+    location: https://github.com/georgefst/network
+    tag: be605cbd4a197f2a595823134a75eb3435cc5ec4

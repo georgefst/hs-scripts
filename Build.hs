@@ -23,6 +23,7 @@ import Data.Bifunctor
 import Data.Bool
 import Data.Char
 import Data.Foldable
+import Data.Function
 import Data.Functor
 import Data.List.Extra
 import Data.Maybe
@@ -93,12 +94,17 @@ main = shakeArgs shakeOpts do
     "deps" ~> do
         maybeTarget <- getEnv "TARGET"
         let cross = isJust maybeTarget
+            web = maybe False (flip any ["wasm", "javascript"] . flip isPrefixOf) maybeTarget
+            ghc = maybe "ghc" (<> "-ghc") maybeTarget
         projectFile <- let p = "cabal.project" <> maybe "" ("." <>) maybeTarget in (p <$) . guard <$> doesFileExist p
+        version <- liftIO $ readProcess ghc ["--numeric-version"] ""
+        let ghc96 = ((>=) `on` splitOn ".") version "9.6"
         cmd_
             "cabal"
             "--builddir=.build/cabal"
             "install"
             (maybe "" ("--project-file=" <>) projectFile)
+            ("-w" <> ghc)
             ( flip (maybe []) maybeTarget \target ->
                 [ "--disable-documentation"
                 , "--ghc-options=-no-haddock" --
@@ -114,7 +120,6 @@ main = shakeArgs shakeOpts do
                 -- or, in other words, this also works when using GHC 9.2.7: "--with-hc-pkg=~/.ghcup/bin/ghc-pkg-9.2.7"
                 -- see https://github.com/haskell/cabal/issues/5632, https://github.com/haskell/cabal/issues/5760
                 -- those issues are also relevant to alex/c2hs etc.
-                , "-w" <> target <> "-ghc"
                 , "--with-hc-pkg=" <> target <> "-ghc-pkg"
                 , "--with-hsc2hs=" <> target <> "-hsc2hs"
                 ]
@@ -140,11 +145,11 @@ main = shakeArgs shakeOpts do
             "comonad"
             "composition"
             "containers"
-            "dhall"
+            (munless ghc96 "dhall") -- TODO https://github.com/dhall-lang/dhall-haskell/pull/2496
             "diagrams-core"
             "directory"
-            "evdev-streamly"
-            "evdev"
+            (munless web "evdev-streamly")
+            (munless web "evdev")
             "exceptions"
             "extra"
             "filepath-bytestring"
@@ -154,12 +159,12 @@ main = shakeArgs shakeOpts do
             "graphviz"
             "hashable"
             "hashtables"
-            "hinotify"
-            "http-client-tls"
+            (munless web "hinotify")
+            (munless ghc96 "http-client-tls") -- TODO wait for crypton/cryptonite/basement ecosystem to settle down
             "http-client"
             "JuicyPixels"
             "lens"
-            "lifx-lan-0.8.0" -- TODO why do we need to force cabal not to use 0.6.2 on aarch64?
+            "lifx-lan-0.8.1" -- TODO why do we need to force cabal not to use 0.6.2 on aarch64?
             "lucid"
             "monad-loops"
             "mtl"
@@ -177,14 +182,14 @@ main = shakeArgs shakeOpts do
             "process"
             "random"
             "raw-strings-qq"
-            "rawfilepath"
+            (munless web "rawfilepath") -- TODO cbits don't compile (and GHC 9.6 not supported on `main` yet anyway)
             "safe"
             "sbv"
             "scientific"
             "shake"
             "split"
             "stm"
-            "streamly"
+            (munless ghc96 "streamly") -- TODO needs a lot of bounds-bumping at least - release should be due soon
             "streams"
             "text"
             "time"

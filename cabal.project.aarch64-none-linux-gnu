@@ -1,15 +1,2 @@
--- https://github.com/cdepillabout/pretty-simple/pull/107
-source-repository-package
-    type: git
-    location: https://github.com/cdepillabout/pretty-simple
-    tag: 9e74d700b63b35aed3dcbda8afca4e4fce21081e
-
--- https://github.com/georgefst/sbv/tree/cross
--- https://github.com/LeventErkok/sbv/issues/659
--- TODO we should be able to use the cleaner approach in https://github.com/georgefst/sbv/tree/cross-2,
--- which moves the extra stuff to a separate library (instead of deleting it),
--- but unfortunately, cabal refuses to ignore said library - https://github.com/haskell/cabal/issues/9075
-source-repository-package
-    type: git
-    location: https://github.com/georgefst/sbv
-    tag: 9a896816019a97b99e32db7ab0ab7d8d3e42d42a
+import: cabal.project.common
+import: cabal.project.cross
