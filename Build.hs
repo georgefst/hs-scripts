@@ -142,19 +142,19 @@ main = shakeArgs shakeOpts do
             "async"
             "base"
             "bytestring"
-            (munless cross "Chart") -- TH
-            (munless cross "Chart-diagrams") -- TH in `Chart` and `active` deps (at least)
+            ("Chart-diagrams" & munless cross) -- TH in `Chart` and `active` deps (at least)
+            ("Chart" & munless cross) -- TH
             "colour"
             "comonad"
             "composition"
             "containers"
-            (munless ghc96 "dhall") -- TODO https://github.com/dhall-lang/dhall-haskell/pull/2496
+            ("dhall" & munless ghc96) -- TODO https://github.com/dhall-lang/dhall-haskell/pull/2496
             "diagrams-core"
-            (munless cross "diagrams-lib") -- TH in `active` dep
-            (munless cross "diagrams-svg") -- TH in `active` dep
+            ("diagrams-lib" & munless cross) -- TH in `active` dep
+            ("diagrams-svg" & munless cross) -- TH in `active` dep
             "directory"
-            (munless web "evdev-streamly")
-            (munless web "evdev")
+            ("evdev-streamly" & munless web)
+            ("evdev" & munless web)
             "exceptions"
             "extra"
             "filepath-bytestring"
@@ -164,8 +164,8 @@ main = shakeArgs shakeOpts do
             "graphviz"
             "hashable"
             "hashtables"
-            (munless web "hinotify")
-            (munless ghc96 "http-client-tls") -- TODO wait for crypton/cryptonite/basement ecosystem to settle down
+            ("hinotify" & munless web)
+            ("http-client-tls" & munless ghc96) -- TODO wait for crypton/cryptonite/basement ecosystem to settle down
             "http-client"
             "JuicyPixels"
             "lens"
@@ -187,14 +187,14 @@ main = shakeArgs shakeOpts do
             "process"
             "random"
             "raw-strings-qq"
-            (munless web "rawfilepath") -- TODO cbits don't compile (and GHC 9.6 not supported on `main` yet anyway)
+            ("rawfilepath" & munless web) -- TODO cbits don't compile (and GHC 9.6 not supported on `main` yet anyway)
             "safe"
             "sbv"
             "scientific"
             "shake"
             "split"
             "stm"
-            (munless ghc96 "streamly") -- TODO needs a lot of bounds-bumping at least - release should be due soon
+            ("streamly" & munless ghc96) -- TODO needs a lot of bounds-bumping at least - release should be due soon
             "streams"
             "text"
             "time"
