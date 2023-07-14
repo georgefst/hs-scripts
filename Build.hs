@@ -142,12 +142,16 @@ main = shakeArgs shakeOpts do
             "async"
             "base"
             "bytestring"
+            (munless cross "Chart") -- TH
+            (munless cross "Chart-diagrams") -- TH in `Chart` and `active` deps (at least)
             "colour"
             "comonad"
             "composition"
             "containers"
             (munless ghc96 "dhall") -- TODO https://github.com/dhall-lang/dhall-haskell/pull/2496
             "diagrams-core"
+            (munless cross "diagrams-lib") -- TH in `active` dep
+            (munless cross "diagrams-svg") -- TH in `active` dep
             "directory"
             (munless web "evdev-streamly")
             (munless web "evdev")
@@ -201,13 +205,6 @@ main = shakeArgs shakeOpts do
             "vector-algorithms"
             "vector"
             "yaml"
-            -- TODO try to get all of these building everywhere
-            -- template haskell
-            (munless cross "Chart")
-            (munless cross "diagrams-lib") -- due to active dependency
-            (munless cross "diagrams-svg") -- ditto
-            -- blocked on above failures (at least)
-            (munless cross "Chart-diagrams") -- Chart
 
 shakeOpts :: ShakeOptions
 shakeOpts =
