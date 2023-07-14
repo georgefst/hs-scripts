@@ -95,7 +95,7 @@ main = shakeArgs shakeOpts do
     "deps" ~> do
         maybeTarget <- getEnv "TARGET"
         let cross = isJust maybeTarget
-            web = maybe False (flip any ["wasm", "javascript"] . flip isPrefixOf) maybeTarget
+            web = maybe False (\t -> any (`isPrefixOf` t) ["wasm", "javascript"]) maybeTarget
             ghc = maybe "ghc" (<> "-ghc") maybeTarget
         projectFile <- let p = "cabal.project" <> maybe "" ("." <>) maybeTarget in (p <$) . guard <$> doesFileExist p
         version <- liftIO $ readProcess ghc ["--numeric-version"] ""
