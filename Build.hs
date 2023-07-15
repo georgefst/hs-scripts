@@ -15,6 +15,8 @@ build-depends:
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
 
+{- HLINT ignore "Redundant bracket" -}
+
 module Main (main) where
 
 import Control.Arrow ((>>>))
@@ -136,75 +138,75 @@ main = shakeArgs shakeOpts do
             "--package-env ."
             "--lib"
             -- TODO versions? maybe via a `cabal.project.freeze`, or just pinning `index-state`
-            "aeson-pretty"
-            "aeson"
-            "ansi-terminal"
-            "async"
-            "base"
-            "bytestring"
+            ("aeson-pretty")
+            ("aeson")
+            ("ansi-terminal")
+            ("async")
+            ("base")
+            ("bytestring")
             ("Chart-diagrams" & munless cross) -- TH in `Chart` and `active` deps (at least)
             ("Chart" & munless cross) -- TH
-            "colour"
-            "comonad"
-            "composition"
-            "containers"
+            ("colour")
+            ("comonad")
+            ("composition")
+            ("containers")
             ("dhall" & munless ghc96) -- TODO https://github.com/dhall-lang/dhall-haskell/pull/2496
-            "diagrams-core"
+            ("diagrams-core")
             ("diagrams-lib" & munless cross) -- TH in `active` dep
             ("diagrams-svg" & munless cross) -- TH in `active` dep
-            "directory"
+            ("directory")
             ("evdev-streamly" & munless web)
             ("evdev" & munless web)
-            "exceptions"
-            "extra"
-            "filepath-bytestring"
-            "filepath"
-            "freer-simple"
-            "generic-optics"
-            "graphviz"
-            "hashable"
-            "hashtables"
+            ("exceptions")
+            ("extra")
+            ("filepath-bytestring")
+            ("filepath")
+            ("freer-simple")
+            ("generic-optics")
+            ("graphviz")
+            ("hashable")
+            ("hashtables")
             ("hinotify" & munless web)
             ("http-client-tls" & munless ghc96) -- TODO wait for crypton/cryptonite/basement ecosystem to settle down
-            "http-client"
-            "JuicyPixels"
-            "lens"
-            "lifx-lan-0.8.1" -- TODO why do we need to force cabal not to use 0.6.2 on aarch64?
-            "lucid"
-            "monad-loops"
-            "mtl"
-            "mwc-random"
-            "network-uri"
-            "network"
-            "optics"
-            "optparse-applicative"
-            "optparse-generic"
-            "parsec"
-            "pretty-simple"
-            "prettyprinter-graphviz"
-            "prettyprinter-lucid"
-            "prettyprinter"
-            "process"
-            "random"
-            "raw-strings-qq"
+            ("http-client")
+            ("JuicyPixels")
+            ("lens")
+            ("lifx-lan-0.8.1") -- TODO why do we need to force cabal not to use 0.6.2 on aarch64?
+            ("lucid")
+            ("monad-loops")
+            ("mtl")
+            ("mwc-random")
+            ("network-uri")
+            ("network")
+            ("optics")
+            ("optparse-applicative")
+            ("optparse-generic")
+            ("parsec")
+            ("pretty-simple")
+            ("prettyprinter-graphviz")
+            ("prettyprinter-lucid")
+            ("prettyprinter")
+            ("process")
+            ("random")
+            ("raw-strings-qq")
             ("rawfilepath" & munless web) -- TODO cbits don't compile (and GHC 9.6 not supported on `main` yet anyway)
-            "safe"
-            "sbv"
-            "scientific"
-            "shake"
-            "split"
-            "stm"
+            ("safe")
+            ("sbv")
+            ("scientific")
+            ("shake")
+            ("split")
+            ("stm")
             ("streamly" & munless ghc96) -- TODO needs a lot of bounds-bumping at least - release should be due soon
-            "streams"
-            "text"
-            "time"
-            "transformers"
-            "uniplate"
-            "unix"
-            "unordered-containers"
-            "vector-algorithms"
-            "vector"
-            "yaml"
+            ("streams")
+            ("text")
+            ("time")
+            ("transformers")
+            ("uniplate")
+            ("unix")
+            ("unordered-containers")
+            ("vector-algorithms")
+            ("vector")
+            ("yaml")
 
 shakeOpts :: ShakeOptions
 shakeOpts =
