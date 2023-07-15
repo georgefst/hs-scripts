@@ -11,6 +11,7 @@ build-depends:
 {-# LANGUAGE GHC2021 #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
@@ -51,8 +52,9 @@ main = shakeArgs shakeOpts do
             let target = case splitPath out of
                     [_, init -> t, _] -> Just t
                     _ -> Nothing
+                TargetInfo{ghc} = getTargetInfo target
             cmd_
-                (foldMap (<> "-") target <> "ghc")
+                ghc
                 hs
                 (mwhen (hs /= "Build.hs") ["-main-is", takeBaseName hs])
                 ["-outputdir", ".build" </> fromMaybe "standard" target]
@@ -96,9 +98,8 @@ main = shakeArgs shakeOpts do
     -- TODO alternatively, we could make these the rules for building the env file
     "deps" ~> do
         maybeTarget <- getEnv "TARGET"
-        let cross = isJust maybeTarget
-            web = maybe False (\t -> any (`isPrefixOf` t) ["wasm", "javascript"]) maybeTarget
-            ghc = foldMap (<> "-") maybeTarget <> "ghc"
+        let TargetInfo{..} = getTargetInfo maybeTarget
+            web = js || wasm
         projectFile <- let p = "cabal.project" <> foldMap ("." <>) maybeTarget in (p <$) . guard @Maybe <$> doesFileExist p
         version <- liftIO $ readProcess ghc ["--numeric-version"] ""
         let ghc96 = ((>=) `on` splitOn ".") version "9.6"
@@ -207,6 +208,23 @@ main = shakeArgs shakeOpts do
             ("vector-algorithms")
             ("vector")
             ("yaml")
+
+data TargetInfo = TargetInfo
+    { ghc :: String
+    , cross :: Bool
+    , js :: Bool
+    , wasm :: Bool
+    }
+getTargetInfo :: Maybe String -> TargetInfo
+getTargetInfo target =
+    TargetInfo
+        { cross = isJust target
+        , js = hasPrefix "javascript"
+        , wasm = hasPrefix "wasm"
+        , ghc = foldMap (<> "-") target <> "ghc"
+        }
+  where
+    hasPrefix s = maybe False (s `isPrefixOf`) target
 
 shakeOpts :: ShakeOptions
 shakeOpts =
