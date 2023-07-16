@@ -102,7 +102,7 @@ main = shakeArgs shakeOpts do
             web = js || wasm
         projectFile <- let p = "cabal.project" <> foldMap ("." <>) maybeTarget in (p <$) . guard @Maybe <$> doesFileExist p
         version <- liftIO $ readProcess ghc ["--numeric-version"] ""
-        let ghc96 = ((>=) `on` splitOn ".") version "9.6"
+        let ghc96 = splitOn "." version >= ["9", "6"]
         cmd_
             "cabal"
             "--builddir=.build/cabal"
