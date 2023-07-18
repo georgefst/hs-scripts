@@ -65,7 +65,7 @@ example =
         , "gui lt"
         , "p  ri se  "
         ]
-main' ls = pPrintForceColor $ foldr (process . parse) W.answers ls
+main' ls = pPrintForceColor $ foldr (process . parse) W.answers ls -- TODO doesn't handle duplicate letters properly
   where
     parse =
         zip [0 ..]
