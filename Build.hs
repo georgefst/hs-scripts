@@ -190,7 +190,6 @@ main = shakeArgs shakeOpts do
             ("process")
             ("random")
             ("raw-strings-qq")
-            ("rawfilepath" & munless web) -- TODO cbits don't compile (and GHC 9.6 not supported on `main` yet anyway)
             ("safe")
             ("sbv")
             ("scientific")
