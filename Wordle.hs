@@ -20,6 +20,9 @@ import Data.Tuple.Extra
 import Text.Pretty.Simple
 import Util.WordleLists qualified as W
 
+
+-- TODO word lists have changed, probably since move to NY times, e.g. "oicks" now accepted
+
 ws = sort $ W.answers <> W.guesses
 
 startingLetterFrequencies =
