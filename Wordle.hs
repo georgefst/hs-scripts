@@ -16,6 +16,7 @@ import Data.List
 import Data.Maybe
 import Data.Ord
 import Data.Traversable
+import Data.Tuple.Extra
 import Text.Pretty.Simple
 import Util.WordleLists qualified as W
 
@@ -65,7 +66,7 @@ example =
         , "gui lt"
         , "p  ri se  "
         ]
-main' ls = pPrintForceColor $ foldr (process . parse) W.answers ls -- TODO doesn't handle duplicate letters properly
+main' ls = pPrintForceColor $ both (flip (foldr (process . parse)) ls) (W.guesses, W.answers) -- TODO doesn't handle duplicate letters properly
   where
     parse =
         zip [0 ..]
