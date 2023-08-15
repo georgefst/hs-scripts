@@ -1,2 +1,1 @@
-import: cabal.project.common
 import: cabal.project.cross
