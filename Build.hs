@@ -193,6 +193,9 @@ main = shakeArgs shakeOpts do
             ("safe")
             ("sbv")
             ("scientific")
+            ("servant")
+            ("servant-client")
+            ("servant-server")
             ("shake")
             ("split")
             ("stm")
@@ -206,6 +209,7 @@ main = shakeArgs shakeOpts do
             ("unordered-containers")
             ("vector-algorithms")
             ("vector")
+            ("warp")
             ("yaml")
 
 data TargetInfo = TargetInfo

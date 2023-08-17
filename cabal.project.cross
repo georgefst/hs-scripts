@@ -15,3 +15,17 @@ source-repository-package
     type: git
     location: https://github.com/georgefst/sbv
     tag: 9a896816019a97b99e32db7ab0ab7d8d3e42d42a
+
+-- custom setup removed, no release yet
+source-repository-package
+    type: git
+    location: https://github.com/kazu-yamamoto/logger
+    subdir: wai-logger
+    tag: cc1ec1d8e6700b66b1b1c037694e962311d165b8
+
+-- https://github.com/haskell-servant/servant/issues/1187#issuecomment-1681962015
+source-repository-package
+    type: git
+    location: https://github.com/georgefst/servant
+    subdir: servant-server servant servant-client
+    tag: 918570fb19f2ef40edafbcba52530f1a23f98e87
