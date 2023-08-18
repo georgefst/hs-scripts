@@ -156,8 +156,6 @@ main = shakeArgs shakeOpts do
             ("diagrams-lib" & munless cross) -- TH in `active` dep
             ("diagrams-svg" & munless cross) -- TH in `active` dep
             ("directory")
-            ("evdev-streamly" & munless web)
-            ("evdev" & munless web)
             ("exceptions")
             ("extra")
             ("file-io")
