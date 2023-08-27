@@ -144,6 +144,7 @@ main = shakeArgs shakeOpts do
             ("ansi-terminal")
             ("async")
             ("base")
+            ("binary")
             ("bytestring")
             ("Chart-diagrams" & munless cross) -- TH in `Chart` and `active` deps (at least)
             ("Chart" & munless cross) -- TH
@@ -166,11 +167,14 @@ main = shakeArgs shakeOpts do
             ("hashable")
             ("hashtables")
             ("hinotify" & munless web)
+            ("http-api-data")
             ("http-client-tls" & munless ghc96) -- TODO wait for crypton/cryptonite/basement ecosystem to settle down
             ("http-client")
+            ("http-types")
             ("JuicyPixels")
             ("lens")
             ("lifx-lan-0.8.1") -- TODO why do we need to force cabal not to use 0.6.2 on aarch64?
+            ("logging-effect")
             ("lucid")
             ("monad-loops")
             ("mtl")
@@ -198,6 +202,7 @@ main = shakeArgs shakeOpts do
             ("shake")
             ("split")
             ("stm")
+            ("streamly-core")
             ("streamly" & munless ghc96) -- TODO needs a lot of bounds-bumping at least - release should be due soon
             ("streams")
             ("text")
@@ -208,6 +213,7 @@ main = shakeArgs shakeOpts do
             ("unordered-containers")
             ("vector-algorithms")
             ("vector")
+            ("wai")
             ("warp")
             ("yaml")
 
