@@ -2,7 +2,6 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -threaded #-}
@@ -22,7 +21,7 @@ import Data.Text.IO (putStrLn)
 import System.Directory.OsPath (listDirectory)
 import System.Exit (ExitCode, exitFailure)
 import System.File.OsPath (readFile', writeFile')
-import System.OsPath (OsPath, decodeUtf, encodeUtf, osp, takeFileName, (</>))
+import System.OsPath (OsPath, decodeUtf, encodeUtf, takeFileName, (</>))
 import System.Posix.Env.ByteString (getArgs)
 import System.Process.ByteString (readProcessWithExitCode)
 import Prelude hiding (lines, putStrLn, readFile, unlines, writeFile)
@@ -33,8 +32,9 @@ main = do
         getArgs >>= \case
             [scriptFile] -> pure scriptFile
             _ -> putStrLn "Provide a cabal script file" >> exitFailure
+    cabal <- encodeUtf "cabal" -- TODO we'd use `[osp| cabal |]` but want to support cross-compilation
     (_exitCode, out, _err) <-
-        readProcessWithExitCode' [osp| cabal |] ["build", "-v", scriptFile, "--write-ghc-environment-files=always"] ""
+        readProcessWithExitCode' cabal ["build", "-v", scriptFile, "--write-ghc-environment-files=always"] ""
     p <- case find ("script-builds" `isInfixOf`) $ lines $ decodeUtf8 out of -- TODO this may be a brittle heuristic
         Just p -> encodeT p
         Nothing -> putStrLn "Failed to parse cabal output" >> exitFailure
