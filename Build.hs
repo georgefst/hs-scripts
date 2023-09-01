@@ -108,6 +108,7 @@ main = shakeArgs shakeOpts do
             "--builddir=.build/cabal"
             "install"
             (foldMap ("--project-file=" <>) projectFile)
+            "--index-state=2023-09-01T11:12:18Z"
             ("-w" <> ghc)
             ( flip foldMap maybeTarget \target ->
                 [ "--disable-documentation"
