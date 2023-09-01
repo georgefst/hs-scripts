@@ -204,8 +204,8 @@ main = shakeArgs shakeOpts do
             ("shake")
             ("split")
             ("stm")
-            ("streamly-core")
             ("streamly" & munless ghc96) -- TODO needs a lot of bounds-bumping at least - release should be due soon
+            ("streamly-core" & munless ghc96) -- ditto
             ("streams")
             ("text")
             ("time")
