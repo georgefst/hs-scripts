@@ -150,8 +150,8 @@ main = shakeArgs shakeOpts do
             ("base")
             ("binary")
             ("bytestring")
-            ("Chart-diagrams" & munless cross) -- TH in `Chart` and `active` deps (at least)
-            ("Chart" & munless cross) -- TH
+            ("Chart-diagrams" & munless cross & munless ghc96) -- TH in `Chart` and `active` deps (at least), as well as https://github.com/timbod7/haskell-chart/issues/248
+            ("Chart" & munless cross & munless ghc96) -- TH
             ("colour")
             ("comonad")
             ("composition")
