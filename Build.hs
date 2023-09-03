@@ -100,7 +100,13 @@ main = shakeArgs shakeOpts do
         maybeTarget <- getEnv "TARGET"
         let TargetInfo{..} = getTargetInfo maybeTarget
             web = js || wasm
-        projectFile <- let p = "cabal.project" <> foldMap ("." <>) maybeTarget in (p <$) . guard @Maybe <$> doesFileExist p
+        projectFile <-
+            findM doesFileExist
+                . map ("cabal.project" <>)
+                $ (maybe mempty (\t -> ["." <> t, ".cross"]) maybeTarget)
+        -- TODO this would be useful for universal options like `index-state` and especially `source-repository-package`
+        -- unfortunately Cabal fails with some weird errors, seeming to expect to see a local package
+        -- <> [".base"]
         liftIO do
             putStrLn $ "Using compiler: " <> ghc
             maybe mempty (putStrLn . ("Using project file: " <>)) projectFile
@@ -113,31 +119,13 @@ main = shakeArgs shakeOpts do
             (foldMap ("--project-file=" <>) projectFile)
             "--index-state=2023-09-01T11:12:18Z"
             ("-w" <> ghc)
-            ( flip foldMap maybeTarget \target ->
-                [ "--disable-documentation"
-                , "--ghc-options=-no-haddock" --
-                -- TODO bit sketchy - e.g. this will work on my Arch machine but probably not on Mac
-                -- also is this even safe in general, or should we be using specific cross-friendly versions?
-                -- NB. this is essentially what's done with nixpkgs GHCJS: https://github.com/NixOS/nixpkgs/issues/7264
-                , "--with-alex=/bin/alex"
-                , "--with-c2hs=/bin/c2hs"
-                , "--with-happy=/bin/happy" --
-                -- TODO ideally Cabal would guess the rest of those from just specifying `ghc`
-                -- or maybe it should have a separate `--target` flag (look out for this with WASM etc.)
-                -- note that we don't need to specify `ghc-pkg` when global-default version matches
-                -- or, in other words, this also works when using GHC 9.2.7: "--with-hc-pkg=~/.ghcup/bin/ghc-pkg-9.2.7"
-                -- see https://github.com/haskell/cabal/issues/5632, https://github.com/haskell/cabal/issues/5760
-                -- those issues are also relevant to alex/c2hs etc.
-                , "--with-hc-pkg=" <> target <> "-ghc-pkg"
-                , "--with-hsc2hs=" <> target <> "-hsc2hs"
-                ]
-                    <> map
-                        (\(lib, flags) -> "--constraint=" <> lib <> concatMap (" -" <>) flags)
-                        [ ("cborg", ["optimize-gmp"])
-                        , ("cryptonite", ["integer-gmp"])
-                        , ("haskeline", ["terminfo"])
-                        ]
-            )
+            -- TODO ideally Cabal would guess the rest of those from just specifying `ghc`
+            -- or maybe it should have a separate `--target` flag (look out for this with WASM etc.)
+            -- note that we don't need to specify `ghc-pkg` when global-default version matches
+            -- or, in other words, this also works when using GHC 9.2.7: "--with-hc-pkg=~/.ghcup/bin/ghc-pkg-9.2.7"
+            -- see https://github.com/haskell/cabal/issues/5632, https://github.com/haskell/cabal/issues/5760
+            -- those issues are also relevant to alex/c2hs etc.
+            (flip foldMap maybeTarget \t -> ["--with-hc-pkg=" <> t <> "-ghc-pkg", "--with-hsc2hs=" <> t <> "-hsc2hs"])
             -- TODO this isn't really what we want - better to just delete the old env file (how?)
             "--force-reinstalls"
             "--package-env ."

@@ -1,5 +1,19 @@
 -- for all non-native builds - remove custom setups, template haskell etc.
 
+constraints:
+    cborg -optimize-gmp,
+    cryptonite -integer-gmp,
+    haskeline -terminfo
+
+package *
+    documentation: False
+    -- TODO bit sketchy - e.g. this will work on my Arch machine but probably not on Mac
+    -- also is this even safe in general, or should we be using specific cross-friendly versions?
+    -- NB. this is essentially what's done with nixpkgs GHCJS: https://github.com/NixOS/nixpkgs/issues/7264
+    alex-location: /bin/alex
+    c2hs-location: /bin/c2hs
+    happy-location: /bin/happy
+
 -- https://github.com/cdepillabout/pretty-simple/pull/107
 source-repository-package
     type: git
