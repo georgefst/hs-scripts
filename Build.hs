@@ -101,6 +101,9 @@ main = shakeArgs shakeOpts do
         let TargetInfo{..} = getTargetInfo maybeTarget
             web = js || wasm
         projectFile <- let p = "cabal.project" <> foldMap ("." <>) maybeTarget in (p <$) . guard @Maybe <$> doesFileExist p
+        liftIO do
+            putStrLn $ "Using compiler: " <> ghc
+            maybe mempty (putStrLn . ("Using project file: " <>)) projectFile
         version <- liftIO $ readProcess ghc ["--numeric-version"] ""
         let ghc96 = splitOn "." version >= ["9", "6"]
         cmd_
