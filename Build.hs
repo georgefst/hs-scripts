@@ -113,7 +113,8 @@ main = shakeArgs shakeOpts do
             putStrLn $ "Host OS: " <> host.os
             putStrLn $ "Using compiler: " <> ghc
             maybe mempty (putStrLn . ("Using project file: " <>)) projectFile
-        version <- liftIO $ readProcess ghc ["--numeric-version"] ""
+        version <- liftIO $ trimEnd <$> readProcess ghc ["--numeric-version"] ""
+        liftIO $ Dir.removeFile $ ".ghc.environment." <> host.machine <> "-" <> host.os <> "-" <> version
         let ghc96 = splitOn "." version >= ["9", "6"]
         cmd_
             "cabal"
@@ -129,8 +130,6 @@ main = shakeArgs shakeOpts do
             -- see https://github.com/haskell/cabal/issues/5632, https://github.com/haskell/cabal/issues/5760
             -- those issues are also relevant to alex/c2hs etc.
             (flip foldMap maybeTarget \t -> ["--with-hc-pkg=" <> t <> "-ghc-pkg", "--with-hsc2hs=" <> t <> "-hsc2hs"])
-            -- TODO this isn't really what we want - better to just delete the old env file (how?)
-            "--force-reinstalls"
             "--package-env ."
             "--lib"
             -- TODO versions? maybe via a `cabal.project.freeze`, or just pinning `index-state`
