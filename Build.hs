@@ -224,10 +224,11 @@ data Triple = Triple
     { machine :: String
     , vendor :: String
     , os :: String
+    , extra :: [String]
     }
 parseTriple :: String -> Triple
 parseTriple triple = case splitOn "-" triple of
-    machine : vendor : (intercalate "-" -> os) -> Triple{..}
+    machine : vendor : os : extra -> Triple{..}
     _ -> error "bad target triple"
 
 data TargetInfo = TargetInfo
