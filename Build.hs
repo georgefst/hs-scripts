@@ -118,7 +118,7 @@ main = shakeArgs shakeOpts do
             putStrLn $ "Using compiler: " <> ghc
             maybe mempty (putStrLn . ("Using project file: " <>)) projectFile
         version <- liftIO $ trimEnd <$> readProcess ghc ["--numeric-version"] ""
-        liftIO $ Dir.removeFile $ ".ghc.environment." <> host.machine <> "-" <> host.os <> "-" <> version
+        liftIO $ Dir.removeFile $ ".ghc.environment." <> triple.machine <> "-" <> triple.os <> "-" <> version
         let ghc96 = splitOn "." version >= ["9", "6"]
         cmd_
             "cabal"
@@ -232,6 +232,7 @@ data TargetInfo = TargetInfo
     , linux :: Bool
     , js :: Bool
     , wasm :: Bool
+    , triple :: Triple
     }
 getTargetInfo :: Triple -> Maybe String -> TargetInfo
 getTargetInfo host targetString =
@@ -241,6 +242,7 @@ getTargetInfo host targetString =
         , linux = target.os == "linux"
         , js = target.machine == "javascript"
         , wasm = target.machine == "wasm"
+        , triple = target
         }
   where
     target = maybe host parseTriple targetString
