@@ -121,8 +121,8 @@ main = shakeArgs shakeOpts do
         version <- liftIO $ trimEnd <$> readProcess ghc ["--numeric-version"] ""
         let envFile = ".ghc.environment." <> triple.machine <> "-" <> triple.os <> "-" <> version
         liftIO $
-            Dir.removeFile envFile >> putStrLn ("Deleting env file: " <> envFile) `catchIOError` \e ->
-                if isDoesNotExistError e then putStrLn $ "No env file to delete: " <> envFile else error $ show e
+            (Dir.removeFile envFile >> putStrLn ("Deleting env file: " <> envFile)) `catchIOError` \e ->
+                if True then putStrLn $ "No env file to delete: " <> envFile else error $ show e
         let ghc96 = splitOn "." version >= ["9", "6"]
         cmd_
             "cabal"
