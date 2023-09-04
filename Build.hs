@@ -67,9 +67,9 @@ main = shakeArgs shakeOpts do
 
     -- install remotely
     ["*:**/*", "*://*"] |%> \p -> do
-        let (host, bin) = second takeFileName $ splitHost p
+        let (sshHost, bin) = second takeFileName $ splitSshHost p
         target <-
-            liftIO (trim <$> readProcess "ssh" [host, "gcc -dumpmachine"] "") <&> \case
+            liftIO (trim <$> readProcess "ssh" [sshHost, "gcc -dumpmachine"] "") <&> \case
                 -- TODO generalise - maybe generate a list of alternatives, then take first for which we find a GHC
                 "aarch64-linux-gnu" -> "aarch64-none-linux-gnu"
                 r -> r
@@ -260,7 +260,7 @@ mwhen = flip $ bool mempty
 munless :: (Monoid c) => Bool -> c -> c
 munless = mwhen . not
 
-splitHost :: String -> (String, String)
-splitHost s = case splitOn ":" s of
+splitSshHost :: String -> (String, String)
+splitSshHost s = case splitOn ":" s of
     [h, p] -> (h, p)
     _ -> error "splitHost failed"
