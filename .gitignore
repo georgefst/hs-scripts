@@ -3,3 +3,6 @@ dist
 .build
 .shake
 Scratch.hs
+
+# TODO this appears on Mac (after `cabal run Build.hs`?), not sure why
+dist-newstyle/cache/compiler

@@ -39,6 +39,7 @@ main :: IO ()
 main = shakeArgs shakeOpts do
     sources <- liftIO $ filter (`notElem` ["Template.hs"]) <$> getDirectoryFilesIO "." ["*.hs"]
     utilSources <- liftIO $ map ("Util" </>) <$> getDirectoryFilesIO "Util" ["//*.hs"]
+    hostOS <- liftIO $ readProcess "uname" [] ""
 
     -- when nothing requested, compile all
     action do
@@ -52,7 +53,7 @@ main = shakeArgs shakeOpts do
             let target = case splitPath out of
                     [_, init -> t, _] -> Just t
                     _ -> Nothing
-                TargetInfo{ghc} = getTargetInfo target
+                TargetInfo{ghc} = getTargetInfo hostOS target
             cmd_
                 ghc
                 hs
@@ -98,8 +99,8 @@ main = shakeArgs shakeOpts do
     -- TODO alternatively, we could make these the rules for building the env file
     "deps" ~> do
         maybeTarget <- getEnv "TARGET"
-        let TargetInfo{..} = getTargetInfo maybeTarget
-            web = js || wasm
+        let TargetInfo{..} = getTargetInfo hostOS maybeTarget
+            _web = js || wasm
         projectFile <-
             findM doesFileExist
                 . map ("cabal.project" <>)
@@ -108,6 +109,7 @@ main = shakeArgs shakeOpts do
         -- unfortunately Cabal fails with some weird errors, seeming to expect to see a local package
         -- <> [".base"]
         liftIO do
+            putStrLn $ "Host OS: " <> hostOS
             putStrLn $ "Using compiler: " <> ghc
             maybe mempty (putStrLn . ("Using project file: " <>)) projectFile
         version <- liftIO $ readProcess ghc ["--numeric-version"] ""
@@ -149,7 +151,7 @@ main = shakeArgs shakeOpts do
             ("diagrams-lib" & munless cross) -- TH in `active` dep
             ("diagrams-svg" & munless cross) -- TH in `active` dep
             ("directory")
-            ("evdev")
+            ("evdev" & mwhen linux)
             ("exceptions")
             ("extra")
             ("file-io")
@@ -159,7 +161,7 @@ main = shakeArgs shakeOpts do
             ("graphviz")
             ("hashable")
             ("hashtables")
-            ("hinotify" & munless web)
+            ("hinotify" & mwhen linux)
             ("http-api-data")
             ("http-client-tls" & munless ghc96) -- TODO wait for crypton/cryptonite/basement ecosystem to settle down
             ("http-client")
@@ -212,14 +214,16 @@ main = shakeArgs shakeOpts do
 
 data TargetInfo = TargetInfo
     { ghc :: String
+    , linux :: Bool
     , cross :: Bool
     , js :: Bool
     , wasm :: Bool
     }
-getTargetInfo :: Maybe String -> TargetInfo
-getTargetInfo target =
+getTargetInfo :: String -> Maybe String -> TargetInfo
+getTargetInfo hostOS target =
     TargetInfo
         { cross = isJust target
+        , linux = hostOS == "Linux"
         , js = hasPrefix "javascript"
         , wasm = hasPrefix "wasm"
         , ghc = foldMap (<> "-") target <> "ghc"
