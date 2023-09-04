@@ -35,6 +35,7 @@ import Data.Monoid
 import Development.Shake
 import Development.Shake.FilePath
 import System.Directory qualified as Dir
+import System.IO.Error
 import System.Process.Extra
 
 main :: IO ()
@@ -118,7 +119,10 @@ main = shakeArgs shakeOpts do
             putStrLn $ "Using compiler: " <> ghc
             maybe mempty (putStrLn . ("Using project file: " <>)) projectFile
         version <- liftIO $ trimEnd <$> readProcess ghc ["--numeric-version"] ""
-        liftIO $ Dir.removeFile $ ".ghc.environment." <> triple.machine <> "-" <> triple.os <> "-" <> version
+        let envFile = ".ghc.environment." <> triple.machine <> "-" <> triple.os <> "-" <> version
+        liftIO $
+            Dir.removeFile envFile >> putStrLn ("Deleting env file: " <> envFile) `catchIOError` \e ->
+                if isDoesNotExistError e then putStrLn $ "No env file to delete: " <> envFile else error $ show e
         let ghc96 = splitOn "." version >= ["9", "6"]
         cmd_
             "cabal"
