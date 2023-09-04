@@ -136,7 +136,7 @@ main = shakeArgs shakeOpts do
             (flip foldMap maybeTarget \t -> ["--with-hc-pkg=" <> t <> "-ghc-pkg", "--with-hsc2hs=" <> t <> "-hsc2hs"])
             "--package-env ."
             "--lib"
-            -- TODO versions? maybe via a `cabal.project.freeze`, or just pinning `index-state`
+            -- TODO versions, maybe via a `cabal.project.freeze`? less of a problem now that we just pin `index-state`
             ("aeson-pretty")
             ("aeson")
             ("ansi-terminal")
