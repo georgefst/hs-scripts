@@ -8,8 +8,8 @@ build-depends:
     pretty-simple ^>= 4.1,
     shake ^>= 0.19,
 -}
-{-# LANGUAGE GHC2021 #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE GHC2021 #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ViewPatterns #-}
