@@ -11,6 +11,7 @@ build-depends:
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE GHC2021 #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
@@ -37,9 +38,9 @@ import System.Process.Extra
 
 main :: IO ()
 main = shakeArgs shakeOpts do
+    host <- liftIO $ parseTriple . trimEnd <$> readProcess "ghc" ["--print-host-platform"] ""
     sources <- liftIO $ filter (`notElem` ["Template.hs"]) <$> getDirectoryFilesIO "." ["*.hs"]
     utilSources <- liftIO $ map ("Util" </>) <$> getDirectoryFilesIO "Util" ["//*.hs"]
-    hostOS <- liftIO $ readProcess "uname" [] ""
 
     -- when nothing requested, compile all
     action do
@@ -53,7 +54,7 @@ main = shakeArgs shakeOpts do
             let target = case splitPath out of
                     [_, init -> t, _] -> Just t
                     _ -> Nothing
-                TargetInfo{ghc} = getTargetInfo hostOS target
+                TargetInfo{ghc} = getTargetInfo host target
             cmd_
                 ghc
                 hs
@@ -99,7 +100,7 @@ main = shakeArgs shakeOpts do
     -- TODO alternatively, we could make these the rules for building the env file
     "deps" ~> do
         maybeTarget <- getEnv "TARGET"
-        let TargetInfo{..} = getTargetInfo hostOS maybeTarget
+        let TargetInfo{..} = getTargetInfo host maybeTarget
             _web = js || wasm
         projectFile <-
             findM doesFileExist
@@ -109,7 +110,7 @@ main = shakeArgs shakeOpts do
         -- unfortunately Cabal fails with some weird errors, seeming to expect to see a local package
         -- <> [".base"]
         liftIO do
-            putStrLn $ "Host OS: " <> hostOS
+            putStrLn $ "Host OS: " <> host.os
             putStrLn $ "Using compiler: " <> ghc
             maybe mempty (putStrLn . ("Using project file: " <>)) projectFile
         version <- liftIO $ readProcess ghc ["--numeric-version"] ""
@@ -212,24 +213,34 @@ main = shakeArgs shakeOpts do
             ("warp")
             ("yaml")
 
+data Triple = Triple
+    { machine :: String
+    , vendor :: String
+    , os :: String
+    }
+parseTriple :: String -> Triple
+parseTriple triple = case splitOn "-" triple of
+    machine : vendor : (intercalate "-" -> os) -> Triple{..}
+    _ -> error "bad target triple"
+
 data TargetInfo = TargetInfo
     { ghc :: String
-    , linux :: Bool
     , cross :: Bool
+    , linux :: Bool
     , js :: Bool
     , wasm :: Bool
     }
-getTargetInfo :: String -> Maybe String -> TargetInfo
-getTargetInfo hostOS target =
+getTargetInfo :: Triple -> Maybe String -> TargetInfo
+getTargetInfo host targetString =
     TargetInfo
-        { cross = isJust target
-        , linux = hostOS == "Linux"
-        , js = hasPrefix "javascript"
-        , wasm = hasPrefix "wasm"
-        , ghc = foldMap (<> "-") target <> "ghc"
+        { ghc = foldMap (<> "-") targetString <> "ghc"
+        , cross = isJust targetString
+        , linux = target.os == "linux"
+        , js = target.machine == "javascript"
+        , wasm = target.machine == "wasm"
         }
   where
-    hasPrefix s = maybe False (s `isPrefixOf`) target
+    target = maybe host parseTriple targetString
 
 shakeOpts :: ShakeOptions
 shakeOpts =
