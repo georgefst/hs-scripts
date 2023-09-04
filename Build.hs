@@ -31,6 +31,7 @@ import Data.Function
 import Data.Functor
 import Data.List.Extra
 import Data.Maybe
+import Data.Monoid
 import Development.Shake
 import Development.Shake.FilePath
 import System.Directory qualified as Dir
@@ -45,7 +46,10 @@ main = shakeArgs shakeOpts do
     -- when nothing requested, compile all
     action do
         maybeTarget <- getEnv "TARGET"
-        need $ map ((("dist" </> concat maybeTarget) </>) . inToOut) sources
+        let target = getTargetInfo host maybeTarget
+        need . map ((("dist" </> concat maybeTarget) </>) . inToOut) $
+            -- filter stuff whose dependencies are not universally available
+            applyWhen (not target.linux) (filter (/= "Scoreboard.hs")) sources
 
     -- compile
     for_ sources \hs ->
@@ -269,6 +273,8 @@ mwhen :: (Monoid c) => Bool -> c -> c
 mwhen = flip $ bool mempty
 munless :: (Monoid c) => Bool -> c -> c
 munless = mwhen . not
+applyWhen :: Bool -> (a -> a) -> a -> a
+applyWhen b = appEndo . mwhen b . Endo
 
 splitSshHost :: String -> (String, String)
 splitSshHost s = case splitOn ":" s of
