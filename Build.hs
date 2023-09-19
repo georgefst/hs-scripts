@@ -1,5 +1,14 @@
 #!/usr/bin/env runghc
 
+{-# LANGUAGE GHC2021 #-}
+{-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedRecordDot #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# OPTIONS_GHC -Wall #-}
+
 {- cabal:
 build-depends:
     base >= 4.16,
@@ -8,14 +17,6 @@ build-depends:
     pretty-simple ^>= 4.1,
     shake ^>= 0.19,
 -}
-{-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE GHC2021 #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE OverloadedRecordDot #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE ViewPatterns #-}
-{-# LANGUAGE NoMonomorphismRestriction #-}
-{-# OPTIONS_GHC -Wall #-}
 
 {- HLINT ignore "Redundant bracket" -}
 
