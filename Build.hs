@@ -62,6 +62,7 @@ main = shakeArgs shakeOpts do
                     _ -> Nothing
                 TargetInfo{ghc} = getTargetInfo host target
             cmd_
+                (WithStderr False)
                 ghc
                 hs
                 (mwhen (hs /= "Build.hs") ["-main-is", takeBaseName hs])
