@@ -173,7 +173,7 @@ main = shakeArgs shakeOpts do
             ("hashtables")
             ("hinotify" & mwhen linux)
             ("http-api-data")
-            ("http-client-tls" & munless ghc96) -- TODO wait for crypton/cryptonite/basement ecosystem to settle down
+            ("http-client-tls")
             ("http-client")
             ("http-types")
             ("JuicyPixels")
