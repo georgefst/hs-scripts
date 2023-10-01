@@ -32,7 +32,6 @@ import Data.Function
 import Data.Functor
 import Data.List.Extra
 import Data.Maybe
-import Data.Monoid
 import Development.Shake
 import Development.Shake.FilePath
 import System.Directory qualified as Dir
@@ -282,8 +281,6 @@ mwhen :: (Monoid c) => Bool -> c -> c
 mwhen = flip $ bool mempty
 munless :: (Monoid c) => Bool -> c -> c
 munless = mwhen . not
-applyWhen :: Bool -> (a -> a) -> a -> a
-applyWhen b = appEndo . mwhen b . Endo
 
 splitSshHost :: String -> (String, String)
 splitSshHost s = case splitOn ":" s of
