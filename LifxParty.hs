@@ -15,11 +15,11 @@ module LifxParty (main) where
 import Control.Concurrent
 import Control.Monad
 import Control.Monad.IO.Class
-import Data.Colour.RGBSpace.HSV qualified as HSV
 import Data.Colour.SRGB
 import Data.Foldable
 import Data.Time
 import Data.Word
+import Lifx.Internal.Colour (rgbToHsbk)
 import Lifx.Lan
 import Lifx.Lan.Mock.Terminal
 import System.Random.Stateful
@@ -64,16 +64,6 @@ romania = forever do
     set c = sendMessageAndWait lamp $ SetColor c $ secondsToNominalDiffTime 0
     pause = liftIO $ threadDelay 1_000_000
     fromHex = rgbToHsbk . toSRGB . sRGB24read
-
--- will be in next lifx-lan release
-rgbToHsbk :: RGB Float -> HSBK
-rgbToHsbk c =
-    HSBK
-        { hue = floor $ HSV.hue c * fromIntegral (maxBound @Word16 `div` 360)
-        , saturation = floor $ HSV.saturation c * fromIntegral (maxBound @Word16)
-        , brightness = floor $ HSV.value c * fromIntegral (maxBound @Word16)
-        , kelvin = 0
-        }
 
 sendMessageAndWaitMany :: (MonadLifx m, MonadIO m) => [Device] -> Message () -> m ()
 sendMessageAndWaitMany ds m = do
