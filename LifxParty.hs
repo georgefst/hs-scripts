@@ -40,7 +40,7 @@ party = forever do
                 , brightness = maxBound
                 , kelvin = minBound
                 }
-    sendMessageAndWaitMany devs $ SetColor color $ secondsToNominalDiffTime 3
+    sendMessageAndWait lamp $ SetColor color $ secondsToNominalDiffTime 3
 
 candle = do
     let color brightness =
