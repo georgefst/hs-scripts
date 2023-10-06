@@ -65,6 +65,8 @@ romania = forever do
     pause = liftIO $ threadDelay 1_000_000
     fromHex = rgbToHsbk . toSRGB . sRGB24read
 
+{- Util -}
+
 sendMessageAndWaitMany :: (MonadLifx m, MonadIO m) => [Device] -> Message () -> m ()
 sendMessageAndWaitMany ds m = do
     for_ ds $ flip sendMessage m
