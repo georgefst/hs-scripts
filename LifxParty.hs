@@ -1,6 +1,8 @@
 {-# LANGUAGE GHC2021 #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
@@ -15,17 +17,20 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Data.Colour.RGBSpace.HSV qualified as HSV
 import Data.Colour.SRGB
+import Data.Foldable
 import Data.Time
 import Data.Word
 import Lifx.Lan
 import Lifx.Lan.Mock.Terminal
 import System.Random.Stateful
 
-dev = deviceFromAddress (192, 168, 1, 71)
+lamp = deviceFromAddress (192, 168, 1, 71)
+spot = deviceFromAddress (192, 168, 1, 247)
+devs = [lamp, spot]
 
-main = runLifx $ sendMessage dev (SetPower True) >> party
+main = runLifx $ for_ devs (flip sendMessage $ SetPower True) >> party
 
-mock = runMock [(dev, "Lamp")] party
+mock = runMock (zip devs ["Lamp", "Spotlight"]) party
 party = forever do
     hue <- randomIO
     let color =
@@ -35,7 +40,7 @@ party = forever do
                 , brightness = maxBound
                 , kelvin = minBound
                 }
-    sendMessageAndWait dev $ SetColor color $ secondsToNominalDiffTime 3
+    sendMessageAndWaitMany devs $ SetColor color $ secondsToNominalDiffTime 3
 
 candle = do
     let color brightness =
@@ -46,7 +51,7 @@ candle = do
                 , kelvin = 2328
                 }
     forever $
-        sendMessageAndWait dev . flip SetColor 0.2 . color =<< randomRIO (32000, 45000)
+        sendMessageAndWaitMany devs . flip SetColor 0.2 . color =<< randomRIO (32000, 45000)
 
 romania = forever do
     set $ fromHex "#012b7f"
@@ -56,7 +61,7 @@ romania = forever do
     set $ fromHex "#ce1127"
     pause
   where
-    set c = sendMessageAndWait dev $ SetColor c $ secondsToNominalDiffTime 0
+    set c = sendMessageAndWait lamp $ SetColor c $ secondsToNominalDiffTime 0
     pause = liftIO $ threadDelay 1_000_000
     fromHex = rgbToHsbk . toSRGB . sRGB24read
 
@@ -69,3 +74,17 @@ rgbToHsbk c =
         , brightness = floor $ HSV.value c * fromIntegral (maxBound @Word16)
         , kelvin = 0
         }
+
+sendMessageAndWaitMany :: (MonadLifx m, MonadIO m) => [Device] -> Message () -> m ()
+sendMessageAndWaitMany ds m = do
+    for_ ds $ flip sendMessage m
+    maybe (pure ()) (liftIO . threadDelay . timeMicros) (messageTime m)
+  where
+    timeMicros t = round $ t * 1_000_000
+
+-- TODO add something like this to library? `sendMessageAndWait` isn't flexible enough when we have multiple recipients
+messageTime :: Message () -> Maybe NominalDiffTime
+messageTime = \case
+    SetPower{} -> Nothing
+    SetColor _ t -> Just t
+    SetLightPower _ t -> Just t
