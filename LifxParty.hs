@@ -36,7 +36,7 @@ party = forever do
     let color =
             HSBK
                 { hue
-                , saturation = maxBound `div` 2
+                , saturation = maxBound *~ 0.5
                 , brightness = maxBound
                 , kelvin = minBound
                 }
@@ -78,3 +78,6 @@ messageTime = \case
     SetPower{} -> Nothing
     SetColor _ t -> Just t
     SetLightPower _ t -> Just t
+
+(*~) :: Word16 -> Double -> Word16
+a *~ b = floor $ fromIntegral a * b
