@@ -1,6 +1,6 @@
+{-# LANGUAGE GHC2021 #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE GHC2021 #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
