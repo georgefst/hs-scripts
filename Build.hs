@@ -178,7 +178,7 @@ main = shakeArgs shakeOpts do
             ("http-types")
             ("JuicyPixels")
             ("lens")
-            ("lifx-lan-0.8.1") -- TODO why do we need to force cabal not to use 0.6.2 on aarch64?
+            ("lifx-lan")
             ("logging-effect")
             ("lucid")
             ("monad-loops")
