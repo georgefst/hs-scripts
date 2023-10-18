@@ -150,13 +150,13 @@ main = shakeArgs shakeOpts do
             ("binary")
             ("brick")
             ("bytestring")
-            ("Chart-diagrams" & munless cross & munless ghc96) -- TH in `Chart` and `active` deps (at least), as well as https://github.com/timbod7/haskell-chart/issues/248
-            ("Chart" & munless cross & munless ghc96) -- TH
+            ("Chart-diagrams" & munless cross & munless ghc96) -- TH in `Chart` and `active` deps (at least)
+            ("Chart" & munless cross & munless ghc96) -- TH, and https://github.com/timbod7/haskell-chart/issues/248
             ("colour")
             ("comonad")
             ("composition")
             ("containers")
-            ("dhall" & munless ghc96) -- TODO https://github.com/dhall-lang/dhall-haskell/pull/2496
+            ("dhall" & munless ghc96) -- https://github.com/dhall-lang/dhall-haskell/pull/2496
             ("diagrams-core")
             ("diagrams-lib" & munless cross) -- TH in `active` dep
             ("diagrams-svg" & munless cross) -- TH in `active` dep
@@ -207,7 +207,7 @@ main = shakeArgs shakeOpts do
             ("shake")
             ("split")
             ("stm")
-            ("streamly" & munless ghc96) -- TODO needs a lot of bounds-bumping at least - release should be due soon
+            ("streamly" & munless ghc96) -- waiting for release - https://github.com/composewell/streamly/issues/2597
             ("streamly-core" & munless ghc96) -- ditto
             ("streams")
             ("text")
