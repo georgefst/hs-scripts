@@ -130,7 +130,7 @@ main = shakeArgs shakeOpts do
             "--builddir=.build/cabal"
             "install"
             (foldMap ("--project-file=" <>) projectFile)
-            "--index-state=2023-09-01T11:12:18Z"
+            "--index-state=2023-10-17T21:05:18Z"
             ("-w" <> ghc)
             -- TODO ideally Cabal would guess the rest of those from just specifying `ghc`
             -- or maybe it should have a separate `--target` flag (look out for this with WASM etc.)
