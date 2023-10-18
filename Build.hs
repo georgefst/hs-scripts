@@ -148,7 +148,7 @@ main = shakeArgs shakeOpts do
             ("async")
             ("base")
             ("binary")
-            ("brick")
+            ("brick" & munless cross) -- TH in `vty` dep
             ("bytestring")
             ("Chart-diagrams" & munless cross & munless ghc96) -- TH in `Chart` and `active` deps (at least)
             ("Chart" & munless cross & munless ghc96) -- TH, and https://github.com/timbod7/haskell-chart/issues/248
