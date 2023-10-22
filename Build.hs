@@ -150,7 +150,8 @@ main = shakeArgs shakeOpts do
             ("binary")
             ("brick" & munless cross) -- TH in `vty` dep
             ("bytestring")
-            ("Chart-diagrams" & munless cross) -- TH in `Chart` and `active` deps (at least)
+            -- TODO https://github.com/timbod7/haskell-chart/issues/255
+            -- ("Chart-diagrams" & munless cross) -- TH in `Chart` and `active` deps (at least)
             ("Chart" & munless cross) -- TH, and https://github.com/timbod7/haskell-chart/issues/248
             ("colour")
             ("comonad")
