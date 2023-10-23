@@ -130,7 +130,7 @@ main = shakeArgs shakeOpts do
             "--builddir=.build/cabal"
             "install"
             (foldMap ("--project-file=" <>) projectFile)
-            "--index-state=2023-10-22T23:19:27Z"
+            "--index-state=2023-10-23T17:15:56Z"
             ("-w" <> ghc)
             -- TODO ideally Cabal would guess the rest of those from just specifying `ghc`
             -- or maybe it should have a separate `--target` flag (look out for this with WASM etc.)
@@ -150,8 +150,7 @@ main = shakeArgs shakeOpts do
             ("binary")
             ("brick" & munless cross) -- TH in `vty` dep
             ("bytestring")
-            -- TODO https://github.com/timbod7/haskell-chart/issues/255
-            -- ("Chart-diagrams" & munless cross) -- TH in `Chart` and `active` deps (at least)
+            ("Chart-diagrams" & munless cross) -- TH in `Chart` and `active` deps (at least)
             ("Chart" & munless cross) -- TH, and https://github.com/timbod7/haskell-chart/issues/248
             ("colour")
             ("comonad")
