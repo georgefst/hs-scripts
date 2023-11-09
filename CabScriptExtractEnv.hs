@@ -50,7 +50,7 @@ main = do
         writeFile' (takeFileName envFile)
             . encodeUtf8
             . unlines
-            . filter (not . ("package-db dist-newstyle" `isPrefixOf`))
+            . filter (not . flip any ["package-db dist-newstyle", "package-db packagedb"] . flip isPrefixOf)
             . lines
             $ decodeUtf8 contents
 
