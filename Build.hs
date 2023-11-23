@@ -224,13 +224,14 @@ main = shakeArgs shakeOpts do
 
 data Triple = Triple
     { machine :: String
-    , vendor :: String
+    , vendor :: Maybe String
     , os :: String
     , extra :: [String]
     }
 parseTriple :: String -> Triple
 parseTriple triple = case splitOn "-" triple of
-    machine : vendor : os : extra -> Triple{..}
+    machine : (Just -> vendor) : os : extra -> Triple{..}
+    [machine, os] -> Triple{vendor = Nothing, extra = [], ..}
     _ -> error "bad target triple"
 
 data TargetInfo = TargetInfo
