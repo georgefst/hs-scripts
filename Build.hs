@@ -159,6 +159,7 @@ main = shakeArgs shakeOpts do
             ("dhall")
             ("diagrams-core")
             ("diagrams-lib")
+            ("diagrams-postscript")
             ("diagrams-svg")
             ("directory")
             ("evdev" & mwhen linux)
