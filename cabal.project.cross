@@ -3,7 +3,7 @@
 constraints:
     cborg -optimize-gmp,
     cryptonite -integer-gmp,
-    haskeline -terminfo
+    haskeline -terminfo,
 
 package *
     documentation: False
