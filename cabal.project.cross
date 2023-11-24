@@ -57,6 +57,10 @@ source-repository-package
     tag: 1764607de6fb66dd3abe517937610fa2f61e96f6
 source-repository-package
     type: git
+    location: https://github.com/georgefst/diagrams-rasterific
+    tag: d2915cfdce8b432944ea2c8820ce827b313ec6b9
+source-repository-package
+    type: git
     location: https://github.com/georgefst/diagrams-svg
     tag: e8b190369ae9afe59caa1b85f371017e9f1273d6
 source-repository-package
