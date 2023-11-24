@@ -113,7 +113,7 @@ main = shakeArgs shakeOpts do
         projectFile <-
             findM doesFileExist
                 . map ("cabal.project." <>)
-                $ (maybe mempty (\t -> [t, "cross"]) maybeTarget)
+                $ (maybe mempty (\t -> [t, "cross"]) maybeTarget) <> ["base"]
         -- TODO this would be useful for universal options like `index-state` and especially `source-repository-package`
         -- unfortunately Cabal fails with some weird errors, seeming to expect to see a local package
         -- <> [".base"]

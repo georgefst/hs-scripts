@@ -1,5 +1,7 @@
 -- for all non-native builds - remove custom setups, template haskell etc.
 
+import: cabal.project.base
+
 constraints:
     cborg -optimize-gmp,
     cryptonite -integer-gmp,
