@@ -145,6 +145,7 @@ main = shakeArgs shakeOpts do
             ("aeson-pretty")
             ("aeson")
             ("ansi-terminal")
+            ("array")
             ("async")
             ("base")
             ("binary")
