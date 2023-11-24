@@ -173,8 +173,8 @@ main = shakeArgs shakeOpts do
             ("filepath")
             ("freer-simple")
             ("generic-optics")
-            ("gloss-export")
-            ("gloss")
+            ("gloss-export" & munless cross) -- probably doable, but has a lot of C deps (GL, X11 etc.)
+            ("gloss" & munless cross) -- ditto
             ("graphviz")
             ("hashable")
             ("hashtables")
