@@ -68,6 +68,7 @@ main = shakeArgs shakeOpts do
                 ["-outputdir", ".build" </> fromMaybe "standard" target]
                 ["-o", out]
                 "-fdiagnostics-color=always"
+                "-O1"
 
     -- install
     "/**" %> (splitFileName >>> \(dir, bin) -> copyFileChanged ("dist" </> bin) (dir </> bin))
