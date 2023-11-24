@@ -193,6 +193,7 @@ main = shakeArgs shakeOpts do
             ("optparse-applicative")
             ("optparse-generic")
             ("parsec")
+            ("palette")
             ("pretty-simple")
             ("prettyprinter-graphviz")
             ("prettyprinter-lucid")
