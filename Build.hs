@@ -143,6 +143,7 @@ main = shakeArgs shakeOpts do
             "--package-env ."
             "--lib"
             -- TODO versions, maybe via a `cabal.project.freeze`? less of a problem now that we just pin `index-state`
+            ("active")
             ("aeson-pretty")
             ("aeson")
             ("ansi-terminal")
@@ -162,6 +163,7 @@ main = shakeArgs shakeOpts do
             ("diagrams-core")
             ("diagrams-lib")
             ("diagrams-postscript")
+            ("diagrams-rasterific")
             ("diagrams-svg")
             ("directory")
             ("evdev" & mwhen linux)
@@ -172,6 +174,7 @@ main = shakeArgs shakeOpts do
             ("freer-simple")
             ("generic-optics")
             ("graphviz")
+            ("gloss")
             ("hashable")
             ("hashtables")
             ("hinotify" & mwhen linux)
@@ -201,6 +204,7 @@ main = shakeArgs shakeOpts do
             ("process-extras")
             ("process")
             ("random")
+            ("Rasterific")
             ("raw-strings-qq")
             ("safe")
             ("sbv")
