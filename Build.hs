@@ -79,6 +79,7 @@ main = shakeArgs shakeOpts do
         target <-
             liftIO (trim <$> readProcess "ssh" [sshHost, "gcc -dumpmachine"] "") <&> \case
                 -- TODO generalise - maybe generate a list of alternatives, then take first for which we find a GHC
+                -- take and/or return a structured `Triple`, maybe after improving `parseTriple`
                 "aarch64-linux-gnu" -> "aarch64-none-linux-gnu"
                 r -> r
         let distBin = "dist" </> target </> bin
