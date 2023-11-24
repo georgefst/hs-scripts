@@ -1,0 +1,6 @@
+-- version 0.10 not yet on Hackage - https://github.com/composewell/streamly/issues/2597
+source-repository-package
+    type: git
+    location: https://github.com/composewell/streamly
+    tag: 0ed37ff344c122288e8b4865458908398e45789b
+    subdir: core .

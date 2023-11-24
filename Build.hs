@@ -126,7 +126,6 @@ main = shakeArgs shakeOpts do
         liftIO $
             (Dir.removeFile envFile >> putStrLn ("Deleting env file: " <> envFile)) `catchIOError` \e ->
                 if True then putStrLn $ "No env file to delete: " <> envFile else error $ show e
-        let ghc96 = splitOn "." version >= ["9", "6"]
         cmd_
             "cabal"
             "--builddir=.build/cabal"
@@ -211,8 +210,8 @@ main = shakeArgs shakeOpts do
             ("shake")
             ("split")
             ("stm")
-            ("streamly" & munless ghc96) -- waiting for release - https://github.com/composewell/streamly/issues/2597
-            ("streamly-core" & munless ghc96) -- ditto
+            ("streamly")
+            ("streamly-core")
             ("streams")
             ("text")
             ("time")
