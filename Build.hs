@@ -173,6 +173,7 @@ main = shakeArgs shakeOpts do
             ("filepath")
             ("freer-simple")
             ("generic-optics")
+            ("gloss-export")
             ("gloss")
             ("graphviz")
             ("hashable")

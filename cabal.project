@@ -4,3 +4,7 @@ source-repository-package
     location: https://github.com/composewell/streamly
     tag: 0ed37ff344c122288e8b4865458908398e45789b
     subdir: core .
+
+allow-newer:
+    -- https://gitlab.com/timo-a/gloss-export/-/issues/4
+    gloss-export:*
