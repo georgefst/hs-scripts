@@ -188,6 +188,7 @@ main = shakeArgs shakeOpts do
             ("lifx-lan")
             ("logging-effect")
             ("lucid")
+            ("megaparsec")
             ("monad-loops")
             ("mtl")
             ("mwc-random")
