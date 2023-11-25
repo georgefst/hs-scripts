@@ -256,7 +256,7 @@ getTargetInfo host targetString =
         , cross = isJust targetString
         , linux = target.os == "linux"
         , js = target.machine == "javascript"
-        , wasm = target.machine == "wasm"
+        , wasm = target.machine == "wasm32"
         , triple = target
         }
   where
