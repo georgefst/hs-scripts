@@ -117,8 +117,10 @@ main = shakeArgs shakeOpts do
     -- TODO make this a proper dependency, rather than a phony? probably not feasible due to no-op taking almost 10s
     -- TODO alternatively, we could make these the rules for building the env file
     "deps" ~> do
+        let versionSuffix = ""
+        -- let ghcVersion = "-9.9.20231020"
         maybeTarget <- getEnv "TARGET"
-        let TargetInfo{..} = getTargetInfo host maybeTarget
+        let TargetInfo{ghc = ((<> versionSuffix) -> ghc), ..} = getTargetInfo host maybeTarget
             _web = js || wasm
         projectFile <-
             findM doesFileExist
@@ -129,6 +131,7 @@ main = shakeArgs shakeOpts do
             putStrLn $ "Using compiler: " <> ghc
             maybe mempty (putStrLn . ("Using project file: " <>)) projectFile
         version <- liftIO $ trimEnd <$> readProcess ghc ["--numeric-version"] ""
+        -- pPrintForceColor version -- yep, this is the same as `ghcVersion`... take GHC path instead of TARGET?
         let envFile = ".ghc.environment." <> triple.machine <> "-" <> triple.os <> "-" <> version
         liftIO $
             (Dir.removeFile envFile >> putStrLn ("Deleting env file: " <> envFile)) `catchIOError` \e ->
@@ -147,7 +150,9 @@ main = shakeArgs shakeOpts do
             -- or, in other words, this also works when using GHC 9.2.7: "--with-hc-pkg=~/.ghcup/bin/ghc-pkg-9.2.7"
             -- see https://github.com/haskell/cabal/issues/5632, https://github.com/haskell/cabal/issues/5760
             -- those issues are also relevant to alex/c2hs etc.
-            (flip foldMap maybeTarget \t -> ["--with-hc-pkg=" <> t <> "-ghc-pkg", "--with-hsc2hs=" <> t <> "-hsc2hs"])
+            ( flip foldMap maybeTarget \t ->
+                map (<> versionSuffix) ["--with-hc-pkg=" <> t <> "-ghc-pkg", "--with-hsc2hs=" <> t <> "-hsc2hs"]
+            )
             "--package-env ."
             "--lib"
             -- TODO this doesn't get picked up if placed in project file - seems to be a WASM-specific issue
