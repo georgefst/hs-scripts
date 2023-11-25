@@ -36,6 +36,7 @@ import Development.Shake
 import Development.Shake.FilePath
 import System.Directory qualified as Dir
 import System.IO.Error
+import System.Posix hiding (getEnv)
 import System.Process.Extra
 
 main :: IO ()
@@ -59,7 +60,7 @@ main = shakeArgs shakeOpts do
             let target = case splitPath out of
                     [_, init -> t, _] -> Just t
                     _ -> Nothing
-                TargetInfo{ghc} = getTargetInfo host target
+                TargetInfo{..} = getTargetInfo host target
             cmd_
                 (WithStderr False)
                 ghc
@@ -69,6 +70,15 @@ main = shakeArgs shakeOpts do
                 ["-o", out]
                 "-fdiagnostics-color=always"
                 "-O1"
+            -- without this, we don't create a file with the expected name, and Shake complains
+            when wasm $ liftIO do
+                writeFile out $
+                    unlines
+                        [ "#!/bin/bash"
+                        , "HERE=$(dirname ${BASH_SOURCE[0]})"
+                        , "wasmtime --dir . $HERE/" <> inToOut hs <> ".wasm $*"
+                        ]
+                setFileMode out $ foldl1' unionFileModes [ownerModes, groupReadMode, otherReadMode]
 
     -- install
     "/**" %> (splitFileName >>> \(dir, bin) -> copyFileChanged ("dist" </> bin) (dir </> bin))
@@ -123,6 +133,7 @@ main = shakeArgs shakeOpts do
         liftIO $
             (Dir.removeFile envFile >> putStrLn ("Deleting env file: " <> envFile)) `catchIOError` \e ->
                 if True then putStrLn $ "No env file to delete: " <> envFile else error $ show e
+        let ghc98 = splitOn "." version >= ["9", "8"]
         cmd_
             "cabal"
             "--builddir=.build/cabal"
@@ -139,6 +150,8 @@ main = shakeArgs shakeOpts do
             (flip foldMap maybeTarget \t -> ["--with-hc-pkg=" <> t <> "-ghc-pkg", "--with-hsc2hs=" <> t <> "-hsc2hs"])
             "--package-env ."
             "--lib"
+            -- TODO this doesn't get picked up if placed in project file - seems to be a WASM-specific issue
+            (mwhen wasm "--constraint=zlib+bundled-c-zlib")
             -- TODO versions, maybe via a `cabal.project.freeze`? less of a problem now that we just pin `index-state`
             ("active")
             ("aeson-pretty")
@@ -156,7 +169,7 @@ main = shakeArgs shakeOpts do
             ("comonad")
             ("composition")
             ("containers")
-            ("dhall")
+            ("dhall" & munless wasm) -- `basement` fails
             ("diagrams-core")
             ("diagrams-lib")
             ("diagrams-postscript")
@@ -174,15 +187,15 @@ main = shakeArgs shakeOpts do
             ("gloss" & munless cross) -- ditto
             ("graphviz")
             ("hashable")
-            ("hashtables")
+            ("hashtables" & munless wasm)
             ("hinotify" & mwhen linux)
-            ("http-api-data")
-            ("http-client-tls")
-            ("http-client")
-            ("http-types")
+            ("http-api-data" & munless wasm)
+            ("http-client-tls" & munless wasm)
+            ("http-client" & munless wasm)
+            ("http-types" & munless wasm)
             ("JuicyPixels")
             ("lens")
-            ("lifx-lan")
+            ("lifx-lan" & munless wasm)
             ("logging-effect")
             ("lucid")
             ("megaparsec")
@@ -190,7 +203,7 @@ main = shakeArgs shakeOpts do
             ("mtl")
             ("mwc-random")
             ("network-uri")
-            ("network")
+            ("network" & munless wasm)
             ("optics")
             ("optparse-applicative")
             ("optparse-generic")
@@ -206,16 +219,16 @@ main = shakeArgs shakeOpts do
             ("Rasterific")
             ("raw-strings-qq")
             ("safe")
-            ("sbv")
+            ("sbv" & munless ghc98) -- crashes on new `head` warning due to `-Werror` - fixed but unreleased
             ("scientific")
-            ("servant-client")
-            ("servant-server")
+            ("servant-client" & munless wasm)
+            ("servant-server" & munless wasm)
             ("servant")
             ("shake")
             ("split")
             ("stm")
-            ("streamly-core")
-            ("streamly")
+            ("streamly-core" & munless wasm)
+            ("streamly" & munless wasm)
             ("streams")
             ("text")
             ("time")
@@ -225,8 +238,8 @@ main = shakeArgs shakeOpts do
             ("unordered-containers")
             ("vector-algorithms")
             ("vector")
-            ("wai")
-            ("warp")
+            ("wai" & munless wasm)
+            ("warp" & munless wasm)
             ("yaml")
 
 data Triple = Triple
