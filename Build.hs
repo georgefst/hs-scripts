@@ -166,6 +166,7 @@ main = shakeArgs shakeOpts do
             ("Chart-diagrams" & munless cross) -- TH in `Chart` dep
             ("Chart" & munless cross) -- TH
             ("colour")
+            ("combinatorial")
             ("comonad")
             ("composition")
             ("containers")
