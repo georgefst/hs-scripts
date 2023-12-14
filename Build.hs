@@ -16,6 +16,7 @@ build-depends:
     extra ^>= 1.7,
     pretty-simple ^>= 4.1,
     shake ^>= 0.19,
+    unix ^>= 2.8,
 -}
 
 {- HLINT ignore "Redundant bracket" -}
