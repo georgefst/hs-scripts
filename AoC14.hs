@@ -36,13 +36,15 @@ data Tile = SquareRock | RoundedRock | Empty deriving (Eq, Show)
 
 type Grid = [[Tile]]
 parse :: String -> [[Tile]]
-parse s =
-    lines s & map \r ->
-        r & map \case
+parse =
+    map
+        ( map \case
             '#' -> SquareRock
             'O' -> RoundedRock
             '.' -> Empty
             c -> error $ "unknown rock char: " <> pure c
+        )
+        . lines
 
 slideNorth :: Grid -> Grid
 slideNorth = transpose . map slideToStart . transpose
