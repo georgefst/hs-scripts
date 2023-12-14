@@ -65,9 +65,6 @@ slideToStart =
     intercalate [SquareRock]
         . map
             ( \rockGroup ->
-                -- let (r, e) = partition (== RoundedRock) rockGroup
-                -- in r <> e
-                -- quicker to just count lengths:
                 let r = length $ filter (== RoundedRock) rockGroup
                  in replicate r RoundedRock <> replicate (length rockGroup - r) Empty
             )
@@ -90,16 +87,3 @@ nTimes :: Int -> (a -> a) -> (a -> a)
 nTimes 0 _ = id
 nTimes 1 f = f
 nTimes n f = f . nTimes (n - 1) f
-
--- data Grid = Grid [Row] deriving (Show) -- all rows have same length
--- data Row = Row [Tile] deriving (Show)
--- parse :: String -> Grid
--- parse s =
---     Grid $
---         lines s & map \r ->
---             Row $
---                 r & map \case
---                     '#' -> SquareRock
---                     'O' -> RoundedRock
---                     '.' -> Empty
---                     c -> error $ "unknown rock char: " <> pure c
