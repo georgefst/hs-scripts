@@ -27,7 +27,7 @@ import Text.Pretty.Simple
 
 main :: IO ()
 main = do
-    example <- parse <$> readFile "aoc14-example"
+    _example <- parse <$> readFile "aoc14-example"
     input <- parse <$> readFile "aoc14-input"
     pp $ totalLoad $ slideNorth input
     pp $
