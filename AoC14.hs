@@ -1,6 +1,7 @@
 {- HLINT ignore "Unused LANGUAGE pragma" -}
 {- HLINT ignore "Use newtype instead of data" -}
 {- HLINT ignore "Use zipWith" -}
+{- HLINT ignore "Use elemIndex" -}
 {-# LANGUAGE GHC2021 #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DeriveAnyClass #-}
@@ -20,7 +21,6 @@
 module AoC14 (main) where
 
 import Control.Monad.IO.Class
-import Data.Function
 import Data.List
 import Data.List.Extra
 import Text.Pretty.Simple
@@ -30,7 +30,12 @@ main = do
     example <- parse <$> readFile "aoc14-example"
     input <- parse <$> readFile "aoc14-input"
     pp $ totalLoad $ slideNorth input
-    pp $ totalLoad $ nTimes 1000000000 spinCycle input
+    pp $
+        totalLoad
+            -- turns out 150 is a repeat of 108
+            let (repeated, i, j) = untilRepeat spinCycle input
+                m = (1000000000 - j) `mod` (j - i)
+             in nTimes m spinCycle repeated
 
 data Tile = SquareRock | RoundedRock | Empty deriving (Eq, Show)
 
@@ -89,3 +94,11 @@ nTimes :: Int -> (a -> a) -> (a -> a)
 nTimes 0 _ = id
 nTimes 1 f = f
 nTimes n f = f . nTimes (n - 1) f
+
+untilRepeat :: (Eq a) => (a -> a) -> a -> (a, Int, Int)
+untilRepeat f = go (0 :: Int) mempty
+  where
+    go n prevs x =
+        case findIndex (== x) prevs of
+            Nothing -> go (n + 1) (prevs <> [x]) (f x)
+            Just i -> (x, i, n)
