@@ -39,10 +39,7 @@ parse :: String -> [String]
 parse = splitOn "," . trim
 
 hash :: String -> Int
-hash = flip execState 0 . traverse_ \c -> do
-    modify (+ ord c)
-    modify (* 17)
-    modify (`mod` 256)
+hash = flip foldl 0 \s c -> ((s + ord c) * 17) `mod` 256
 
 pp :: (MonadIO m, Show a) => a -> m ()
 pp = pPrintForceColor
