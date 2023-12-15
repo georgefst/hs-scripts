@@ -80,9 +80,11 @@ removeLens s = flip Map.adjust (hash s) \xs ->
         _ -> xs
 
 addLens :: String -> Int -> Boxes -> Boxes
-addLens s l = flip Map.alter (hash s) \case
-    Nothing -> Just [(s, l)]
-    Just xs -> Just $ fromMaybe ((s, l) : xs) $ findAndAdjust ((== s) . fst) (const (s, l)) xs
+addLens s l =
+    flip Map.alter (hash s) $
+        Just . \case
+            Nothing -> [(s, l)]
+            Just xs -> fromMaybe ((s, l) : xs) $ findAndAdjust ((== s) . fst) (const (s, l)) xs
 
 hash :: String -> Word8
 hash = fromIntegral . flip foldl 0 \s c -> ((s + ord c) * 17) `mod` 256
