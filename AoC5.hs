@@ -39,7 +39,7 @@ import Text.Pretty.Simple
 main :: IO ()
 main = do
     _example <- either (error . TL.unpack . pShow) id . runParser parser "" <$> T.readFile "aoc5-example"
-    input <- either (error . TL.unpack . pShow) id . runParser parser "" <$> T.readFile "aoc5-input"
+    -- input <- either (error . TL.unpack . pShow) id . runParser parser "" <$> T.readFile "aoc5-input"
     putStrLn ""
     let _exampleRanges = map (\case [a, b] -> (a, b.unwrap); _ -> undefined) $ chunksOf 2 _example.seeds
     -- let inputRanges = map (\case [a, b] -> (a, b.unwrap); _ -> undefined) $ chunksOf 2 input.seeds
