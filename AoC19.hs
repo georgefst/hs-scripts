@@ -22,6 +22,8 @@
 
 {-# HLINT ignore "Redundant if" #-}
 {-# HLINT ignore "Use section" #-}
+{-# HLINT ignore "Eta reduce" #-}
+{-# HLINT ignore "Use concatMap" #-}
 
 module AoC19 (main) where
 
@@ -58,6 +60,62 @@ main = do
         . sum
         . map (\(Part p) -> sum $ map p enumerate)
         $ filter ((== Accept) . flip applyWorkflows input.rules) input.parts
+    -- TODO we repeat work of calculating conditions at each node of search tree - should cache
+    pp
+        . sum
+        . map
+            ( (\f -> product $ map ((\(l, u) -> u - l + 1) . f) enumerate)
+                . satisfyingBound
+                . fst
+            )
+        . filter ((== Accept) . snd)
+        $ search input.rules
+
+search :: WorkflowMap -> [([Condition], Result)]
+search workflows = go "in"
+  where
+    go s =
+        -- concatMap
+        --     -- TODO do I also need to add the negations of old conditions?
+        --     (uncurry \c -> map (first (c :)) . f)
+        --     rules
+        --     <> f fallback
+        concatMap
+            (uncurry \cs -> map (first (cs <>)) . f)
+            rulesWithFailures
+            <>
+            -- TODO combine this with the zip used above
+            map
+                (first (map (negateCondition . fst) rules <>))
+                (f fallback)
+      where
+        Workflow{..} = lookupWorkflow s workflows
+        rulesWithFailures =
+            zipWith
+                (\cs (c, r) -> (cs <> [c], r))
+                (map (map negateCondition) $ inits $ map fst rules)
+                rules
+        negateCondition Condition{..} = Condition{operator = negateOp operator, ..}
+        negateOp = \case
+            LessThan -> GreaterThanOrEqualTo
+            GreaterThan -> LessThanOrEqualTo
+            _ -> error "should never need to negate operator which doesn't come from input"
+        f = \case
+            Final result -> [([], result)]
+            GoTo workflow -> go workflow
+satisfyingBound :: [Condition] -> Field -> (Int, Int)
+satisfyingBound = flip \f -> \case
+    [] -> (1, 4000)
+    Condition{..} : cs ->
+        if f == field
+            then case operator of
+                LessThan -> (l, min u (bound - 1))
+                LessThanOrEqualTo -> (l, min u bound)
+                GreaterThan -> (max l (bound + 1), u)
+                GreaterThanOrEqualTo -> (max l bound, u)
+            else (l, u)
+      where
+        (l, u) = satisfyingBound cs f
 
 applyWorkflows :: Part -> WorkflowMap -> Result
 applyWorkflows part workflows = go "in"
@@ -75,6 +133,7 @@ applyRule (Part part) Condition{..} result = if part field `op` bound then Just 
     op = case operator of
         LessThan -> (<)
         GreaterThan -> (>)
+        _ -> error "should never need to apply operator which doesn't come from input"
 
 data Input = Input
     { rules :: WorkflowMap
@@ -96,8 +155,14 @@ data Condition = Condition
     , bound :: Int
     }
     deriving (Show)
-data Field = X | M | A | S deriving (Show, Bounded, Enum)
-data Operator = LessThan | GreaterThan deriving (Show)
+data Field = X | M | A | S deriving (Eq, Show, Bounded, Enum)
+data Operator
+    = LessThan
+    | GreaterThan
+    | -- TODO this is a bit silly since these last two don't appear in input
+      LessThanOrEqualTo
+    | GreaterThanOrEqualTo
+    deriving (Show)
 newtype Part = Part (Field -> Int)
 instance Show Part where show (Part f) = show $ map (id &&& f) enumerate
 
