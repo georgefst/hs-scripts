@@ -61,6 +61,7 @@ main = do
         . map (\(Part p) -> sum $ map p enumerate)
         $ filter ((== Accept) . flip applyWorkflows input.rules) input.parts
     -- TODO we repeat work of calculating conditions at each node of search tree - should cache
+    -- pp 132557544578569
     pp
         . sum
         . map
@@ -75,26 +76,16 @@ search :: WorkflowMap -> [([Condition], Result)]
 search workflows = go "in"
   where
     go s =
-        -- concatMap
-        --     -- TODO do I also need to add the negations of old conditions?
-        --     (uncurry \c -> map (first (c :)) . f)
-        --     rules
-        --     <> f fallback
         concatMap
             (uncurry \cs -> map (first (cs <>)) . f)
             rulesWithFailures
-            <>
-            -- TODO combine this with the zip used above
-            map
-                (first (map (negateCondition . fst) rules <>))
-                (f fallback)
       where
         Workflow{..} = lookupWorkflow s workflows
         rulesWithFailures =
             zipWith
-                (\cs (c, r) -> (cs <> [c], r))
+                (\cs' (cs, r) -> (cs' <> cs, r))
                 (map (map negateCondition) $ inits $ map fst rules)
-                rules
+                $ map (first pure) rules <> [([], fallback)]
         negateCondition Condition{..} = Condition{operator = negateOp operator, ..}
         negateOp = \case
             LessThan -> GreaterThanOrEqualTo
