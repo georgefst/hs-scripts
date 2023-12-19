@@ -59,12 +59,14 @@ main = do
         . map (\(Part p) -> sum $ map p enumerate)
         $ filter ((== Accept) . flip applyWorkflows input.rules) input.parts
 
-applyWorkflows :: Part -> Map WorkflowName Workflow -> Result
+applyWorkflows :: Part -> WorkflowMap -> Result
 applyWorkflows part workflows = go "in"
   where
-    go s = case applyWorkflow part $ fromMaybe (error "failed to find workflow") $ Map.lookup s workflows of
+    go s = case applyWorkflow part $ lookupWorkflow s workflows of
         Final result -> result
         GoTo rule -> go rule
+lookupWorkflow :: WorkflowName -> WorkflowMap -> Workflow
+lookupWorkflow s = fromMaybe (error "failed to find workflow") . Map.lookup s
 applyWorkflow :: Part -> Workflow -> RuleResult
 applyWorkflow part Workflow{..} = fromMaybe fallback $ firstJust (uncurry $ applyRule part) rules
 applyRule :: Part -> Condition -> RuleResult -> Maybe RuleResult
@@ -75,10 +77,11 @@ applyRule (Part part) Condition{..} result = if part field `op` bound then Just 
         GreaterThan -> (>)
 
 data Input = Input
-    { rules :: Map WorkflowName Workflow
+    { rules :: WorkflowMap
     , parts :: [Part]
     }
     deriving (Show)
+type WorkflowMap = Map WorkflowName Workflow
 newtype WorkflowName = WorkflowName Text deriving newtype (Eq, Ord, Show, IsString)
 data Workflow = Workflow
     { rules :: [(Condition, RuleResult)]
