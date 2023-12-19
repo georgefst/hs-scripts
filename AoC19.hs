@@ -66,9 +66,9 @@ applyWorkflows part workflows = go "in"
         Final result -> result
         GoTo rule -> go rule
 applyWorkflow :: Part -> Workflow -> RuleResult
-applyWorkflow part Workflow{..} = fromMaybe fallback $ firstJust (applyRule part) rules
-applyRule :: Part -> Rule -> Maybe RuleResult
-applyRule (Part part) Rule{..} = if part field `op` bound then Just result else Nothing
+applyWorkflow part Workflow{..} = fromMaybe fallback $ firstJust (uncurry $ applyRule part) rules
+applyRule :: Part -> Condition -> RuleResult -> Maybe RuleResult
+applyRule (Part part) Condition{..} result = if part field `op` bound then Just result else Nothing
   where
     op = case operator of
         LessThan -> (<)
@@ -81,17 +81,16 @@ data Input = Input
     deriving (Show)
 newtype WorkflowName = WorkflowName Text deriving newtype (Eq, Ord, Show, IsString)
 data Workflow = Workflow
-    { rules :: [Rule]
+    { rules :: [(Condition, RuleResult)]
     , fallback :: RuleResult
     }
     deriving (Show)
 data Result = Accept | Reject deriving (Eq, Show)
 data RuleResult = Final Result | GoTo WorkflowName deriving (Show)
-data Rule = Rule
+data Condition = Condition
     { field :: Field
     , operator :: Operator
     , bound :: Int
-    , result :: RuleResult
     }
     deriving (Show)
 data Field = X | M | A | S deriving (Show, Bounded, Enum)
@@ -112,7 +111,7 @@ parser = do
                 bound <- int
                 void $ char ':'
                 result <- resultParser
-                pure Rule{..}
+                pure (Condition{..}, result)
             void $ char ','
             fallback <- resultParser
             void $ char '}'
