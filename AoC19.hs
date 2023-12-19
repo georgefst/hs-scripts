@@ -64,7 +64,7 @@ applyWorkflows part workflows = go "in"
   where
     go s = case applyWorkflow part $ lookupWorkflow s workflows of
         Final result -> result
-        GoTo rule -> go rule
+        GoTo workflow -> go workflow
 lookupWorkflow :: WorkflowName -> WorkflowMap -> Workflow
 lookupWorkflow s = fromMaybe (error "failed to find workflow") . Map.lookup s
 applyWorkflow :: Part -> Workflow -> RuleResult
