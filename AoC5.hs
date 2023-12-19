@@ -25,6 +25,7 @@ import Control.Monad
 import Control.Monad.IO.Class
 import Data.Foldable qualified as F
 import Data.List
+import Data.List.Extra
 import Data.List.NonEmpty (NonEmpty ((:|)))
 import Data.Text (Text)
 import Data.Text.IO qualified as T
@@ -40,7 +41,9 @@ main = do
     _example <- either (error . TL.unpack . pShow) id . runParser parser "" <$> T.readFile "aoc5-example"
     input <- either (error . TL.unpack . pShow) id . runParser parser "" <$> T.readFile "aoc5-input"
     putStrLn ""
-    pp $ minimum $ map (lookupTrans input) input.seeds
+    let _exampleRanges = map (\case [a, b] -> (a, b.unwrap); _ -> undefined) $ chunksOf 2 _example.seeds
+    -- let inputRanges = map (\case [a, b] -> (a, b.unwrap); _ -> undefined) $ chunksOf 2 input.seeds
+    pp $ minimum $ map (lookupTrans _example) $ concatMap (\(ID i, j) -> map ID [i .. i + j - 1]) _exampleRanges
 
 lookupTrans :: Input -> ID "seed" -> ID "location"
 lookupTrans Input{..} =
