@@ -60,4 +60,4 @@ main = do
             for_ lights $ flip sendMessage $ SetPower False
             pause dayLength
   where
-    pause = liftIO . threadDelay . (* 1_000_000) . fromInteger . diffTimeToPicoseconds
+    pause = liftIO . threadDelay . fromInteger . (`div` 1_000_000) . diffTimeToPicoseconds
