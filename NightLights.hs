@@ -55,6 +55,9 @@ main = do
             nightLength = picosecondsToDiffTime (24 * 60 * 60 * 1_000_000_000_000) - dayLength
         pause initialPause
         forever do
+            -- this would become out of sync if long running,
+            -- as we don't account for the time taken to actually do stuff i.e. communicate with the lights
+            -- also, leap seconds and rounding errors...
             for_ lights $ flip sendMessage $ SetPower True
             pause nightLength
             for_ lights $ flip sendMessage $ SetPower False
