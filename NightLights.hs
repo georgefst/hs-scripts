@@ -53,14 +53,17 @@ main = do
         let initialPause = sinceMidnight args.start - start -- assumes script is started outside of relevant hours
             onDuration = sinceMidnight args.end - sinceMidnight args.start -- assumes end is later than start
             offDuration = picosecondsToDiffTime (24 * 60 * 60 * 1_000_000_000_000) - onDuration
+        liftIO . putStrLn $ "Waiting until turning lights on: " <> show initialPause
         pause initialPause
         forever do
             -- this would become out of sync if long running,
             -- as we don't account for the time taken to actually do stuff i.e. communicate with the lights
             -- also, leap seconds and rounding errors...
             for_ lights $ flip sendMessage $ SetPower True
+            liftIO . putStrLn $ "Keeping lights on for: " <> show onDuration
             pause onDuration
             for_ lights $ flip sendMessage $ SetPower False
+            liftIO . putStrLn $ "Keeping lights off for: " <> show offDuration
             pause offDuration
   where
     pause = liftIO . threadDelay . fromInteger . (`div` 1_000_000) . diffTimeToPicoseconds
