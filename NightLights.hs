@@ -32,8 +32,8 @@ import System.Directory.Internal.Prelude (exitFailure)
 import Util.Error qualified as Error
 
 data Args = Args
-    { dusk :: TimeOfDay
-    , dawn :: TimeOfDay
+    { start :: TimeOfDay
+    , end :: TimeOfDay
     , light :: [Text]
     }
     deriving (Eq, Ord, Show, Generic, ParseRecord)
@@ -50,17 +50,17 @@ main = do
                 exitFailure
             pure $ map fst ds'
         start <- utctDayTime <$> liftIO getCurrentTime
-        let initialPause = sinceMidnight args.dusk - start -- assumes script is started during the day
-            dayLength = sinceMidnight args.dusk - sinceMidnight args.dawn -- assumes dusk is later than dawn
-            nightLength = picosecondsToDiffTime (24 * 60 * 60 * 1_000_000_000_000) - dayLength
+        let initialPause = sinceMidnight args.start - start -- assumes script is started outside of relevant hours
+            onDuration = sinceMidnight args.end - sinceMidnight args.start -- assumes end is later than start
+            offDuration = picosecondsToDiffTime (24 * 60 * 60 * 1_000_000_000_000) - onDuration
         pause initialPause
         forever do
             -- this would become out of sync if long running,
             -- as we don't account for the time taken to actually do stuff i.e. communicate with the lights
             -- also, leap seconds and rounding errors...
             for_ lights $ flip sendMessage $ SetPower True
-            pause nightLength
+            pause onDuration
             for_ lights $ flip sendMessage $ SetPower False
-            pause dayLength
+            pause offDuration
   where
     pause = liftIO . threadDelay . fromInteger . (`div` 1_000_000) . diffTimeToPicoseconds
