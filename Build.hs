@@ -231,6 +231,7 @@ main = shakeArgs shakeOpts do
             ("split")
             ("stm")
             ("streamly-core" & munless wasm)
+            ("streamly-fsnotify" & munless wasm)
             ("streamly" & munless wasm)
             ("streams")
             ("text")
