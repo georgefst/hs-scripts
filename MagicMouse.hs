@@ -1,6 +1,5 @@
 {-# LANGUAGE GHC2021 #-}
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE LexicalNegation #-}
 {-# LANGUAGE MultiWayIf #-}
@@ -18,12 +17,14 @@ module MagicMouse (main) where
 
 import Control.Monad
 import Control.Monad.Except
+import Control.Monad.Extra (findM)
 import Control.Monad.State
 import Data.ByteString (ByteString)
 import Data.List
 import Data.List.Extra (firstJust)
 import Data.Maybe
 import Data.Text qualified as T
+import Data.Text.Encoding (decodeUtf8, encodeUtf8)
 import Data.Text.IO qualified as T
 import Data.Time (getCurrentTime)
 import Evdev
@@ -34,13 +35,11 @@ import Optics.State.Operators
 import Options.Generic
 import Streamly.Data.Fold qualified as SF
 import Streamly.Data.Stream qualified as S
+import System.Directory.OsPath (listDirectory)
 import System.Exit (exitFailure)
+import System.OsPath ((</>))
+import System.OsPath qualified as OsPath
 import Prelude hiding (log)
-
-data Args = Args
-    { path :: ByteString
-    }
-    deriving (Eq, Ord, Show, Generic, ParseRecord)
 
 data AppActiveState = AppActiveState
     { button :: Key
@@ -51,9 +50,12 @@ data AppActiveState = AppActiveState
 
 main :: IO ()
 main = do
-    (args :: Args) <- getRecord "magic-mouse-hack"
+    dev <-
+        listDirectory evdevDir'
+            >>= traverse (newDevice' . (evdevDir' </>)) . filter (maybe False ("event" `isPrefixOf`) . OsPath.decodeUtf)
+            >>= findM (fmap (== "Magic Mouse 2") . deviceName)
+            >>= maybe (T.putStrLn "device not found" >> exitFailure) pure
     udev <- U.newDevice "magic-mouse-hack" U.defaultDeviceOpts{U.keys = [BtnLeft, BtnMiddle, BtnRight]}
-    dev <- newDevice args.path
     (either ((>> exitFailure) . T.putStrLn) pure =<<) $ runExceptT $ do
         log "starting"
         xAxisInfo <- maybe (throwError "no abs position") pure =<< liftIO (deviceAbsAxis dev AbsMtPositionX)
@@ -124,3 +126,13 @@ readEventBatches :: (MonadIO m) => Device -> S.Stream m [Event]
 readEventBatches = S.splitOn ((== SyncEvent SynReport) . eventData) SF.toList . readEvents
   where
     readEvents = S.repeatM . liftIO . nextEvent
+
+-- TODO this is a pretty stupid way of doing this, but the upstream `evdev` definitions will use `OsPath` soon enough
+osPathToBS :: OsPath.OsPath -> ByteString
+osPathToBS = encodeUtf8 . T.pack . fromJust . OsPath.decodeUtf
+osPathFromBS :: ByteString -> OsPath.OsPath
+osPathFromBS = fromJust . OsPath.encodeUtf . T.unpack . decodeUtf8
+evdevDir' :: OsPath.OsPath
+evdevDir' = osPathFromBS evdevDir
+newDevice' :: OsPath.OsPath -> IO Device
+newDevice' = newDevice . osPathToBS
