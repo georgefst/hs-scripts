@@ -160,6 +160,7 @@ main = shakeArgs shakeOpts do
             (mwhen wasm "--constraint=zlib+bundled-c-zlib")
             -- TODO versions, maybe via a `cabal.project.freeze`? less of a problem now that we just pin `index-state`
             ("active")
+            ("aeson-optics")
             ("aeson-pretty")
             ("aeson")
             ("ansi-terminal")
