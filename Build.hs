@@ -145,7 +145,7 @@ main = shakeArgs shakeOpts do
             -- TODO this should really go in `cabal.project.base` but that bizarrely causes an unrelated-looking error:
             -- `Error: cabal: There is no <pkgname>.cabal package file or cabal.project file.`
             -- yet it worked when the project file also contained a `source-repository-package` stanza for Streamly
-            "--allow-newer=gloss-export:*"
+            "--allow-newer=gloss-export:*,*:base,*:bytestring,*:containers,*:ghc-prim,*:template-haskell,*:text"
             ("-w" <> ghc)
             -- TODO ideally Cabal would guess the rest of those from just specifying `ghc`
             -- or maybe it should have a separate `--target` flag (look out for this with WASM etc.)
