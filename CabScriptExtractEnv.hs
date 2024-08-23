@@ -17,7 +17,6 @@ import Control.Monad.Catch (MonadThrow)
 import Data.ByteString (ByteString)
 import Data.Foldable (find, for_)
 import Data.Text (Text, isInfixOf, isPrefixOf, lines, pack, unlines, unpack)
-import Data.Text qualified as T
 import Data.Text.Encoding (decodeUtf8, encodeUtf8)
 import Data.Text.IO (putStrLn)
 import System.Directory.OsPath (listDirectory)
@@ -38,7 +37,7 @@ main = do
     (_exitCode, out, _err) <-
         readProcessWithExitCode' cabal ["build", "-v", scriptFile, "--write-ghc-environment-files=always"] ""
     p <- case find ("script-builds" `isInfixOf`) $ lines $ decodeUtf8 out of -- TODO this may be a brittle heuristic
-        Just (T.stripPrefix "creating " -> Just p) -> encodeT p
+        Just p -> encodeT p
         _ -> putStrLn "Failed to parse cabal output" >> exitFailure
     envFiles <- filterM (fmap (".ghc.environment." `isInfixOf`) . decodeT) =<< listDirectory p
     if null envFiles
