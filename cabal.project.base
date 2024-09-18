@@ -1,0 +1,35 @@
+-- 9.10 supported but unreleased
+-- https://github.com/composewell/streamly/pull/2749
+-- https://github.com/composewell/streamly/issues/2748
+source-repository-package
+    type: git
+    location: https://github.com/composewell/streamly
+    tag: 9539dcca361bb05eaa04cfe5be99ce38d8a1f98f
+    subdir: . core
+allow-newer: streamly-fsnotify:streamly, streamly-fsnotify:streamly-core
+
+-- 9.10 support: https://github.com/lexi-lambda/freer-simple/pull/45
+source-repository-package
+    type: git
+    location: https://github.com/georgefst/freer-simple
+    tag: 365bf9294477783b29186cdf48dc608e060a6ec9
+
+allow-newer:
+    -- https://github.com/phadej/aeson-optics/issues/20
+    aeson-optics:base,
+    -- https://github.com/timbod7/haskell-chart/issues/257
+    Chart-diagrams:lens, Chart:lens,
+    -- https://github.com/dhall-lang/dhall-haskell/pull/2602#issuecomment-2359077335
+    dhall:containers, dhall:template-haskell,
+    -- deprecated library - can be removed once `evdev` stops depending on it
+    filepath-bytestring:base,
+    -- https://gitlab.com/timo-a/gloss-export/-/issues/4
+    gloss-export:*,
+    -- https://github.com/benl23x5/gloss/pull/57
+    gloss-rendering:containers, gloss:containers,
+    -- https://github.com/chrisdone/lucid/pull/157
+    lucid:base,
+    -- https://github.com/diagrams/palette/pull/9
+    palette:base, palette:containers,
+    -- https://github.com/sdiehl/repline/pull/50
+    repline:containers,

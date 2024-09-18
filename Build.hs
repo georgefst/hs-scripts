@@ -140,12 +140,7 @@ main = shakeArgs shakeOpts do
             "--builddir=.build/cabal"
             "install"
             (foldMap ("--project-file=" <>) projectFile)
-            "--index-state=2024-09-14T14:07:56Z"
-            -- https://gitlab.com/timo-a/gloss-export/-/issues/4
-            -- TODO this should really go in `cabal.project.base` but that bizarrely causes an unrelated-looking error:
-            -- `Error: cabal: There is no <pkgname>.cabal package file or cabal.project file.`
-            -- yet it worked when the project file also contained a `source-repository-package` stanza for Streamly
-            "--allow-newer=gloss-export:*,*:base,*:bytestring,*:containers,*:ghc-prim,*:template-haskell,*:text"
+            "--index-state=2024-09-18T20:40:16Z"
             ("-w" <> ghc)
             -- TODO ideally Cabal would guess the rest of those from just specifying `ghc`
             -- or maybe it should have a separate `--target` flag (look out for this with WASM etc.)
