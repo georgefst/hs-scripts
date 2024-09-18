@@ -140,7 +140,7 @@ main = shakeArgs shakeOpts do
             "--builddir=.build/cabal"
             "install"
             (foldMap ("--project-file=" <>) projectFile)
-            "--index-state=2024-01-02T10:02:41Z"
+            "--index-state=2024-09-14T14:07:56Z"
             -- https://gitlab.com/timo-a/gloss-export/-/issues/4
             -- TODO this should really go in `cabal.project.base` but that bizarrely causes an unrelated-looking error:
             -- `Error: cabal: There is no <pkgname>.cabal package file or cabal.project file.`
