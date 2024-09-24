@@ -1,4 +1,4 @@
-index-state: 2024-09-18T20:40:16Z
+index-state: 2024-09-24T11:25:49Z
 
 -- 9.10 supported but unreleased
 -- https://github.com/composewell/streamly/pull/2749
@@ -19,8 +19,6 @@ source-repository-package
 allow-newer:
     -- https://github.com/phadej/aeson-optics/issues/20
     aeson-optics:base,
-    -- https://github.com/timbod7/haskell-chart/issues/257
-    Chart-diagrams:lens, Chart:lens,
     -- https://github.com/dhall-lang/dhall-haskell/pull/2602#issuecomment-2359077335
     dhall:containers, dhall:template-haskell,
     -- deprecated library - can be removed once `evdev` stops depending on it
@@ -29,8 +27,6 @@ allow-newer:
     gloss-export:*,
     -- https://github.com/benl23x5/gloss/pull/57
     gloss-rendering:containers, gloss:containers,
-    -- https://github.com/chrisdone/lucid/pull/157
-    lucid:base,
     -- https://github.com/diagrams/palette/pull/9
     palette:base, palette:containers,
     -- https://github.com/sdiehl/repline/pull/50
