@@ -16,6 +16,13 @@ package *
     c2hs-location: /bin/c2hs
     happy-location: /bin/happy
 
+-- compilation hangs: https://github.com/composewell/streamly/issues/2840
+source-repository-package
+    type: git
+    location: https://github.com/georgefst/streamly
+    tag: b2047c3b89537f93a686ddd8cf1879ffb81a8f9a
+    subdir: . core
+
 -- https://github.com/cdepillabout/pretty-simple/pull/107
 source-repository-package
     type: git
@@ -30,7 +37,7 @@ source-repository-package
 source-repository-package
     type: git
     location: https://github.com/georgefst/sbv
-    tag: 9a896816019a97b99e32db7ab0ab7d8d3e42d42a
+    tag: 83d6291e7d28738ad2e3b130ec06b3bec58290b3
 
 -- custom setup removed, no release yet
 source-repository-package
@@ -43,8 +50,8 @@ source-repository-package
 source-repository-package
     type: git
     location: https://github.com/georgefst/servant
-    subdir: servant-server servant servant-client
-    tag: 918570fb19f2ef40edafbcba52530f1a23f98e87
+    subdir: servant-server servant servant-client servant-client-core
+    tag: bbe435d0a290a052e02a38b6441623d817556729
 
 -- https://github.com/diagrams/active/pull/45
 source-repository-package
@@ -67,3 +74,9 @@ source-repository-package
     type: git
     location: https://github.com/georgefst/diagrams-postscript
     tag: b108f12d3d367581688254bb25415871865ddfc2
+allow-newer:
+    active:*,
+    diagrams-lib:*,
+    diagrams-rasterific:*,
+    diagrams-svg:*,
+    diagrams-postscript:*,

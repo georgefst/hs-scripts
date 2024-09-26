@@ -147,6 +147,7 @@ main = shakeArgs shakeOpts do
             -- see https://github.com/haskell/cabal/issues/5632, https://github.com/haskell/cabal/issues/5760
             -- those issues are also relevant to alex/c2hs etc.
             (flip foldMap maybeTarget \t -> ["--with-hc-pkg=" <> t <> "-ghc-pkg", "--with-hsc2hs=" <> t <> "-hsc2hs"])
+            (maybeTarget <&> \t -> AddEnv "PKG_CONFIG_PATH" $ "/usr/" <> t <> "/lib/pkgconfig")
             "--package-env ."
             "--lib"
             -- TODO this doesn't get picked up if placed in project file - seems to be a WASM-specific issue
