@@ -134,7 +134,6 @@ main = shakeArgs shakeOpts do
         liftIO $
             (Dir.removeFile envFile >> putStrLn ("Deleting env file: " <> envFile)) `catchIOError` \e ->
                 if True then putStrLn $ "No env file to delete: " <> envFile else error $ show e
-        let ghc98 = splitOn "." version >= ["9", "8"]
         cmd_
             "cabal"
             "--builddir=.build/cabal"
@@ -223,7 +222,7 @@ main = shakeArgs shakeOpts do
             ("Rasterific")
             ("raw-strings-qq")
             ("safe")
-            ("sbv" & munless ghc98) -- crashes on new `head` warning due to `-Werror` - fixed but unreleased
+            ("sbv")
             ("scientific")
             ("servant-client" & munless wasm)
             ("servant-server" & munless wasm)
