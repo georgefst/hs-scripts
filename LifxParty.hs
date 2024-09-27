@@ -29,7 +29,7 @@ devs = [lamp, spot]
 
 main = runLifx $ for_ devs (flip sendMessage $ SetPower True) >> party
 
-mock = runMock (zip devs ["Lamp", "Spotlight"]) party
+mock = runMock (zip devs [("Lamp", "Bedroom"), ("Spotlight", "Living Room")]) party
 party = forever do
     hue <- randomIO
     let color =

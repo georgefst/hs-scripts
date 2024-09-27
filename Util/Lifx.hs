@@ -25,6 +25,7 @@ messageTime = \case
     SetPower{} -> Nothing
     SetColor _ t -> Just t
     SetLightPower _ t -> Just t
+    SetLabel{} -> Nothing
 
 (*~) :: Word16 -> Double -> Word16
 a *~ b = floor $ fromIntegral a * b
