@@ -33,7 +33,5 @@ allow-newer:
     gloss-export:*,
     -- https://github.com/benl23x5/gloss/pull/57
     gloss-rendering:containers, gloss:containers,
-    -- https://github.com/diagrams/palette/pull/9
-    palette:base, palette:containers,
     -- https://github.com/sdiehl/repline/pull/50
     repline:containers,
