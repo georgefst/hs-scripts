@@ -263,7 +263,7 @@ parseTriple :: String -> Triple
 parseTriple triple = case splitOn "-" triple of
     machine : (Just -> vendor) : os : extra -> Triple{..}
     [machine, os] -> Triple{vendor = Nothing, extra = [], ..}
-    _ -> error "bad target triple"
+    _ -> error "bad target triple" -- TODO or-patterns: `[_] | []`
 
 data TargetInfo = TargetInfo
     { ghc :: String
