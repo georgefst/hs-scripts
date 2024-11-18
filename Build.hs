@@ -239,6 +239,7 @@ main = shakeArgs shakeOpts do
             ("streamly-fsnotify" & munless wasm)
             ("streamly" & munless wasm)
             ("streams")
+            ("syb")
             ("template-haskell" & munless cross)
             ("text")
             ("th-lift" & munless cross)
