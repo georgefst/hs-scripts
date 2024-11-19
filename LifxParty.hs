@@ -23,9 +23,9 @@ import Lifx.Lan.Mock.Terminal
 import System.Random.Stateful
 import Util.Lifx
 
-lamp = deviceFromAddress (192, 168, 1, 71)
+lamp = deviceFromAddress (192, 168, 178, 29)
 spot = deviceFromAddress (192, 168, 1, 247)
-devs = [lamp, spot]
+devs = [lamp]
 
 main = runLifx $ for_ devs (flip sendMessage $ SetPower True) >> party
 
