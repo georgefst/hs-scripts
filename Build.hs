@@ -164,6 +164,8 @@ main = shakeArgs shakeOpts do
             ("binary")
             ("brick" & munless cross) -- TH in `vty` dep
             ("bytestring")
+            ("cassava-megaparsec")
+            ("cassava")
             ("Chart-diagrams" & munless cross) -- TH in `Chart` dep
             ("Chart" & munless cross) -- TH
             ("colour")
@@ -211,6 +213,7 @@ main = shakeArgs shakeOpts do
             ("mwc-random")
             ("network-uri")
             ("network" & munless wasm)
+            ("optics-operators")
             ("optics")
             ("optparse-applicative")
             ("optparse-generic")
@@ -226,6 +229,7 @@ main = shakeArgs shakeOpts do
             ("random")
             ("Rasterific")
             ("raw-strings-qq")
+            ("repline")
             ("safe")
             ("sbv")
             ("scientific")
