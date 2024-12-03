@@ -260,6 +260,7 @@ main = shakeArgs shakeOpts do
             ("unordered-containers")
             ("vector-algorithms")
             ("vector")
+            ("wai-app-static" & munless wasm)
             ("wai" & munless wasm)
             ("warp" & munless wasm)
             ("yaml")
