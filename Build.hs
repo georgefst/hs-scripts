@@ -163,6 +163,7 @@ main = shakeArgs shakeOpts do
             ("base")
             ("binary")
             ("brick" & munless cross) -- TH in `vty` dep
+            ("brillo" & munless cross) -- probably doable, but has a lot of C deps (GL, X11 etc.)
             ("bytestring")
             ("cassava-megaparsec")
             ("cassava")
@@ -190,8 +191,6 @@ main = shakeArgs shakeOpts do
             ("force-layout")
             ("freer-simple")
             ("fsnotify" & munless wasm)
-            ("gloss-export" & munless cross) -- probably doable, but has a lot of C deps (GL, X11 etc.)
-            ("gloss" & munless cross) -- ditto
             ("graphviz")
             ("hashable")
             ("hashtables" & munless wasm)

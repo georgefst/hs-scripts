@@ -27,10 +27,6 @@ allow-newer:
     aeson-optics:base,
     -- deprecated library - can be removed once `evdev` stops depending on it
     filepath-bytestring:base,
-    -- https://gitlab.com/timo-a/gloss-export/-/issues/4
-    gloss-export:*,
-    -- https://github.com/benl23x5/gloss/pull/57
-    gloss-rendering:containers, gloss:containers,
     -- https://github.com/sdiehl/repline/pull/50
     repline:containers,
 
