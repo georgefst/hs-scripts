@@ -169,8 +169,6 @@ main = shakeArgs shakeOpts do
             ("bytestring")
             ("cassava-megaparsec")
             ("cassava")
-            ("Chart-diagrams" & munless cross) -- TH in `Chart` dep
-            ("Chart" & munless cross) -- TH
             ("clay")
             ("colour")
             ("combinatorial")
