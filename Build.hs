@@ -191,6 +191,7 @@ main = shakeArgs shakeOpts do
             ("force-layout")
             ("freer-simple")
             ("fsnotify" & munless wasm)
+            ("generic-data")
             ("graphviz")
             ("hashable")
             ("hashtables" & munless wasm)
