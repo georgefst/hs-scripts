@@ -1,4 +1,4 @@
-index-state: 2024-09-29T13:54:17Z
+index-state: 2024-11-30T13:07:50Z
 
 -- 9.10 supported but unreleased
 -- https://github.com/composewell/streamly/pull/2749
@@ -25,8 +25,6 @@ source-repository-package
 allow-newer:
     -- https://github.com/phadej/aeson-optics/issues/20
     aeson-optics:base,
-    -- https://github.com/dhall-lang/dhall-haskell/pull/2602#issuecomment-2359077335
-    dhall:containers, dhall:template-haskell,
     -- deprecated library - can be removed once `evdev` stops depending on it
     filepath-bytestring:base,
     -- https://gitlab.com/timo-a/gloss-export/-/issues/4
@@ -35,3 +33,7 @@ allow-newer:
     gloss-rendering:containers, gloss:containers,
     -- https://github.com/sdiehl/repline/pull/50
     repline:containers,
+
+constraints:
+    -- older versions are broken: https://github.com/haskell-fswatch/hfsnotify/issues/116#issuecomment-2514476058
+    fsnotify >= 0.4.1
