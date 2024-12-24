@@ -23,23 +23,28 @@ source-repository-package
     tag: b2047c3b89537f93a686ddd8cf1879ffb81a8f9a
     subdir: . core
 
--- https://github.com/georgefst/sbv/tree/cross
--- https://github.com/LeventErkok/sbv/issues/659
--- TODO we should be able to use the cleaner approach in https://github.com/georgefst/sbv/tree/cross-2,
--- which moves the extra stuff to a separate library (instead of deleting it),
--- but unfortunately, cabal refuses to ignore said library - https://github.com/haskell/cabal/issues/9075
-source-repository-package
-    type: git
-    location: https://github.com/georgefst/sbv
-    tag: 83d6291e7d28738ad2e3b130ec06b3bec58290b3
+-- TemplateHaskell workarounds
+if !arch(wasm32)
+    -- https://github.com/georgefst/sbv/tree/cross
+    -- https://github.com/LeventErkok/sbv/issues/659
+    -- TODO we should be able to use the cleaner approach in https://github.com/georgefst/sbv/tree/cross-2,
+    -- which moves the extra stuff to a separate library (instead of deleting it),
+    -- but unfortunately, cabal refuses to ignore said library - https://github.com/haskell/cabal/issues/9075
+    source-repository-package
+        type: git
+        location: https://github.com/georgefst/sbv
+        tag: 83d6291e7d28738ad2e3b130ec06b3bec58290b3
 
--- https://github.com/haskell-servant/servant/issues/1187#issuecomment-1681962015
-source-repository-package
-    type: git
-    location: https://github.com/georgefst/servant
-    subdir: servant-server servant servant-client servant-client-core
-    tag: bbe435d0a290a052e02a38b6441623d817556729
+    -- https://github.com/haskell-servant/servant/issues/1187#issuecomment-1681962015
+    source-repository-package
+        type: git
+        location: https://github.com/georgefst/servant
+        subdir: servant-server servant servant-client servant-client-core
+        tag: bbe435d0a290a052e02a38b6441623d817556729
 
+-- https://github.com/diagrams/diagrams-lib/issues/370
+-- once that's implemented, create new branches with the TH workarounds only (i.e. not `fsnotify`),
+-- and move to the non-wasm section above
 source-repository-package
     type: git
     location: https://github.com/georgefst/diagrams-lib

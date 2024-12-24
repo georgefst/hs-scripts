@@ -4,4 +4,8 @@ import: cabal.project.cross
 source-repository-package
     type: git
     location: https://github.com/amesgen/splitmix
-    tag: 83b906c4bcdc2720546f1779a16eb65e8e12ecba
+    tag: cea9e31bdd849eb0c17611bb99e33d590e126164
+
+-- necessary as of 24/12/2024 (taken from Tweag WASM Miso examples repo)
+constraints: time installed
+allow-newer: time
