@@ -169,6 +169,7 @@ main = shakeArgs shakeOpts do
             ("cassava")
             ("Chart-diagrams" & munless cross) -- TH in `Chart` dep
             ("Chart" & munless cross) -- TH
+            ("clay")
             ("colour")
             ("combinatorial")
             ("comonad")
@@ -200,6 +201,7 @@ main = shakeArgs shakeOpts do
             ("http-client-tls" & munless wasm)
             ("http-client" & munless wasm)
             ("http-types" & munless wasm)
+            ("jsaddle-warp")
             ("JuicyPixels")
             ("lens")
             ("lifx-lan" & munless wasm)
@@ -207,6 +209,7 @@ main = shakeArgs shakeOpts do
             ("logging-effect")
             ("lucid")
             ("megaparsec")
+            ("miso")
             ("monad-loops")
             ("mtl")
             ("mwc-random")
