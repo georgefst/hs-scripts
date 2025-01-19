@@ -162,6 +162,8 @@ main = shakeArgs shakeOpts do
             ("async")
             ("base")
             ("binary")
+            ("blaze-html")
+            ("blaze-markup")
             ("brick" & munless cross) -- TH in `vty` dep
             ("brillo" & munless cross) -- probably doable, but has a lot of C deps (GL, X11 etc.)
             ("bytestring")
@@ -220,6 +222,8 @@ main = shakeArgs shakeOpts do
             ("optparse-applicative")
             ("optparse-generic")
             ("palette")
+            ("pandoc")
+            ("pandoc-types")
             ("parallel")
             ("parsec")
             ("pretty-simple")
