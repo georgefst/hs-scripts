@@ -85,7 +85,7 @@ main = shakeArgs shakeOpts do
     "/**" %> (splitFileName >>> \(dir, bin) -> copyFileChanged ("dist" </> bin) (dir </> bin))
 
     -- install remotely
-    ["*:**/*", "*://*"] |%> \p -> do
+    ["*:**/*", "*://*", "*:*"] |%> \p -> do
         let (sshHost, bin) = second takeFileName $ splitSshHost p
         target <-
             liftIO (trim <$> readProcess "ssh" [sshHost, "gcc -dumpmachine"] "") <&> \case
