@@ -262,6 +262,7 @@ main = shakeArgs shakeOpts do
             ("wai-app-static" & munless wasm)
             ("wai" & munless wasm)
             ("warp" & munless wasm)
+            ("websockets")
             ("yaml")
 
 data Triple = Triple
