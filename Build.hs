@@ -215,6 +215,7 @@ main = shakeArgs shakeOpts do
             ("mwc-random")
             ("network-uri")
             ("network" & munless wasm)
+            ("nonempty-containers")
             ("optics-operators")
             ("optics")
             ("optparse-applicative")
