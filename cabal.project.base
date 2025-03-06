@@ -13,7 +13,3 @@ allow-newer:
     filepath-bytestring:base,
     -- https://github.com/sdiehl/repline/pull/50
     repline:containers,
-
-constraints:
-    -- older versions are broken: https://github.com/haskell-fswatch/hfsnotify/issues/116#issuecomment-2514476058
-    fsnotify >= 0.4.1
