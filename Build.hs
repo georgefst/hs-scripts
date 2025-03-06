@@ -120,7 +120,6 @@ main = shakeArgs shakeOpts do
     "deps" ~> do
         maybeTarget <- getEnv "TARGET"
         let TargetInfo{..} = getTargetInfo host maybeTarget
-            _web = js || wasm
         projectFile <-
             findM doesFileExist
                 . map ("cabal.project." <>)
@@ -281,7 +280,6 @@ data TargetInfo = TargetInfo
     { ghc :: String
     , cross :: Bool
     , linux :: Bool
-    , js :: Bool
     , wasm :: Bool
     , triple :: Triple
     }
@@ -291,7 +289,6 @@ getTargetInfo host targetString =
         { ghc = foldMap (<> "-") targetString <> "ghc"
         , cross = isJust targetString
         , linux = target.os == "linux"
-        , js = target.machine == "javascript"
         , wasm = target.machine == "wasm32"
         , triple = target
         }

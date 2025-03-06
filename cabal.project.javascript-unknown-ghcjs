@@ -1,8 +1,0 @@
-import: cabal.project.cross
-
--- https://github.com/haskell/network/pull/565
--- https://github.com/georgefst/network/tree/ghc-js-configured
-source-repository-package
-    type: git
-    location: https://github.com/georgefst/network
-    tag: be605cbd4a197f2a595823134a75eb3435cc5ec4
