@@ -1,11 +1,11 @@
-index-state: 2025-02-27T14:58:03Z
+index-state: 2025-03-06T12:04:16Z
 
 if impl(ghc >= 9.10)
     -- https://github.com/lexi-lambda/freer-simple/pull/45
     source-repository-package
         type: git
         location: https://github.com/georgefst/freer-simple
-        tag: 365bf9294477783b29186cdf48dc608e060a6ec9
+        tag: e1d88c1ee036115ef527bda8c66da997962b3f34
     allow-newer:
         -- https://github.com/phadej/aeson-optics/issues/20
         aeson-optics:base,
@@ -13,3 +13,46 @@ if impl(ghc >= 9.10)
         filepath-bytestring:base,
         -- https://github.com/sdiehl/repline/pull/50
         repline:containers,
+
+if impl(ghc >= 9.12)
+    -- https://github.com/ocharles/logging-effect/pull/44
+    source-repository-package
+        type: git
+        location: https://github.com/alexfmpe/logging-effect
+        tag: 0710673fbb0bcf2705646afd85019d6a836e2660
+    -- https://github.com/well-typed/optics/pull/512
+    source-repository-package
+        type: git
+        location: https://github.com/well-typed/optics
+        tag: b01df0848b082e30e8596daddccde713c9a6b4d1
+        subdir: optics optics-core optics-extra optics-th
+    -- building HEAD (21/02/2025) - recent package takeover, long time since release, support for text 2.1.2 etc.
+    source-repository-package
+        type: git
+        location: https://github.com/haskell-fswatch/hfsnotify
+        tag: 011d8234b78bbfa5d3717fb3af435c4ba21f97fd
+    -- TODO should I PR all these now?
+    -- I feel like no one is really using 9.12 apart from us Wasmers
+    -- then again there's no harm - if I don't do it now then it falls on someone else
+    allow-newer:
+        brillo:bytestring,
+        cborg:base,
+        cborg:ghc-prim,
+        cborg-json:base,
+        dhall:template-haskell,
+        diagrams-lib:base,
+        diagrams-postscript:base,
+        diagrams-rasterific:base,
+        diagrams-svg:base,
+        haddock-library:base,
+        haddock-library:text,
+        http-api-data:base,
+        lucid:base,
+        serialise:base,
+        serialise:ghc-prim,
+        servant:base,
+        servant-client:base,
+        servant-client-core:base,
+        servant-client-core:template-haskell,
+        servant-server:base,
+        svg-builder:base,
