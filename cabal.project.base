@@ -1,5 +1,11 @@
 index-state: 2025-03-06T12:04:16Z
 
+-- using HEAD (06/03/2025) for components and better Wasm support
+source-repository-package
+    type: git
+    location: https://github.com/dmjio/miso
+    tag: c6b1f4deff1186ab78c568d9c82705778ffb278e
+
 if impl(ghc >= 9.10)
     -- https://github.com/lexi-lambda/freer-simple/pull/45
     source-repository-package
