@@ -1,10 +1,6 @@
--- for all non-native builds - remove custom setups, template haskell etc.
-
 import: cabal.project.base
 
 constraints:
-    cborg -optimize-gmp,
-    cryptonite -integer-gmp,
     haskeline -terminfo,
 
 package *
@@ -16,12 +12,26 @@ package *
     c2hs-location: /bin/c2hs
     happy-location: /bin/happy
 
--- compilation hangs: https://github.com/composewell/streamly/issues/2840
-source-repository-package
-    type: git
-    location: https://github.com/georgefst/streamly
-    tag: b2047c3b89537f93a686ddd8cf1879ffb81a8f9a
-    subdir: . core
+-- this issue may well also apply to Wasm
+-- the problem is, Streamly is disabled for Wasm for other reasons, and SRPs aren't optional like they should be
+if !arch(wasm32)
+    -- compilation hangs: https://github.com/composewell/streamly/issues/2840
+    source-repository-package
+        type: git
+        location: https://github.com/georgefst/streamly
+        tag: 914c44650875a3795c93cd563d78dce14b6b710a
+        subdir: . core
+    -- if this becomes problematic, we could apply the patch to an older release, instead of `master`
+    allow-newer: streamly-fsnotify:streamly,
+
+-- the Wasm check is only because this dependency is also vendored for Wasm, for other reasons
+-- and Cabal gets confused otherwise, since it doesn't have any notion of overriding SRPs
+if !arch(wasm32)
+    -- https://github.com/haskell/entropy/issues/42
+    source-repository-package
+        type: git
+        location: https://github.com/georgefst/entropy
+        tag: 111c5e59b6117c24cf622c2e1816d8b37517390e
 
 -- TemplateHaskell workarounds
 if !arch(wasm32)
@@ -40,28 +50,3 @@ if !arch(wasm32)
         location: https://github.com/georgefst/servant
         subdir: servant-server servant servant-client servant-client-core
         tag: bbe435d0a290a052e02a38b6441623d817556729
-
--- https://github.com/diagrams/diagrams-lib/issues/370
--- once that's implemented, create new branches with the TH workarounds only (i.e. not `fsnotify`),
--- and move to the non-wasm section above
-source-repository-package
-    type: git
-    location: https://github.com/georgefst/diagrams-lib
-    tag: 1764607de6fb66dd3abe517937610fa2f61e96f6
-source-repository-package
-    type: git
-    location: https://github.com/georgefst/diagrams-rasterific
-    tag: d2915cfdce8b432944ea2c8820ce827b313ec6b9
-source-repository-package
-    type: git
-    location: https://github.com/georgefst/diagrams-svg
-    tag: e8b190369ae9afe59caa1b85f371017e9f1273d6
-source-repository-package
-    type: git
-    location: https://github.com/georgefst/diagrams-postscript
-    tag: b108f12d3d367581688254bb25415871865ddfc2
-allow-newer:
-    diagrams-lib:*,
-    diagrams-rasterific:*,
-    diagrams-svg:*,
-    diagrams-postscript:*,

@@ -51,8 +51,21 @@ main = shakeArgs shakeOpts do
         maybeTarget <- getEnv "TARGET"
         let target = getTargetInfo host maybeTarget
         need . map ((("dist" </> concat maybeTarget) </>) . inToOut) $
-            -- filter stuff whose dependencies are not universally available
-            applyWhen (not target.linux) (filter (/= "Scoreboard.hs")) sources
+            sources
+                & filter
+                    ( `notElem`
+                        ( ["Scratch.hs"]
+                            <> mwhen
+                                (target.triple.machine == "aarch64")
+                                ["MagicMouse.hs"]
+                            <> mwhen
+                                (not target.linux)
+                                ["Scoreboard.hs", "MagicMouse.hs"]
+                            <> mwhen
+                                target.cross
+                                ["Timesheet.hs"]
+                        )
+                    )
 
     -- compile
     for_ sources \hs ->
@@ -120,6 +133,14 @@ main = shakeArgs shakeOpts do
     "deps" ~> do
         maybeTarget <- getEnv "TARGET"
         let TargetInfo{..} = getTargetInfo host maybeTarget
+            noTH = cross && not wasm
+            -- we define some common reasons not to build packages here, as variables, to avoid repeating explanations
+            noUnixCompat = wasm -- C stuff
+            noStreamly = wasm -- C stuff
+            noWarp = wasm -- various issues, and unlikely to be useful while `network` patch is a stub
+            noDiagrams =
+                noTH
+                    || wasm --  "soon": https://github.com/diagrams/diagrams-lib/issues/370#issuecomment-2657318690
         projectFile <-
             findM doesFileExist
                 . map ("cabal.project." <>)
@@ -145,7 +166,11 @@ main = shakeArgs shakeOpts do
             -- or, in other words, this also works when using GHC 9.2.7: "--with-hc-pkg=~/.ghcup/bin/ghc-pkg-9.2.7"
             -- see https://github.com/haskell/cabal/issues/5632, https://github.com/haskell/cabal/issues/5760
             -- those issues are also relevant to alex/c2hs etc.
-            (flip foldMap maybeTarget \t -> ["--with-hc-pkg=" <> t <> "-ghc-pkg", "--with-hsc2hs=" <> t <> "-hsc2hs"])
+            (flip foldMap maybeTarget \t -> ["--with-hc-pkg=" <> t <> "-ghc-pkg"])
+            -- TODO it's not clear why this is necessary with e.g. ARM but fails with Wasm
+            -- (with a warning about specifying per-package)
+            -- hsc2hs does run on the host and even has a `--cross` flag
+            (munless wasm $ flip foldMap maybeTarget \t -> ["--with-hsc2hs=" <> t <> "-hsc2hs"])
             (maybeTarget <&> \t -> AddEnv "PKG_CONFIG_PATH" $ "/usr/" <> t <> "/lib/pkgconfig")
             "--package-env ."
             "--lib"
@@ -163,7 +188,7 @@ main = shakeArgs shakeOpts do
             ("binary")
             ("blaze-html")
             ("blaze-markup")
-            ("brick" & munless cross) -- TH in `vty` dep
+            ("brick" & munless cross) -- various reasons: C, TH and more
             ("brillo" & munless cross) -- probably doable, but has a lot of C deps (GL, X11 etc.)
             ("bytestring")
             ("cassava-megaparsec")
@@ -175,53 +200,53 @@ main = shakeArgs shakeOpts do
             ("composition")
             ("containers")
             ("data-default")
-            ("dhall" & munless wasm) -- `basement` fails
-            ("diagrams-contrib" & munless wasm)
+            ("dhall" & munless noUnixCompat)
+            ("diagrams-contrib" & munless noTH)
             ("diagrams-core")
-            ("diagrams-lib")
-            ("diagrams-postscript")
-            ("diagrams-rasterific")
-            ("diagrams-svg")
+            ("diagrams-lib" & munless noTH)
+            ("diagrams-postscript" & munless noDiagrams)
+            ("diagrams-rasterific" & munless noDiagrams)
+            ("diagrams-svg" & munless noDiagrams)
             ("directory")
             ("evdev" & mwhen linux)
             ("exceptions")
             ("extra")
             ("file-io")
             ("filepath")
-            ("force-layout" & munless wasm)
-            ("freer-simple" & munless wasm)
+            ("force-layout" & munless noTH)
+            ("freer-simple")
             ("fsnotify" & munless wasm)
             ("generic-data")
             ("graphviz")
             ("hashable")
-            ("hashtables" & munless wasm)
+            ("hashtables")
             ("hinotify" & mwhen linux)
-            ("http-api-data" & munless wasm)
-            ("http-client-tls" & munless wasm)
-            ("http-client" & munless wasm)
-            ("http-types" & munless wasm)
-            ("jsaddle-warp")
+            ("http-api-data")
+            ("http-client-tls")
+            ("http-client")
+            ("http-types")
+            ("jsaddle-warp" & munless noWarp)
             ("JuicyPixels")
             ("lens")
-            ("lifx-lan" & munless wasm)
+            ("lifx-lan")
             ("linear")
             ("logging-effect")
             ("lucid")
             ("megaparsec")
-            ("miso")
+            ("miso" & munless noTH)
             ("monad-loops")
             ("mtl")
             ("mwc-random")
             ("network-uri")
-            ("network" & munless wasm)
+            ("network")
             ("nonempty-containers")
             ("optics-operators")
             ("optics")
             ("optparse-applicative")
             ("optparse-generic")
             ("palette")
-            ("pandoc")
-            ("pandoc-types")
+            ("pandoc" & munless noTH)
+            ("pandoc-types" & munless noTH)
             ("parallel")
             ("parsec")
             ("pretty-simple")
@@ -235,22 +260,22 @@ main = shakeArgs shakeOpts do
             ("raw-strings-qq")
             ("repline")
             ("safe")
-            ("sbv" & munless wasm)
+            ("sbv")
             ("scientific")
-            ("servant-client" & munless wasm)
-            ("servant-server" & munless wasm)
+            ("servant-client")
+            ("servant-server" & munless noUnixCompat)
             ("servant")
             ("shake")
             ("split")
             ("stm")
-            ("streamly-core" & munless wasm)
-            ("streamly-fsnotify" & munless wasm)
-            ("streamly" & munless wasm)
+            ("streamly-core" & munless noStreamly)
+            ("streamly-fsnotify" & munless noStreamly)
+            ("streamly" & munless noStreamly)
             ("streams")
             ("syb")
-            ("template-haskell" & munless cross)
+            ("template-haskell" & munless noTH)
             ("text")
-            ("th-lift" & munless cross)
+            ("th-lift" & munless noTH)
             ("time")
             ("transformers")
             ("uniplate")
@@ -258,9 +283,9 @@ main = shakeArgs shakeOpts do
             ("unordered-containers")
             ("vector-algorithms")
             ("vector")
-            ("wai-app-static" & munless wasm)
-            ("wai" & munless wasm)
-            ("warp" & munless wasm)
+            ("wai-app-static" & munless (noTH || noUnixCompat))
+            ("wai")
+            ("warp" & munless noWarp)
             ("websockets")
             ("yaml")
 
