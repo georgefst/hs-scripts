@@ -135,7 +135,6 @@ main = shakeArgs shakeOpts do
         let TargetInfo{..} = getTargetInfo host maybeTarget
             noTH = cross && not wasm
             -- we define some common reasons not to build packages here, as variables, to avoid repeating explanations
-            noUnixCompat = wasm -- C stuff
             noStreamly = wasm -- C stuff
             noWarp = wasm -- various issues, and unlikely to be useful while `network` patch is a stub
             noDiagrams =
@@ -200,7 +199,7 @@ main = shakeArgs shakeOpts do
             ("composition")
             ("containers")
             ("data-default")
-            ("dhall" & munless noUnixCompat)
+            ("dhall")
             ("diagrams-contrib" & munless noTH)
             ("diagrams-core")
             ("diagrams-lib" & munless noTH)
@@ -263,7 +262,7 @@ main = shakeArgs shakeOpts do
             ("sbv")
             ("scientific")
             ("servant-client")
-            ("servant-server" & munless noUnixCompat)
+            ("servant-server" & munless noWarp)
             ("servant")
             ("shake")
             ("split")
@@ -283,7 +282,7 @@ main = shakeArgs shakeOpts do
             ("unordered-containers")
             ("vector-algorithms")
             ("vector")
-            ("wai-app-static" & munless (noTH || noUnixCompat))
+            ("wai-app-static" & munless (noTH || noWarp))
             ("wai")
             ("warp" & munless noWarp)
             ("websockets")

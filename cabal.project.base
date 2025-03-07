@@ -37,6 +37,12 @@ if impl(ghc >= 9.12)
         type: git
         location: https://github.com/haskell-fswatch/hfsnotify
         tag: 011d8234b78bbfa5d3717fb3af435c4ba21f97fd
+    -- https://github.com/dhall-lang/dhall-haskell/pull/2647
+    source-repository-package
+        type: git
+        location: https://github.com/m4dc4p/dhall-haskell
+        tag: 940e3a4c369d6262db3a54eaffe16e18b851df51
+        subdir: dhall
     allow-newer:
         brillo:bytestring,
         cborg:base,
