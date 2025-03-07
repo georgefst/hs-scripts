@@ -37,9 +37,6 @@ if impl(ghc >= 9.12)
         type: git
         location: https://github.com/haskell-fswatch/hfsnotify
         tag: 011d8234b78bbfa5d3717fb3af435c4ba21f97fd
-    -- TODO should I PR all these now?
-    -- I feel like no one is really using 9.12 apart from us Wasmers
-    -- then again there's no harm - if I don't do it now then it falls on someone else
     allow-newer:
         brillo:bytestring,
         cborg:base,
