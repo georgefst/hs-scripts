@@ -192,6 +192,9 @@ main = shakeArgs shakeOpts do
             ("bytestring")
             ("cassava-megaparsec")
             ("cassava")
+            ("Chart-cairo" & munless cross) -- GTK stuff
+            ("Chart-diagrams" & munless noDiagrams)
+            ("Chart")
             ("clay")
             ("colour")
             ("combinatorial")
