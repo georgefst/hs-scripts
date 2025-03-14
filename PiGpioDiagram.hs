@@ -43,7 +43,7 @@ pins =
         [ Hifi 1 white
         , Hifi 2 grey
         , Hifi 3 purple -- ground
-        , Broken
+        , Blank
         , Button
         , Hifi 6 yellow
         , Ground
