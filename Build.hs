@@ -228,6 +228,7 @@ main = shakeArgs shakeOpts do
             ("http-client")
             ("http-types")
             ("jsaddle-warp" & munless noWarp)
+            ("jsaddle")
             ("JuicyPixels")
             ("lens")
             ("lifx-lan")
