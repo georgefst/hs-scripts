@@ -63,7 +63,7 @@ main = shakeArgs shakeOpts do
                                 ["Scoreboard.hs", "MagicMouse.hs"]
                             <> mwhen
                                 target.cross
-                                ["Timesheet.hs"]
+                                ["Timesheet.hs", "Charts.hs", "PiGpioDiagram.hs"]
                         )
                     )
 
@@ -75,16 +75,33 @@ main = shakeArgs shakeOpts do
                     [_, init -> t, _] -> Just t
                     _ -> Nothing
                 TargetInfo{..} = getTargetInfo host target
+            isWasmModule <-
+                if not wasm
+                    then pure False
+                    else
+                        -- TODO insert this on the fly at build time instead of requiring it in source?
+                        let marker = "#ifdef wasi_HOST_OS\nforeign export javascript \"hs\" main :: IO ()\n#endif\n"
+                         in liftIO $ (marker `isSuffixOf`) <$> readFile hs
             cmd_
                 (WithStderr False)
                 ghc
                 hs
                 (mwhen (hs /= "Build.hs") ["-main-is", takeBaseName hs])
+                ( mwhen
+                    (isWasmModule && wasm)
+                    ["-no-hs-main", "-optl-mexec-model=reactor", "-optl-Wl,--export=hs"]
+                )
                 ["-outputdir", ".build" </> fromMaybe "standard" target]
                 ["-o", out]
                 "-fdiagnostics-color=always"
                 "-O1"
+            when isWasmModule do
+                -- TODO implement this properly, instead of running following in shell:
+                -- "$(wasm32-wasi-ghc --print-libdir)"/post-link.mjs --input dist/wasm32-wasi/ramen.wasm --output dist/wasm32-wasi/ramen-jsffi.js
+                -- we're also manually copying `index.js` (shareable, taken largely from Tweag) and `ramen.html` (use Lucid?)
+                pure ()
             -- without this, we don't create a file with the expected name, and Shake complains
+            -- TODO is this just nonsense for wasm modules?
             when wasm $ liftIO do
                 writeFile out $
                     unlines
@@ -228,6 +245,7 @@ main = shakeArgs shakeOpts do
             ("http-client")
             ("http-types")
             ("jsaddle-warp" & munless noWarp)
+            ("jsaddle")
             ("JuicyPixels")
             ("lens")
             ("lifx-lan")

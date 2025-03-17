@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>ramen (hs-scripts)</title>
+  </head>
+  <body>
+    <script type="module">
+      import jsffi from "./ramen-jsffi.js";
+      globalThis.name = "ramen";
+      globalThis.jsffi = jsffi;
+    </script>
+    <script src="index.js" type="module"></script>
+  </body>
+</html>
