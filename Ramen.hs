@@ -80,9 +80,9 @@ class EnvHas (name :: Symbol) a (env :: List (Symbol, Type)) where
 -- use efficient heterogenous map?
 -- can that also be used to rule out duplicate component names?
 instance EnvHas name a ('(name, a) : env) where
+    -- usually, this could throw an exception, but this can't happen since if a component is mounted so is its parent
     getFromEnv =
-        fmap (error "readEnv: parent not found") -- this can't happen since if a component is mounted so is its parent
-            . JSM
+        JSM
             . Miso.sample
             $ Miso.Component
                 (ms (symbolVal (Proxy @name)))
@@ -119,7 +119,8 @@ fromUnit () = Empty
 {- Example -}
 
 main :: IO ()
-main = run top
+-- main = run top
+main = Miso.run $ Miso.startApp topMisoApp
 
 -- top :: forall env.  Component "top" Word () env
 top :: forall (env :: List (Symbol, Type)). Component "top" Word () env
@@ -130,12 +131,18 @@ top =
             div_
                 []
                 [ button_ [onClick ()] [text $ ms m]
-                , embed sub
+                , View . Miso.embed $ subMisoCom
                 ]
         , update = \() -> fromUnit <$> modify (+ 1)
         , initialAction = ()
         }
 
+topMisoCom = Miso.component @"top" topMisoApp
+topMisoApp = toApp top
+subMisoCom = Miso.component @"sub" subMisoApp
+subMisoApp = toApp (sub @'[ '("top", Word)])
+
+-- TODO it would be better for subs to be agnostic about exact names of parents
 sub :: forall env. (EnvHas "top" Word env) => Component "sub" Word (Maybe Word) env
 sub =
     Component
@@ -145,6 +152,14 @@ sub =
             Nothing -> do
                 (toUnit -> ()) <- scheduleIO do
                     -- n <- getFromEnv @"top" @Word
+                    -- n <- JSM
+                    --     . Miso.sample
+                    --     $ Miso.Component
+                    --         (ms (symbolVal (Proxy @"top")))
+                    --         -- TODO I'm not as certain about this being unused as for `mail`/`notify` - will find out when we test
+                    --         (error "readEnv: no parent app")
+                    -- n <- JSM . Miso.sample $ toComponent top
+                    n <- JSM . Miso.sample $ topMisoCom
                     -- pure $ Just n
                     pure Nothing
                 pure $ fromUnit ()
