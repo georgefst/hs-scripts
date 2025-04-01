@@ -180,6 +180,8 @@ main = shakeArgs shakeOpts do
             ("aeson-optics")
             ("aeson-pretty")
             ("aeson")
+            ("amazonka-ses")
+            ("amazonka")
             ("ansi-terminal")
             ("array")
             ("async")

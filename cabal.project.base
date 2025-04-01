@@ -6,6 +6,23 @@ source-repository-package
     location: https://github.com/dmjio/miso
     tag: c6b1f4deff1186ab78c568d9c82705778ffb278e
 
+if impl(ghc >= 9.8)
+    -- support is unreleased
+    -- https://github.com/brendanhay/amazonka/pull/973
+    -- https://github.com/brendanhay/amazonka/issues/1001
+    allow-newer:
+        amazonka-core:base,
+        amazonka-ses:base,
+        amazonka-sso:base,
+        amazonka-sts:base,
+        amazonka:base,
+    package amazonka-ses
+        ghc-options: -XDuplicateRecordFields
+    package amazonka-sso
+        ghc-options: -XDuplicateRecordFields
+    package amazonka-sts
+        ghc-options: -XDuplicateRecordFields
+
 if impl(ghc >= 9.10)
     -- https://github.com/lexi-lambda/freer-simple/pull/45
     source-repository-package
