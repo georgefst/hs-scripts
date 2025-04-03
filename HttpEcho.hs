@@ -24,4 +24,5 @@ main :: IO ()
 main = getRecord "http-echo" >>= \Opts{..} -> run port \req respond -> do
     pPrint req
     liftIO . BL.putStr =<< consumeRequestBodyStrict req
+    liftIO $ putStr "\n\n"
     respond $ responseLBS status200 [] "OK\n"
