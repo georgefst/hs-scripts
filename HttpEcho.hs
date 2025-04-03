@@ -1,6 +1,8 @@
 {-# LANGUAGE GHC2021 #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -Wall #-}
 
 module HttpEcho (main) where
@@ -10,10 +12,16 @@ import Data.ByteString.Lazy qualified as BL
 import Network.HTTP.Types
 import Network.Wai
 import Network.Wai.Handler.Warp
+import Options.Generic
 import Text.Pretty.Simple
 
+data Opts = Opts
+    { port :: Port
+    }
+    deriving (Generic, ParseRecord)
+
 main :: IO ()
-main = run 8000 \req respond -> do
+main = getRecord "http-echo" >>= \Opts{..} -> run port \req respond -> do
     pPrint req
     liftIO . BL.putStr =<< consumeRequestBodyStrict req
     respond $ responseLBS status200 [] "OK\n"
