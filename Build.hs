@@ -68,8 +68,8 @@ main = shakeArgs shakeOpts do
                     )
 
     -- compile
-    for_ sources \hs ->
-        ["dist" </> inToOut hs, "dist" </> "*" </> inToOut hs] |%> \out -> do
+    for_ sources \hs@(inToOut -> name) ->
+        ["dist" </> name, "dist" </> "*" </> name] |%> \out -> do
             need $ hs : utilSources
             let target = case splitPath out of
                     [_, init -> t, _] -> Just t
