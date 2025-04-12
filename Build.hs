@@ -14,8 +14,10 @@ build-depends:
     base >= 4.16,
     directory ^>= 1.3,
     extra ^>= 1.7,
+    lucid2 ^>= 0.0.20250303,
     pretty-simple ^>= 4.1,
     shake ^>= 0.19,
+    text ^>= 2.1.1,
     unix ^>= 2.8,
 -}
 
@@ -33,8 +35,10 @@ import Data.Function
 import Data.Functor
 import Data.List.Extra
 import Data.Maybe
+import Data.String
 import Development.Shake
 import Development.Shake.FilePath
+import Lucid qualified
 import System.Directory qualified as Dir
 import System.IO.Error
 import System.Posix hiding (getEnv)
@@ -75,23 +79,65 @@ main = shakeArgs shakeOpts do
                     [_, init -> t, _] -> Just t
                     _ -> Nothing
                 TargetInfo{..} = getTargetInfo host target
+            isWasmModule <-
+                if not wasm
+                    then pure False
+                    else
+                        -- TODO this is a bit of an ugly hack
+                        -- we could insert this on the fly at build time instead of requiring it in source
+                        -- and come up with some new way to identify which files to build as modules
+                        -- perhaps just put them in a separate folder?
+                        -- we could then have a new template which starts with this line, and no CLI stuff
+                        let marker = "#ifdef wasi_HOST_OS\nforeign export javascript \"hs\" main :: IO ()\n#endif\n"
+                         in liftIO $ (marker `isSuffixOf`) <$> readFile hs
             cmd_
                 (WithStderr False)
                 ghc
                 hs
                 (mwhen (hs /= "Build.hs") ["-main-is", takeBaseName hs])
+                (mwhen (isWasmModule && wasm) ["-no-hs-main", "-optl-mexec-model=reactor", "-optl-Wl,--export=hs"])
                 ["-outputdir", ".build" </> fromMaybe "standard" target]
                 ["-o", out]
                 "-fdiagnostics-color=always"
                 "-O1"
+            when (isWasmModule && wasm) do
+                -- TODO we should really actually register these files as Shake deps
+                -- in fact, even the `.wasm` files could be separate targets
+                StdoutTrim ghcLibDir <- cmd ghc "--print-libdir"
+                cmd_
+                    (ghcLibDir <> "/post-link.mjs")
+                    ("--input dist/wasm32-wasi/" <> name <> ".wasm")
+                    ("--output dist/wasm32-wasi/" <> name <> "-jsffi.js")
+                copyFileChanged "web/index.js" "dist/wasm32-wasi/index.js"
+                liftIO $ Lucid.renderToFile ("dist/wasm32-wasi/" <> name <> ".html") $ Lucid.doctypehtml_ do
+                    Lucid.head_ do
+                        Lucid.meta_ [Lucid.charset_ $ fromString "utf-8"]
+                        Lucid.title_ [] $ fromString name
+                    Lucid.body_ do
+                        Lucid.script_
+                            [Lucid.type_ $ fromString "module"]
+                            (jsffiFileContents name)
+                        Lucid.script_
+                            [Lucid.src_ $ fromString "index.js", Lucid.type_ $ fromString "module"]
+                            ""
             -- without this, we don't create a file with the expected name, and Shake complains
             when wasm $ liftIO do
-                writeFile out $
-                    unlines
-                        [ "#!/bin/bash"
-                        , "HERE=$(dirname ${BASH_SOURCE[0]})"
-                        , "wasmtime --dir . $HERE/" <> inToOut hs <> ".wasm $*"
-                        ]
+                writeFile out . unlines $
+                    [ "#!/bin/bash"
+                    , "HERE=$(dirname ${BASH_SOURCE[0]})"
+                    ]
+                        <> if isWasmModule
+                            then
+                                -- TODO copying to `index.html` is a hack
+                                -- ideally we could just use `--try-file` (and remove `--index`)
+                                -- but this currently shows the root directory listing:
+                                -- https://github.com/TheWaWaR/simple-http-server/issues/108#issuecomment-2798241667
+                                [ "cp $HERE/" <> name <> ".html $HERE/index.html"
+                                , "simple-http-server --nocache --index --open $HERE"
+                                ]
+                            else
+                                [ "wasmtime --dir . $HERE/" <> inToOut hs <> ".wasm $*"
+                                ]
                 setFileMode out $ foldl1' unionFileModes [ownerModes, groupReadMode, otherReadMode]
 
     -- install
@@ -359,3 +405,15 @@ splitSshHost :: String -> (String, String)
 splitSshHost s = case splitOn ":" s of
     [h, p] -> (h, p)
     _ -> error "splitHost failed"
+
+-- TODO this has been factored out only so that we can avoid reformatting the operators, and thus losing readability
+-- perhaps TH or native string interpolation would be nice here
+-- or perhaps Fourmolu/Ormolu could be patched to be more flexible about disabling sections
+-- in this instance, the remaining code is parseable, so we just need to format everything else, then patch back in
+{- FOURMOLU_DISABLE -}
+jsffiFileContents :: String -> String
+jsffiFileContents s =
+    "import jsffi from \"./" <> s <> "-jsffi.js\";\
+    \globalThis.name = \"" <> s <> "\";\
+    \globalThis.jsffi = jsffi;"
+{- FOURMOLU_ENABLE -}
