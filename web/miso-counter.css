@@ -1,4 +1,5 @@
 body {
+  font-size: 100pt;
   > div {
     display: flex;
     align-items: center;
@@ -8,12 +9,13 @@ body {
       aspect-ratio: 1/1;
     }
     > button {
+      font-size: inherit;
       display: flex;
       align-items: center;
       justify-content: center;
       > span {
         position: relative;
-        top: -1px;
+        top: -10px;
       }
     }
   }
