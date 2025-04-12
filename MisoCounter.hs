@@ -11,13 +11,14 @@ import Miso
 import Miso.String
 
 main :: IO ()
-main =
-    run
-        . startApp
-        $ defaultApp
-            (0 :: Word)
-            (\() -> modify succ)
-            (\n -> div_ [] [button_ [onClick ()] [span_ [] [text "+"]], text $ ms n])
+main = run $ startApp app
+
+app :: App Effect Word () ()
+app =
+    defaultApp
+        0
+        (\() -> modify succ)
+        (\n -> div_ [] [button_ [onClick ()] [span_ [] [text "+"]], text $ ms n])
 
 #ifdef wasi_HOST_OS
 foreign export javascript "hs" main :: IO ()
