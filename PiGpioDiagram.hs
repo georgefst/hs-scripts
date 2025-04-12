@@ -2,6 +2,8 @@
 {-# LANGUAGE LexicalNegation #-}
 {-# OPTIONS_GHC -Wall #-}
 
+module PiGpioDiagram where
+
 import Diagrams.Backend.SVG.CmdLine
 import Diagrams.Prelude
 
