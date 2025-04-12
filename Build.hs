@@ -109,10 +109,16 @@ main = shakeArgs shakeOpts do
                     ("--input dist/wasm32-wasi/" <> name <> ".wasm")
                     ("--output dist/wasm32-wasi/" <> name <> "-jsffi.js")
                 copyFileChanged "web/index.js" "dist/wasm32-wasi/index.js"
+                let cssSource = "web/" <> name <> ".css"
+                hasCssSource <- doesFileExist cssSource
+                when hasCssSource $ copyFileChanged cssSource ("dist/wasm32-wasi/" <> name <> ".css")
                 liftIO $ Lucid.renderToFile ("dist/wasm32-wasi/" <> name <> ".html") $ Lucid.doctypehtml_ do
                     Lucid.head_ do
                         Lucid.meta_ [Lucid.charset_ $ fromString "utf-8"]
                         Lucid.title_ [] $ fromString name
+                        when hasCssSource $
+                            Lucid.link_
+                                [Lucid.rel_ $ fromString "stylesheet", Lucid.href_ $ fromString $ name <> ".css"]
                     Lucid.body_ do
                         Lucid.script_
                             [Lucid.type_ $ fromString "module"]

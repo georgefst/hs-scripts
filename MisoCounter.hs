@@ -16,7 +16,7 @@ main =
         $ defaultApp
             (0 :: Word)
             (\() n -> pure $ succ n)
-            (\n -> div_ [] [button_ [onClick ()] [text "+"], text $ ms n])
+            (\n -> div_ [] [button_ [onClick ()] [span_ [] [text "+"]], text $ ms n])
             ()
 
 #ifdef wasi_HOST_OS

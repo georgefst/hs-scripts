@@ -1,0 +1,20 @@
+body {
+  > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    > * {
+      min-width: 30%;
+      aspect-ratio: 1/1;
+    }
+    > button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      > span {
+        position: relative;
+        top: -1px;
+      }
+    }
+  }
+}
