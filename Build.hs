@@ -235,7 +235,7 @@ main = shakeArgs shakeOpts do
             ("lifx-lan")
             ("linear")
             ("logging-effect")
-            ("lucid")
+            ("lucid2")
             ("megaparsec")
             ("miso" & munless noTH)
             ("monad-loops")
