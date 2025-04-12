@@ -185,6 +185,7 @@ main = shakeArgs shakeOpts do
             ("ansi-terminal")
             ("array")
             ("async")
+            ("aws-sns-verify")
             ("base")
             ("binary")
             ("blaze-html")
