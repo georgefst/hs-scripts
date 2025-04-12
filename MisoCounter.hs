@@ -6,6 +6,7 @@
 -- | This is basically a "hello world" for Miso, to check that the build script logic for Wasm modules is working etc.
 module MisoCounter (main) where
 
+import Control.Monad.State
 import Miso
 import Miso.String
 
@@ -15,9 +16,8 @@ main =
         . startApp
         $ defaultApp
             (0 :: Word)
-            (\() n -> pure $ succ n)
+            (\() -> modify succ)
             (\n -> div_ [] [button_ [onClick ()] [span_ [] [text "+"]], text $ ms n])
-            ()
 
 #ifdef wasi_HOST_OS
 foreign export javascript "hs" main :: IO ()
