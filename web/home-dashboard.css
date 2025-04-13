@@ -1,0 +1,124 @@
+:root {
+  --blue-dark: #162745;
+  --blue-medium: #3863af;
+  --blue-light: #95afdd;
+  font-size: large;
+  color: white;
+}
+
+body {
+  margin: 0;
+  font-family: Helvetica, Arial, sans-serif;
+  height: 100vh;
+  > div {
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 0.2rem;
+    background-color: var(--blue-light);
+    > * {
+      background-color: var(--blue-dark);
+    }
+  }
+}
+
+#clock {
+  > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    height: 100%;
+    font-size: xxx-large;
+  }
+}
+
+#weather {
+  > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    font-size: xxx-large;
+  }
+}
+
+#transport {
+  grid-row: 1 / 3;
+  grid-column: 1 / 3;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+  > div {
+    grid-row: 1 / 3;
+    grid-column: 1 / 3;
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    > div {
+      /* station */
+      overflow: auto;
+      > div:first-child {
+        text-align: center;
+        &.district {
+          background-color: #007d32;
+        }
+        &.bakerloo {
+          background-color: #b26300;
+        }
+        &.central {
+          background-color: #dc241f;
+        }
+        &.circle {
+          background-color: #ffc80a;
+          color: black;
+        }
+        &.hammersmith-city {
+          background-color: #f589a6;
+          color: black;
+        }
+        &.jubilee {
+          background-color: #838d93;
+        }
+        &.metropolitan {
+          background-color: #9b0058;
+        }
+        &.northern {
+          background-color: #000000;
+        }
+        &.piccadilly {
+          background-color: #0019a8;
+        }
+        &.victoria {
+          background-color: #039be5;
+        }
+        &.waterloo-city {
+          background-color: #76d0bd;
+          color: black;
+        }
+      }
+      > div {
+        padding: 0.7rem;
+        > div {
+          /* platform */
+          padding-top: 0.3rem;
+          padding-left: 0.5rem;
+          padding-right: 0.5rem;
+          > div:first-child {
+            text-align: center;
+          }
+          > div {
+            /* train */
+            > div {
+              padding: 0.1rem;
+              display: flex;
+              justify-content: space-between;
+            }
+          }
+        }
+      }
+    }
+  }
+}

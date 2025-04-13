@@ -302,6 +302,7 @@ main = shakeArgs shakeOpts do
             ("network-uri")
             ("network")
             ("nonempty-containers")
+            ("openweathermap")
             ("optics-operators")
             ("optics")
             ("optparse-applicative")
