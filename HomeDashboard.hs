@@ -151,7 +151,7 @@ data WeatherState = WeatherState
     }
     deriving (Eq, Show, Generic)
 
-transport :: (s ~ MisoString) => Component Effect (Map (s, s) (s, NonEmpty TrainData)) ((s, s), (s, NonEmpty TrainData)) ()
+transport :: Component Effect (Map StationLineId StationData) (StationLineId, StationData) ()
 transport =
     component
         "transport"
@@ -237,6 +237,8 @@ stations =
     d = "district"
     p = "piccadilly"
     h = "hammersmith-city"
+type StationData = (MisoString, NonEmpty TrainData)
+type StationLineId = (MisoString, MisoString)
 data TrainData = TrainData
     { stationName :: MisoString
     , lineName :: MisoString
