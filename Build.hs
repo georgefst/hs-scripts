@@ -57,6 +57,7 @@ main = shakeArgs shakeOpts do
         need . map ((("dist" </> concat maybeTarget) </>) . inToOut) $
             sources
                 & filter
+                    -- TODO find a more principled approach, that doesn't duplicate logic from the `deps` target
                     ( `notElem`
                         ( ["Scratch.hs"]
                             <> mwhen
@@ -67,7 +68,10 @@ main = shakeArgs shakeOpts do
                                 ["Scoreboard.hs", "MagicMouse.hs"]
                             <> mwhen
                                 target.cross
-                                ["Timesheet.hs"]
+                                ["Timesheet.hs", "Charts.hs", "PiGpioDiagram.hs"]
+                            <> mwhen
+                                target.wasm
+                                ["HttpEcho.hs"]
                         )
                     )
 
@@ -232,8 +236,8 @@ main = shakeArgs shakeOpts do
             ("aeson-optics")
             ("aeson-pretty")
             ("aeson")
-            ("amazonka-ses")
-            ("amazonka")
+            ("amazonka-ses" & munless cross) -- `xml-conduit` fails at configure step for some reason
+            ("amazonka" & munless cross)
             ("ansi-terminal")
             ("array")
             ("async")
@@ -249,7 +253,7 @@ main = shakeArgs shakeOpts do
             ("cassava")
             ("Chart-cairo" & munless cross) -- GTK stuff
             ("Chart-diagrams" & munless noDiagrams)
-            ("Chart")
+            ("Chart" & munless noTH)
             ("clay")
             ("colour")
             ("combinatorial")
