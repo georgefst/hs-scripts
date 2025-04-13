@@ -107,7 +107,10 @@ clock =
                     t <- liftIO getCurrentTime
                     z <- liftIO getCurrentTimeZone
                     sink $ utcToLocalTime z t
-                    liftIO $ threadDelay 1_000_000
+                    liftIO
+                        . threadDelay
+                        . ceiling
+                        $ 1_000_001 - realToFrac @_ @Double (snd $ properFraction @_ @Int $ utctDayTime t) * 1_000_000
                 ]
             }
 
