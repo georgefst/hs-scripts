@@ -22,7 +22,6 @@ import Data.Aeson.Optics
 import Data.Foldable
 import Data.List.Extra hiding (lines)
 import Data.List.NonEmpty (NonEmpty)
-import Data.List.NonEmpty qualified as NE
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Maybe
@@ -34,7 +33,7 @@ import Data.Traversable
 import Data.Tuple.Extra ((&&&))
 import GHC.Generics (Generic)
 import Miso hiding (for_, sink)
-import Miso.String (MisoString, fromMisoString, ms)
+import Miso.String (MisoString, ms)
 import Optics
 import Servant.Client (ClientError)
 import System.Environment
@@ -152,7 +151,7 @@ data WeatherState = WeatherState
     }
     deriving (Eq, Show, Generic)
 
-transport :: (s ~ MisoString) => Component Effect (Map (s, s) (NonEmpty TrainData)) ((s, s), NonEmpty TrainData) ()
+transport :: (s ~ MisoString) => Component Effect (Map (s, s) (s, NonEmpty TrainData)) ((s, s), (s, NonEmpty TrainData)) ()
 transport =
     component
         "transport"
@@ -161,7 +160,7 @@ transport =
             (modify . uncurry Map.insert)
             \allData ->
                 div_ [] $
-                    Map.toList allData <&> \((_, lineId), trains@(NE.head -> TrainData{stationName})) ->
+                    Map.toList allData <&> \((_, lineId), (stationNameShort, trains)) ->
                         div_
                             []
                             [ div_
@@ -169,12 +168,7 @@ transport =
                                 -- I guess this is why React people all love using Tailwind
                                 -- and is it really any worse than the tight coupling of structure we currently have?
                                 [class_ lineId]
-                                [ text
-                                    . ms
-                                    . dropEnd @Char (length @[] "Underground Station" + 1)
-                                    . fromMisoString
-                                    $ stationName
-                                ]
+                                [text . ms $ stationNameShort]
                             , div_ [] $
                                 classifyOn (.platformName) (toList trains) <&> \(platform, platformTrains) ->
                                     div_
@@ -193,7 +187,7 @@ transport =
             { subs =
                 [ \sink -> forever do
                     timeZone <- liftIO getCurrentTimeZone
-                    for_ stations \(station, lines) ->
+                    for_ stations \(station, stationNameShort, lines) ->
                         for_ lines \line -> fetchJSON
                             @(NonEmpty Aeson.Value)
                             ("https://api.tfl.gov.uk/Line/" <> line <> "/Arrivals/" <> station)
@@ -212,7 +206,7 @@ transport =
                                         pure TrainData{..}
                                  in case jsonData of
                                         Nothing -> consoleLog $ "failure parsing train info: " <> ms (show entries)
-                                        Just r -> sink ((station, line), r)
+                                        Just r -> sink ((station, line), (stationNameShort, r))
                     -- 50 requests a minute allowed without key (presumably per IP?)
                     -- of course we do `sum $ map (length . snd) stations` calls on each iteration
                     -- and during development we could easily have three clients running during dev
@@ -221,18 +215,21 @@ transport =
                     liftIO $ threadDelay 30_000_000
                 ]
             }
-stations :: [(MisoString, [MisoString])]
+stations :: [(MisoString, MisoString, [MisoString])]
 stations =
     [
         ( "940GZZLURVP" -- Ravenscourt Park
+        , "Ravenscourt Park"
         , [d]
         )
     ,
         ( "940GZZLUHSD" -- Hammersmith (Dist&Picc Line)
+        , "Hammersmith"
         , [p, d]
         )
     ,
         ( "940GZZLUHSC" -- Hammersmith (H&C Line)
+        , "Hammersmith"
         , [h]
         )
     ]
