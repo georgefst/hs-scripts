@@ -170,7 +170,7 @@ transport =
                                 [class_ lineId]
                                 [text . ms $ stationNameShort]
                             , div_ [] $
-                                classifyOn (.platformName) (toList trains) <&> \(platform, platformTrains) ->
+                                classifyOn (.platformName) trains <&> \(platform, platformTrains) ->
                                     div_
                                         []
                                         [ div_ [] [text platform]
@@ -189,7 +189,7 @@ transport =
                     timeZone <- liftIO getCurrentTimeZone
                     for_ stations \(station, stationNameShort, lines) ->
                         for_ lines \line -> fetchJSON
-                            @(NonEmpty Aeson.Value)
+                            @[Aeson.Value]
                             ("https://api.tfl.gov.uk/Line/" <> line <> "/Arrivals/" <> station)
                             \entries ->
                                 let jsonData = for entries \json -> do
@@ -237,7 +237,7 @@ stations =
     d = "district"
     p = "piccadilly"
     h = "hammersmith-city"
-type StationData = (MisoString, NonEmpty TrainData)
+type StationData = (MisoString, [TrainData])
 type StationLineId = (MisoString, MisoString)
 data TrainData = TrainData
     { stationName :: MisoString
