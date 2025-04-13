@@ -158,7 +158,7 @@ transport =
             (modify . uncurry Map.insert)
             \allData ->
                 div_ [] $
-                    Map.toList allData <&> \((_, lineId), trains@(NE.head -> TrainData{stationName, lineName})) ->
+                    Map.toList allData <&> \((_, lineId), trains@(NE.head -> TrainData{stationName})) ->
                         div_
                             []
                             [ div_
@@ -166,14 +166,11 @@ transport =
                                 -- I guess this is why React people all love using Tailwind
                                 -- and is it really any worse than the tight coupling of structure we currently have?
                                 [class_ lineId]
-                                [ text $
-                                    ms
-                                        ( dropEnd @Char (length @[] "Underground Station" + 1)
-                                            . fromMisoString
-                                            $ stationName
-                                        )
-                                        <> ": "
-                                        <> ms lineName
+                                [ text
+                                    . ms
+                                    . dropEnd @Char (length @[] "Underground Station" + 1)
+                                    . fromMisoString
+                                    $ stationName
                                 ]
                             , div_ [] $
                                 classifyOn (.platformName) (toList trains) <&> \(platform, platformTrains) ->
