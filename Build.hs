@@ -308,8 +308,6 @@ main = shakeArgs shakeOpts do
             ("optparse-applicative")
             ("optparse-generic")
             ("palette")
-            ("pandoc" & munless noTH)
-            ("pandoc-types" & munless noTH)
             ("parallel")
             ("parsec")
             ("pretty-simple")
