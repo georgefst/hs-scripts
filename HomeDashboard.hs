@@ -207,7 +207,7 @@ transport =
                                         Nothing -> consoleLog $ "failure parsing train info: " <> ms (show entries)
                                         Just r -> sink ((station, line), (stationNameShort, r))
                     -- 50 requests a minute allowed without key (presumably per IP?)
-                    -- of course we do `sum $ map (length . snd) stations` calls on each iteration
+                    -- of course we do `sum $ map (length . thd3) stations` calls on each iteration
                     -- and during development we could easily have three clients running during dev
                     -- but this still seems fairly safe
                     -- we can get that to 400 be applying for a free "product" on the TfL website
