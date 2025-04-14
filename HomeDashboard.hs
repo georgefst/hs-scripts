@@ -12,23 +12,23 @@
 
 module HomeDashboard (main) where
 
+import Util.TFL (QueryList (QueryList))
+import Util.TFLMiso (lineArrivals)
+import Util.TFLTypes (TflApiPresentationEntitiesPrediction (..))
+
 import Control.Concurrent
 import Control.Monad
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
-import Data.Aeson qualified as Aeson
-import Data.Aeson.Optics
 import Data.Foldable
 import Data.List.Extra hiding (lines)
 import Data.List.NonEmpty (NonEmpty)
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Maybe
-import Data.Text qualified as T
 import Data.Time
 import Data.Time.Calendar.OrdinalDate
-import Data.Time.Format.ISO8601 (iso8601ParseM)
 import Data.Traversable
 import Data.Tuple.Extra (second, (&&&))
 import GHC.Generics (Generic)
@@ -187,21 +187,18 @@ transport =
             { subs =
                 [ \sink -> forever do
                     timeZone <- liftIO getCurrentTimeZone
-                    for_ stations \(station, stationNameShort, lines) -> fetchJSON @[Aeson.Value]
-                        ("https://api.tfl.gov.uk/Line/" <> T.intercalate "," lines <> "/Arrivals/" <> station)
+                    for_ stations \(station, stationNameShort, lines) -> flip
+                        (lineArrivals (QueryList lines) station Nothing Nothing)
+                        (\s -> consoleLog $ "error fetching train data: " <> s)
                         \entries ->
                             let jsonData =
-                                    map (second toList) . classifyOnFst <$> for entries \json -> do
-                                        lineId <- json ^? key "lineId" % _String % to ms
-                                        stationName <- json ^? key "stationName" % _String % to ms
-                                        platformName <- json ^? key "platformName" % _String % to ms
-                                        towards <- json ^? key "towards" % _String % to ms
-                                        currentLocation <- json ^? key "currentLocation" % _String % to ms
-                                        expectedArrival <-
-                                            json
-                                                ^? key "expectedArrival"
-                                                % _String
-                                                % afolding (fmap (utcToLocalTime timeZone) . iso8601ParseM . T.unpack)
+                                    map (second toList) . classifyOnFst <$> for entries \prediction -> do
+                                        lineId <- ms <$> tflApiPresentationEntitiesPredictionLineId prediction
+                                        stationName <- ms <$> tflApiPresentationEntitiesPredictionStationName prediction
+                                        platformName <- ms <$> tflApiPresentationEntitiesPredictionPlatformName prediction
+                                        towards <- ms <$> tflApiPresentationEntitiesPredictionTowards prediction
+                                        currentLocation <- ms <$> tflApiPresentationEntitiesPredictionCurrentLocation prediction
+                                        expectedArrival <- utcToLocalTime timeZone <$> tflApiPresentationEntitiesPredictionExpectedArrival prediction
                                         pure (lineId, TrainData{..})
                              in case jsonData of
                                     Nothing -> consoleLog $ "failure parsing train info: " <> ms (show entries)
