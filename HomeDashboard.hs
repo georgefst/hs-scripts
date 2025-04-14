@@ -21,6 +21,7 @@ import Control.Monad
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
+import Data.Either.Extra
 import Data.Foldable
 import Data.List.Extra hiding (lines)
 import Data.List.NonEmpty (NonEmpty)
@@ -193,16 +194,16 @@ transport =
                         \entries ->
                             let jsonData =
                                     map (second toList) . classifyOnFst <$> for entries \prediction -> do
-                                        lineId <- ms <$> tflApiPresentationEntitiesPredictionLineId prediction
-                                        stationName <- ms <$> tflApiPresentationEntitiesPredictionStationName prediction
-                                        platformName <- ms <$> tflApiPresentationEntitiesPredictionPlatformName prediction
-                                        towards <- ms <$> tflApiPresentationEntitiesPredictionTowards prediction
-                                        currentLocation <- ms <$> tflApiPresentationEntitiesPredictionCurrentLocation prediction
-                                        expectedArrival <- utcToLocalTime timeZone <$> tflApiPresentationEntitiesPredictionExpectedArrival prediction
+                                        lineId <- maybeToEither "lineId" $ ms <$> tflApiPresentationEntitiesPredictionLineId prediction
+                                        stationName <- maybeToEither "stationName" $ ms <$> tflApiPresentationEntitiesPredictionStationName prediction
+                                        platformName <- maybeToEither "platformName" $ ms <$> tflApiPresentationEntitiesPredictionPlatformName prediction
+                                        towards <- maybeToEither "towards" $ ms <$> tflApiPresentationEntitiesPredictionTowards prediction
+                                        currentLocation <- maybeToEither "currentLocation" $ ms <$> tflApiPresentationEntitiesPredictionCurrentLocation prediction
+                                        expectedArrival <- maybeToEither "expectedArrival" $ utcToLocalTime timeZone <$> tflApiPresentationEntitiesPredictionExpectedArrival prediction
                                         pure (lineId, TrainData{..})
                              in case jsonData of
-                                    Nothing -> consoleLog $ "failure parsing train info: " <> ms (show entries)
-                                    Just r -> for_ r \(line, r') -> sink ((station, line), (stationNameShort, r'))
+                                    Left e -> consoleLog $ "train field missing: " <> e
+                                    Right r -> for_ r \(line, r') -> sink ((station, line), (stationNameShort, r'))
                     -- 50 requests a minute allowed without key (presumably per IP?)
                     -- of course we do `sum $ map (length . thd3) stations` calls on each iteration
                     -- and during development we could easily have three clients running during dev
