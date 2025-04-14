@@ -194,7 +194,6 @@ transport =
                             \entries ->
                                 let jsonData = for entries \json -> do
                                         stationName <- json ^? key "stationName" % _String % to ms
-                                        lineName <- json ^? key "lineName" % _String % to ms
                                         platformName <- json ^? key "platformName" % _String % to ms
                                         towards <- json ^? key "towards" % _String % to ms
                                         currentLocation <- json ^? key "currentLocation" % _String % to ms
@@ -241,7 +240,6 @@ type StationData = (MisoString, [TrainData])
 type StationLineId = (MisoString, MisoString)
 data TrainData = TrainData
     { stationName :: MisoString
-    , lineName :: MisoString
     , platformName :: MisoString
     , towards :: MisoString
     , expectedArrival :: LocalTime
