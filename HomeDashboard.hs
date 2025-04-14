@@ -187,12 +187,11 @@ transport =
             { subs =
                 [ \sink -> forever do
                     timeZone <- liftIO getCurrentTimeZone
-                    for_ stations \(station, stationNameShort, lines) ->
-                        fetchJSON
-                            @[Aeson.Value]
-                            ("https://api.tfl.gov.uk/Line/" <> T.intercalate "," lines <> "/Arrivals/" <> station)
-                            \entries ->
-                                let jsonData = map (second toList) . classifyOnFst <$> for entries \json -> do
+                    for_ stations \(station, stationNameShort, lines) -> fetchJSON @[Aeson.Value]
+                        ("https://api.tfl.gov.uk/Line/" <> T.intercalate "," lines <> "/Arrivals/" <> station)
+                        \entries ->
+                            let jsonData =
+                                    map (second toList) . classifyOnFst <$> for entries \json -> do
                                         lineId <- json ^? key "lineId" % _String % to ms
                                         stationName <- json ^? key "stationName" % _String % to ms
                                         platformName <- json ^? key "platformName" % _String % to ms
@@ -204,9 +203,9 @@ transport =
                                                 % _String
                                                 % afolding (fmap (utcToLocalTime timeZone) . iso8601ParseM . T.unpack)
                                         pure (lineId, TrainData{..})
-                                 in case jsonData of
-                                        Nothing -> consoleLog $ "failure parsing train info: " <> ms (show entries)
-                                        Just r -> for_ r \(line, r') -> sink ((station, line), (stationNameShort, r'))
+                             in case jsonData of
+                                    Nothing -> consoleLog $ "failure parsing train info: " <> ms (show entries)
+                                    Just r -> for_ r \(line, r') -> sink ((station, line), (stationNameShort, r'))
                     -- 50 requests a minute allowed without key (presumably per IP?)
                     -- of course we do `sum $ map (length . thd3) stations` calls on each iteration
                     -- and during development we could easily have three clients running during dev
