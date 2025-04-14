@@ -343,6 +343,7 @@ main = shakeArgs shakeOpts do
             ("uniplate")
             ("unix")
             ("unordered-containers")
+            ("uuid")
             ("vector-algorithms")
             ("vector")
             ("wai-app-static" & munless (noTH || noWarp))
