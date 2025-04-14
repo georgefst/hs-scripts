@@ -21,6 +21,7 @@ import Control.Monad
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
+import Data.Bifunctor (bimap)
 import Data.Either.Extra
 import Data.Foldable
 import Data.List.Extra hiding (lines)
@@ -192,8 +193,10 @@ transport =
                         (lineArrivals (QueryList lines) station Nothing Nothing)
                         (\s -> consoleLog $ "error fetching train data: " <> s)
                         \entries ->
-                            let jsonData =
-                                    map (second toList) . classifyOnFst <$> for entries \prediction -> do
+                            either
+                                (consoleLog . ("train field missing: " <>))
+                                (traverse_ $ sink . bimap (station,) (stationNameShort,))
+                                $ map (second toList) . classifyOnFst <$> for entries \prediction -> do
                                         lineId <- maybeToEither "lineId" $ ms <$> tflApiPresentationEntitiesPredictionLineId prediction
                                         stationName <- maybeToEither "stationName" $ ms <$> tflApiPresentationEntitiesPredictionStationName prediction
                                         platformName <- maybeToEither "platformName" $ ms <$> tflApiPresentationEntitiesPredictionPlatformName prediction
@@ -201,9 +204,6 @@ transport =
                                         currentLocation <- maybeToEither "currentLocation" $ ms <$> tflApiPresentationEntitiesPredictionCurrentLocation prediction
                                         expectedArrival <- maybeToEither "expectedArrival" $ utcToLocalTime timeZone <$> tflApiPresentationEntitiesPredictionExpectedArrival prediction
                                         pure (lineId, TrainData{..})
-                             in case jsonData of
-                                    Left e -> consoleLog $ "train field missing: " <> e
-                                    Right r -> for_ r \(line, r') -> sink ((station, line), (stationNameShort, r'))
                     -- 50 requests a minute allowed without key (presumably per IP?)
                     -- of course we do `sum $ map (length . thd3) stations` calls on each iteration
                     -- and during development we could easily have three clients running during dev
