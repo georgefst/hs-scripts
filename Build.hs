@@ -333,6 +333,7 @@ main = shakeArgs shakeOpts do
             ("streamly-fsnotify" & munless noStreamly)
             ("streamly" & munless noStreamly)
             ("streams")
+            ("swagger2")
             ("syb")
             ("template-haskell" & munless noTH)
             ("text")
