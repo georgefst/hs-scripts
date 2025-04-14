@@ -30,7 +30,7 @@ import Data.Time
 import Data.Time.Calendar.OrdinalDate
 import Data.Time.Format.ISO8601 (iso8601ParseM)
 import Data.Traversable
-import Data.Tuple.Extra ((&&&))
+import Data.Tuple.Extra (second, (&&&))
 import GHC.Generics (Generic)
 import Miso hiding (for_, sink)
 import Miso.String (MisoString, ms)
@@ -188,11 +188,12 @@ transport =
                 [ \sink -> forever do
                     timeZone <- liftIO getCurrentTimeZone
                     for_ stations \(station, stationNameShort, lines) ->
-                        for_ lines \line -> fetchJSON
+                        fetchJSON
                             @[Aeson.Value]
-                            ("https://api.tfl.gov.uk/Line/" <> line <> "/Arrivals/" <> station)
+                            ("https://api.tfl.gov.uk/Line/" <> T.intercalate "," lines <> "/Arrivals/" <> station)
                             \entries ->
-                                let jsonData = for entries \json -> do
+                                let jsonData = map (second toList) . classifyOnFst <$> for entries \json -> do
+                                        lineId <- json ^? key "lineId" % _String % to ms
                                         stationName <- json ^? key "stationName" % _String % to ms
                                         platformName <- json ^? key "platformName" % _String % to ms
                                         towards <- json ^? key "towards" % _String % to ms
@@ -202,10 +203,10 @@ transport =
                                                 ^? key "expectedArrival"
                                                 % _String
                                                 % afolding (fmap (utcToLocalTime timeZone) . iso8601ParseM . T.unpack)
-                                        pure TrainData{..}
+                                        pure (lineId, TrainData{..})
                                  in case jsonData of
                                         Nothing -> consoleLog $ "failure parsing train info: " <> ms (show entries)
-                                        Just r -> sink ((station, line), (stationNameShort, r))
+                                        Just r -> for_ r \(line, r') -> sink ((station, line), (stationNameShort, r'))
                     -- 50 requests a minute allowed without key (presumably per IP?)
                     -- of course we do `sum $ map (length . thd3) stations` calls on each iteration
                     -- and during development we could easily have three clients running during dev
@@ -249,6 +250,8 @@ data TrainData = TrainData
 
 classifyOn :: (Ord b) => (a -> b) -> [a] -> [(b, NonEmpty a)]
 classifyOn f = Map.toList . Map.fromListWith (<>) . map (f &&& pure @NonEmpty)
+classifyOnFst :: (Ord a) => [(a, b)] -> [(a, NonEmpty b)]
+classifyOnFst = map (second $ fmap snd) . classifyOn fst
 
 -- TODO `openweathermap` really isn't a great library
 -- here are just a few things we should (improve further, then) try to upstream
