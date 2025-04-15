@@ -35,7 +35,7 @@ import Data.Traversable
 import Data.Tuple.Extra (second, (&&&))
 import GHC.Generics (Generic)
 import Miso hiding (for_, sink)
-import Miso.String (MisoString, ms)
+import Miso.String (MisoString, fromMisoString, ms)
 import Optics
 import Servant.Client (ClientError)
 import System.Environment
@@ -190,7 +190,7 @@ transport =
                 [ \sink -> forever do
                     timeZone <- liftIO getCurrentTimeZone
                     for_ stations \(station, stationNameShort, lines) -> flip
-                        (lineArrivals (QueryList lines) station Nothing Nothing)
+                        (lineArrivals (QueryList $ map fromMisoString lines) (fromMisoString station) Nothing Nothing)
                         (\s -> consoleLog $ "error fetching train data: " <> s)
                         \entries ->
                             either
