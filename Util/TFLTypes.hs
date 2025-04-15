@@ -1,8 +1,5 @@
--- TODO aside from this comment, the module name, and some removed imports, this is an exact copy of https://github.com/georgefst/tfl-haskell/blob/3fdb4b080a1d5d6edced9799065d276585b89b43/lib/TransportForLondonUnified/Types.hs
+-- TODO aside from this comment, the module name, some removed imports, switching `swagger2` for `openapi3`, and the aqueduct, this is an exact copy of https://github.com/georgefst/tfl-haskell/blob/3fdb4b080a1d5d6edced9799065d276585b89b43/lib/TransportForLondonUnified/Types.hs
 -- it's factored out of that project due to some dependencies which don't work on Wasm
--- it does still depend on `swagger2`, which depends on `network`
--- but this code should still run since we're not using the problematic parts
--- we should really modify the template to use the more modern `openapi3` library instead
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE DeriveGeneric              #-}
@@ -141,8 +138,8 @@ import Data.Aeson.Types (Options(..), defaultOptions)
 import Data.Text (Text)
 import Data.Time
 import Data.Time.Calendar.OrdinalDate (fromOrdinalDate)
-import Data.Swagger (ToSchema, declareNamedSchema)
-import qualified Data.Swagger as Swagger
+import Data.OpenApi (ToSchema, declareNamedSchema)
+import qualified Data.OpenApi as Swagger
 import GHC.Generics (Generic)
 
 

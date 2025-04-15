@@ -36,6 +36,13 @@ if impl(ghc >= 9.10)
         filepath-bytestring:base,
         -- https://github.com/sdiehl/repline/pull/50
         repline:containers,
+        -- https://github.com/biocad/openapi3/pull/109
+        openapi3:base,
+        openapi3:base-compat-batteries,
+        openapi3:containers,
+        openapi3:hashable,
+        openapi3:template-haskell,
+        openapi3:time,
 
 if impl(ghc >= 9.12)
     -- https://github.com/ocharles/logging-effect/pull/44
@@ -84,5 +91,3 @@ if impl(ghc >= 9.12)
         servant-client-core:template-haskell,
         servant-server:base,
         svg-builder:base,
-        swagger2:base,
-        swagger2:template-haskell,
