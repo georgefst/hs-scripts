@@ -343,7 +343,7 @@ main = shakeArgs shakeOpts do
             ("uniplate")
             ("unix")
             ("unordered-containers")
-            ("uuid")
+            ("uuid" & munless wasm) -- https://github.com/haskell-hvr/uuid/issues/64, https://github.com/jacobstanley/network-info/issues/22
             ("vector-algorithms")
             ("vector")
             ("wai-app-static" & munless (noTH || noWarp))
