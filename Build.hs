@@ -302,7 +302,7 @@ main = shakeArgs shakeOpts do
             ("network-uri")
             ("network")
             ("nonempty-containers")
-            ("openapi3")
+            ("openapi3" & munless wasm) -- https://github.com/biocad/openapi3/issues/110
             ("openweathermap")
             ("optics-operators")
             ("optics")
