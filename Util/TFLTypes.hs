@@ -1,4 +1,4 @@
--- TODO aside from this comment, the module name, some removed imports, switching `swagger2` for `openapi3`, and the aqueduct, this is an exact copy of https://github.com/georgefst/tfl-haskell/blob/3fdb4b080a1d5d6edced9799065d276585b89b43/lib/TransportForLondonUnified/Types.hs
+-- TODO aside from this comment, the module name, some removed imports, removing `ToSchema` instances, and the aqueduct, this is an exact copy of https://github.com/georgefst/tfl-haskell/blob/3fdb4b080a1d5d6edced9799065d276585b89b43/lib/TransportForLondonUnified/Types.hs
 -- it's factored out of that project due to some dependencies which don't work on Wasm
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE DeriveDataTypeable         #-}
@@ -138,8 +138,6 @@ import Data.Aeson.Types (Options(..), defaultOptions)
 import Data.Text (Text)
 import Data.Time
 import Data.Time.Calendar.OrdinalDate (fromOrdinalDate)
-import Data.OpenApi (ToSchema, declareNamedSchema)
-import qualified Data.OpenApi as Swagger
 import GHC.Generics (Generic)
 
 
@@ -152,10 +150,6 @@ instance FromJSON SystemDataSpatialDbGeography where
   parseJSON = genericParseJSON optionsSystemDataSpatialDbGeography
 instance ToJSON SystemDataSpatialDbGeography where
   toJSON = genericToJSON optionsSystemDataSpatialDbGeography
-instance ToSchema SystemDataSpatialDbGeography where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsSystemDataSpatialDbGeography
 
 optionsSystemDataSpatialDbGeography :: Options
 optionsSystemDataSpatialDbGeography =
@@ -180,10 +174,6 @@ instance FromJSON SystemDataSpatialDbGeographyWellKnownValue where
   parseJSON = genericParseJSON optionsSystemDataSpatialDbGeographyWellKnownValue
 instance ToJSON SystemDataSpatialDbGeographyWellKnownValue where
   toJSON = genericToJSON optionsSystemDataSpatialDbGeographyWellKnownValue
-instance ToSchema SystemDataSpatialDbGeographyWellKnownValue where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsSystemDataSpatialDbGeographyWellKnownValue
 
 optionsSystemDataSpatialDbGeographyWellKnownValue :: Options
 optionsSystemDataSpatialDbGeographyWellKnownValue =
@@ -211,10 +201,6 @@ instance FromJSON TflApiCommonApiVersionInfo where
   parseJSON = genericParseJSON optionsTflApiCommonApiVersionInfo
 instance ToJSON TflApiCommonApiVersionInfo where
   toJSON = genericToJSON optionsTflApiCommonApiVersionInfo
-instance ToSchema TflApiCommonApiVersionInfo where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiCommonApiVersionInfo
 
 optionsTflApiCommonApiVersionInfo :: Options
 optionsTflApiCommonApiVersionInfo =
@@ -241,10 +227,6 @@ instance FromJSON TflApiCommonDateRange where
   parseJSON = genericParseJSON optionsTflApiCommonDateRange
 instance ToJSON TflApiCommonDateRange where
   toJSON = genericToJSON optionsTflApiCommonDateRange
-instance ToSchema TflApiCommonDateRange where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiCommonDateRange
 
 optionsTflApiCommonDateRange :: Options
 optionsTflApiCommonDateRange =
@@ -269,10 +251,6 @@ instance FromJSON TflApiCommonDateRangeNullable where
   parseJSON = genericParseJSON optionsTflApiCommonDateRangeNullable
 instance ToJSON TflApiCommonDateRangeNullable where
   toJSON = genericToJSON optionsTflApiCommonDateRangeNullable
-instance ToSchema TflApiCommonDateRangeNullable where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiCommonDateRangeNullable
 
 optionsTflApiCommonDateRangeNullable :: Options
 optionsTflApiCommonDateRangeNullable =
@@ -297,10 +275,6 @@ instance FromJSON TflApiCommonGeoPoint where
   parseJSON = genericParseJSON optionsTflApiCommonGeoPoint
 instance ToJSON TflApiCommonGeoPoint where
   toJSON = genericToJSON optionsTflApiCommonGeoPoint
-instance ToSchema TflApiCommonGeoPoint where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiCommonGeoPoint
 
 optionsTflApiCommonGeoPoint :: Options
 optionsTflApiCommonGeoPoint =
@@ -330,10 +304,6 @@ instance FromJSON TflApiCommonJourneyPlannerJpElevation where
   parseJSON = genericParseJSON optionsTflApiCommonJourneyPlannerJpElevation
 instance ToJSON TflApiCommonJourneyPlannerJpElevation where
   toJSON = genericToJSON optionsTflApiCommonJourneyPlannerJpElevation
-instance ToSchema TflApiCommonJourneyPlannerJpElevation where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiCommonJourneyPlannerJpElevation
 
 optionsTflApiCommonJourneyPlannerJpElevation :: Options
 optionsTflApiCommonJourneyPlannerJpElevation =
@@ -367,10 +337,6 @@ instance FromJSON TflApiCommonPlaceGeo where
   parseJSON = genericParseJSON optionsTflApiCommonPlaceGeo
 instance ToJSON TflApiCommonPlaceGeo where
   toJSON = genericToJSON optionsTflApiCommonPlaceGeo
-instance ToSchema TflApiCommonPlaceGeo where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiCommonPlaceGeo
 
 optionsTflApiCommonPlaceGeo :: Options
 optionsTflApiCommonPlaceGeo =
@@ -398,10 +364,6 @@ instance FromJSON TflApiCommonPostcodeInput where
   parseJSON = genericParseJSON optionsTflApiCommonPostcodeInput
 instance ToJSON TflApiCommonPostcodeInput where
   toJSON = genericToJSON optionsTflApiCommonPostcodeInput
-instance ToSchema TflApiCommonPostcodeInput where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiCommonPostcodeInput
 
 optionsTflApiCommonPostcodeInput :: Options
 optionsTflApiCommonPostcodeInput =
@@ -432,10 +394,6 @@ instance FromJSON TflApiPresentationEntitiesAccidentStatsAccidentDetail where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesAccidentStatsAccidentDetail
 instance ToJSON TflApiPresentationEntitiesAccidentStatsAccidentDetail where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesAccidentStatsAccidentDetail
-instance ToSchema TflApiPresentationEntitiesAccidentStatsAccidentDetail where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesAccidentStatsAccidentDetail
 
 optionsTflApiPresentationEntitiesAccidentStatsAccidentDetail :: Options
 optionsTflApiPresentationEntitiesAccidentStatsAccidentDetail =
@@ -468,10 +426,6 @@ instance FromJSON TflApiPresentationEntitiesAccidentStatsAccidentStatsOrderedSum
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesAccidentStatsAccidentStatsOrderedSummary
 instance ToJSON TflApiPresentationEntitiesAccidentStatsAccidentStatsOrderedSummary where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesAccidentStatsAccidentStatsOrderedSummary
-instance ToSchema TflApiPresentationEntitiesAccidentStatsAccidentStatsOrderedSummary where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesAccidentStatsAccidentStatsOrderedSummary
 
 optionsTflApiPresentationEntitiesAccidentStatsAccidentStatsOrderedSummary :: Options
 optionsTflApiPresentationEntitiesAccidentStatsAccidentStatsOrderedSummary =
@@ -500,10 +454,6 @@ instance FromJSON TflApiPresentationEntitiesAccidentStatsCasualty where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesAccidentStatsCasualty
 instance ToJSON TflApiPresentationEntitiesAccidentStatsCasualty where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesAccidentStatsCasualty
-instance ToSchema TflApiPresentationEntitiesAccidentStatsCasualty where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesAccidentStatsCasualty
 
 optionsTflApiPresentationEntitiesAccidentStatsCasualty :: Options
 optionsTflApiPresentationEntitiesAccidentStatsCasualty =
@@ -530,10 +480,6 @@ instance FromJSON TflApiPresentationEntitiesAccidentStatsVehicle where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesAccidentStatsVehicle
 instance ToJSON TflApiPresentationEntitiesAccidentStatsVehicle where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesAccidentStatsVehicle
-instance ToSchema TflApiPresentationEntitiesAccidentStatsVehicle where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesAccidentStatsVehicle
 
 optionsTflApiPresentationEntitiesAccidentStatsVehicle :: Options
 optionsTflApiPresentationEntitiesAccidentStatsVehicle =
@@ -557,10 +503,6 @@ instance FromJSON TflApiPresentationEntitiesActiveServiceType where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesActiveServiceType
 instance ToJSON TflApiPresentationEntitiesActiveServiceType where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesActiveServiceType
-instance ToSchema TflApiPresentationEntitiesActiveServiceType where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesActiveServiceType
 
 optionsTflApiPresentationEntitiesActiveServiceType :: Options
 optionsTflApiPresentationEntitiesActiveServiceType =
@@ -588,10 +530,6 @@ instance FromJSON TflApiPresentationEntitiesAdditionalProperties where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesAdditionalProperties
 instance ToJSON TflApiPresentationEntitiesAdditionalProperties where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesAdditionalProperties
-instance ToSchema TflApiPresentationEntitiesAdditionalProperties where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesAdditionalProperties
 
 optionsTflApiPresentationEntitiesAdditionalProperties :: Options
 optionsTflApiPresentationEntitiesAdditionalProperties =
@@ -631,10 +569,6 @@ instance FromJSON TflApiPresentationEntitiesArrivalDeparture where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesArrivalDeparture
 instance ToJSON TflApiPresentationEntitiesArrivalDeparture where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesArrivalDeparture
-instance ToSchema TflApiPresentationEntitiesArrivalDeparture where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesArrivalDeparture
 
 optionsTflApiPresentationEntitiesArrivalDeparture :: Options
 optionsTflApiPresentationEntitiesArrivalDeparture =
@@ -686,10 +620,6 @@ instance FromJSON TflApiPresentationEntitiesArrivalDepartureWithLine where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesArrivalDepartureWithLine
 instance ToJSON TflApiPresentationEntitiesArrivalDepartureWithLine where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesArrivalDepartureWithLine
-instance ToSchema TflApiPresentationEntitiesArrivalDepartureWithLine where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesArrivalDepartureWithLine
 
 optionsTflApiPresentationEntitiesArrivalDepartureWithLine :: Options
 optionsTflApiPresentationEntitiesArrivalDepartureWithLine =
@@ -731,10 +661,6 @@ instance FromJSON TflApiPresentationEntitiesBay where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesBay
 instance ToJSON TflApiPresentationEntitiesBay where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesBay
-instance ToSchema TflApiPresentationEntitiesBay where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesBay
 
 optionsTflApiPresentationEntitiesBay :: Options
 optionsTflApiPresentationEntitiesBay =
@@ -766,10 +692,6 @@ instance FromJSON TflApiPresentationEntitiesBikePointOccupancy where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesBikePointOccupancy
 instance ToJSON TflApiPresentationEntitiesBikePointOccupancy where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesBikePointOccupancy
-instance ToSchema TflApiPresentationEntitiesBikePointOccupancy where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesBikePointOccupancy
 
 optionsTflApiPresentationEntitiesBikePointOccupancy :: Options
 optionsTflApiPresentationEntitiesBikePointOccupancy =
@@ -801,10 +723,6 @@ instance FromJSON TflApiPresentationEntitiesCarParkOccupancy where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesCarParkOccupancy
 instance ToJSON TflApiPresentationEntitiesCarParkOccupancy where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesCarParkOccupancy
-instance ToSchema TflApiPresentationEntitiesCarParkOccupancy where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesCarParkOccupancy
 
 optionsTflApiPresentationEntitiesCarParkOccupancy :: Options
 optionsTflApiPresentationEntitiesCarParkOccupancy =
@@ -832,10 +750,6 @@ instance FromJSON TflApiPresentationEntitiesChargeConnectorOccupancy where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesChargeConnectorOccupancy
 instance ToJSON TflApiPresentationEntitiesChargeConnectorOccupancy where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesChargeConnectorOccupancy
-instance ToSchema TflApiPresentationEntitiesChargeConnectorOccupancy where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesChargeConnectorOccupancy
 
 optionsTflApiPresentationEntitiesChargeConnectorOccupancy :: Options
 optionsTflApiPresentationEntitiesChargeConnectorOccupancy =
@@ -865,10 +779,6 @@ instance FromJSON TflApiPresentationEntitiesCoordinate where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesCoordinate
 instance ToJSON TflApiPresentationEntitiesCoordinate where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesCoordinate
-instance ToSchema TflApiPresentationEntitiesCoordinate where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesCoordinate
 
 optionsTflApiPresentationEntitiesCoordinate :: Options
 optionsTflApiPresentationEntitiesCoordinate =
@@ -897,10 +807,6 @@ instance FromJSON TflApiPresentationEntitiesCrowding where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesCrowding
 instance ToJSON TflApiPresentationEntitiesCrowding where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesCrowding
-instance ToSchema TflApiPresentationEntitiesCrowding where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesCrowding
 
 optionsTflApiPresentationEntitiesCrowding :: Options
 optionsTflApiPresentationEntitiesCrowding =
@@ -931,10 +837,6 @@ instance FromJSON TflApiPresentationEntitiesCycleSuperhighway where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesCycleSuperhighway
 instance ToJSON TflApiPresentationEntitiesCycleSuperhighway where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesCycleSuperhighway
-instance ToSchema TflApiPresentationEntitiesCycleSuperhighway where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesCycleSuperhighway
 
 optionsTflApiPresentationEntitiesCycleSuperhighway :: Options
 optionsTflApiPresentationEntitiesCycleSuperhighway =
@@ -973,10 +875,6 @@ instance FromJSON TflApiPresentationEntitiesDisruptedPoint where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesDisruptedPoint
 instance ToJSON TflApiPresentationEntitiesDisruptedPoint where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesDisruptedPoint
-instance ToSchema TflApiPresentationEntitiesDisruptedPoint where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesDisruptedPoint
 
 optionsTflApiPresentationEntitiesDisruptedPoint :: Options
 optionsTflApiPresentationEntitiesDisruptedPoint =
@@ -1020,10 +918,6 @@ instance FromJSON TflApiPresentationEntitiesDisruptedRoute where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesDisruptedRoute
 instance ToJSON TflApiPresentationEntitiesDisruptedRoute where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesDisruptedRoute
-instance ToSchema TflApiPresentationEntitiesDisruptedRoute where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesDisruptedRoute
 
 optionsTflApiPresentationEntitiesDisruptedRoute :: Options
 optionsTflApiPresentationEntitiesDisruptedRoute =
@@ -1068,10 +962,6 @@ instance FromJSON TflApiPresentationEntitiesDisruption where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesDisruption
 instance ToJSON TflApiPresentationEntitiesDisruption where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesDisruption
-instance ToSchema TflApiPresentationEntitiesDisruption where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesDisruption
 
 optionsTflApiPresentationEntitiesDisruption :: Options
 optionsTflApiPresentationEntitiesDisruption =
@@ -1114,10 +1004,6 @@ instance FromJSON TflApiPresentationEntitiesFaresFare where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesFaresFare
 instance ToJSON TflApiPresentationEntitiesFaresFare where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesFaresFare
-instance ToSchema TflApiPresentationEntitiesFaresFare where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesFaresFare
 
 optionsTflApiPresentationEntitiesFaresFare :: Options
 optionsTflApiPresentationEntitiesFaresFare =
@@ -1162,10 +1048,6 @@ instance FromJSON TflApiPresentationEntitiesFaresFareBounds where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesFaresFareBounds
 instance ToJSON TflApiPresentationEntitiesFaresFareBounds where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesFaresFareBounds
-instance ToSchema TflApiPresentationEntitiesFaresFareBounds where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesFaresFareBounds
 
 optionsTflApiPresentationEntitiesFaresFareBounds :: Options
 optionsTflApiPresentationEntitiesFaresFareBounds =
@@ -1221,10 +1103,6 @@ instance FromJSON TflApiPresentationEntitiesFaresFareDetails where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesFaresFareDetails
 instance ToJSON TflApiPresentationEntitiesFaresFareDetails where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesFaresFareDetails
-instance ToSchema TflApiPresentationEntitiesFaresFareDetails where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesFaresFareDetails
 
 optionsTflApiPresentationEntitiesFaresFareDetails :: Options
 optionsTflApiPresentationEntitiesFaresFareDetails =
@@ -1270,10 +1148,6 @@ instance FromJSON TflApiPresentationEntitiesFaresFareStation where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesFaresFareStation
 instance ToJSON TflApiPresentationEntitiesFaresFareStation where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesFaresFareStation
-instance ToSchema TflApiPresentationEntitiesFaresFareStation where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesFaresFareStation
 
 optionsTflApiPresentationEntitiesFaresFareStation :: Options
 optionsTflApiPresentationEntitiesFaresFareStation =
@@ -1300,10 +1174,6 @@ instance FromJSON TflApiPresentationEntitiesFaresFaresMode where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesFaresFaresMode
 instance ToJSON TflApiPresentationEntitiesFaresFaresMode where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesFaresFaresMode
-instance ToSchema TflApiPresentationEntitiesFaresFaresMode where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesFaresFaresMode
 
 optionsTflApiPresentationEntitiesFaresFaresMode :: Options
 optionsTflApiPresentationEntitiesFaresFaresMode =
@@ -1332,10 +1202,6 @@ instance FromJSON TflApiPresentationEntitiesFaresFaresPeriod where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesFaresFaresPeriod
 instance ToJSON TflApiPresentationEntitiesFaresFaresPeriod where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesFaresFaresPeriod
-instance ToSchema TflApiPresentationEntitiesFaresFaresPeriod where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesFaresFaresPeriod
 
 optionsTflApiPresentationEntitiesFaresFaresPeriod :: Options
 optionsTflApiPresentationEntitiesFaresFaresPeriod =
@@ -1366,10 +1232,6 @@ instance FromJSON TflApiPresentationEntitiesFaresFaresSection where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesFaresFaresSection
 instance ToJSON TflApiPresentationEntitiesFaresFaresSection where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesFaresFaresSection
-instance ToSchema TflApiPresentationEntitiesFaresFaresSection where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesFaresFaresSection
 
 optionsTflApiPresentationEntitiesFaresFaresSection :: Options
 optionsTflApiPresentationEntitiesFaresFaresSection =
@@ -1397,10 +1259,6 @@ instance FromJSON TflApiPresentationEntitiesFaresJourney where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesFaresJourney
 instance ToJSON TflApiPresentationEntitiesFaresJourney where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesFaresJourney
-instance ToSchema TflApiPresentationEntitiesFaresJourney where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesFaresJourney
 
 optionsTflApiPresentationEntitiesFaresJourney :: Options
 optionsTflApiPresentationEntitiesFaresJourney =
@@ -1427,10 +1285,6 @@ instance FromJSON TflApiPresentationEntitiesFaresPassengerType where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesFaresPassengerType
 instance ToJSON TflApiPresentationEntitiesFaresPassengerType where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesFaresPassengerType
-instance ToSchema TflApiPresentationEntitiesFaresPassengerType where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesFaresPassengerType
 
 optionsTflApiPresentationEntitiesFaresPassengerType :: Options
 optionsTflApiPresentationEntitiesFaresPassengerType =
@@ -1473,10 +1327,6 @@ instance FromJSON TflApiPresentationEntitiesFaresRecommendation where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesFaresRecommendation
 instance ToJSON TflApiPresentationEntitiesFaresRecommendation where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesFaresRecommendation
-instance ToSchema TflApiPresentationEntitiesFaresRecommendation where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesFaresRecommendation
 
 optionsTflApiPresentationEntitiesFaresRecommendation :: Options
 optionsTflApiPresentationEntitiesFaresRecommendation =
@@ -1516,10 +1366,6 @@ instance FromJSON TflApiPresentationEntitiesFaresRecommendationResponse where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesFaresRecommendationResponse
 instance ToJSON TflApiPresentationEntitiesFaresRecommendationResponse where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesFaresRecommendationResponse
-instance ToSchema TflApiPresentationEntitiesFaresRecommendationResponse where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesFaresRecommendationResponse
 
 optionsTflApiPresentationEntitiesFaresRecommendationResponse :: Options
 optionsTflApiPresentationEntitiesFaresRecommendationResponse =
@@ -1549,10 +1395,6 @@ instance FromJSON TflApiPresentationEntitiesFaresTicket where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesFaresTicket
 instance ToJSON TflApiPresentationEntitiesFaresTicket where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesFaresTicket
-instance ToSchema TflApiPresentationEntitiesFaresTicket where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesFaresTicket
 
 optionsTflApiPresentationEntitiesFaresTicket :: Options
 optionsTflApiPresentationEntitiesFaresTicket =
@@ -1583,10 +1425,6 @@ instance FromJSON TflApiPresentationEntitiesFaresTicketTime where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesFaresTicketTime
 instance ToJSON TflApiPresentationEntitiesFaresTicketTime where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesFaresTicketTime
-instance ToSchema TflApiPresentationEntitiesFaresTicketTime where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesFaresTicketTime
 
 optionsTflApiPresentationEntitiesFaresTicketTime :: Options
 optionsTflApiPresentationEntitiesFaresTicketTime =
@@ -1611,10 +1449,6 @@ instance FromJSON TflApiPresentationEntitiesFaresTicketType where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesFaresTicketType
 instance ToJSON TflApiPresentationEntitiesFaresTicketType where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesFaresTicketType
-instance ToSchema TflApiPresentationEntitiesFaresTicketType where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesFaresTicketType
 
 optionsTflApiPresentationEntitiesFaresTicketType :: Options
 optionsTflApiPresentationEntitiesFaresTicketType =
@@ -1644,10 +1478,6 @@ instance FromJSON TflApiPresentationEntitiesGeoCodeSearchMatch where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesGeoCodeSearchMatch
 instance ToJSON TflApiPresentationEntitiesGeoCodeSearchMatch where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesGeoCodeSearchMatch
-instance ToSchema TflApiPresentationEntitiesGeoCodeSearchMatch where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesGeoCodeSearchMatch
 
 optionsTflApiPresentationEntitiesGeoCodeSearchMatch :: Options
 optionsTflApiPresentationEntitiesGeoCodeSearchMatch =
@@ -1685,10 +1515,6 @@ instance FromJSON TflApiPresentationEntitiesIdentifier where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesIdentifier
 instance ToJSON TflApiPresentationEntitiesIdentifier where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesIdentifier
-instance ToSchema TflApiPresentationEntitiesIdentifier where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesIdentifier
 
 optionsTflApiPresentationEntitiesIdentifier :: Options
 optionsTflApiPresentationEntitiesIdentifier =
@@ -1722,10 +1548,6 @@ instance FromJSON TflApiPresentationEntitiesInstruction where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesInstruction
 instance ToJSON TflApiPresentationEntitiesInstruction where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesInstruction
-instance ToSchema TflApiPresentationEntitiesInstruction where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesInstruction
 
 optionsTflApiPresentationEntitiesInstruction :: Options
 optionsTflApiPresentationEntitiesInstruction =
@@ -1764,10 +1586,6 @@ instance FromJSON TflApiPresentationEntitiesInstructionStep where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesInstructionStep
 instance ToJSON TflApiPresentationEntitiesInstructionStep where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesInstructionStep
-instance ToSchema TflApiPresentationEntitiesInstructionStep where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesInstructionStep
 
 optionsTflApiPresentationEntitiesInstructionStep :: Options
 optionsTflApiPresentationEntitiesInstructionStep =
@@ -1805,10 +1623,6 @@ instance FromJSON TflApiPresentationEntitiesInterval where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesInterval
 instance ToJSON TflApiPresentationEntitiesInterval where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesInterval
-instance ToSchema TflApiPresentationEntitiesInterval where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesInterval
 
 optionsTflApiPresentationEntitiesInterval :: Options
 optionsTflApiPresentationEntitiesInterval =
@@ -1840,10 +1654,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerFare where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerFare
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerFare where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerFare
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerFare where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerFare
 
 optionsTflApiPresentationEntitiesJourneyPlannerFare :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerFare =
@@ -1875,10 +1685,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerFareCaveat where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerFareCaveat
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerFareCaveat where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerFareCaveat
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerFareCaveat where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerFareCaveat
 
 optionsTflApiPresentationEntitiesJourneyPlannerFareCaveat :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerFareCaveat =
@@ -1903,10 +1709,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerFareTap where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerFareTap
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerFareTap where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerFareTap
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerFareTap where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerFareTap
 
 optionsTflApiPresentationEntitiesJourneyPlannerFareTap :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerFareTap =
@@ -1935,10 +1737,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerFareTapDetails where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerFareTapDetails
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerFareTapDetails where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerFareTapDetails
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerFareTapDetails where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerFareTapDetails
 
 optionsTflApiPresentationEntitiesJourneyPlannerFareTapDetails :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerFareTapDetails =
@@ -1972,10 +1770,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerItineraryResult where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerItineraryResult
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerItineraryResult where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerItineraryResult
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerItineraryResult where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerItineraryResult
 
 optionsTflApiPresentationEntitiesJourneyPlannerItineraryResult :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerItineraryResult =
@@ -2010,10 +1804,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerJourney where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerJourney
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerJourney where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerJourney
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerJourney where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerJourney
 
 optionsTflApiPresentationEntitiesJourneyPlannerJourney :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerJourney =
@@ -2044,10 +1834,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerJourneyFare where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerJourneyFare
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerJourneyFare where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerJourneyFare
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerJourneyFare where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerJourneyFare
 
 optionsTflApiPresentationEntitiesJourneyPlannerJourneyFare :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerJourneyFare =
@@ -2077,10 +1863,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerJourneyPlannerCycleHir
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerJourneyPlannerCycleHireDockingStationData
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerJourneyPlannerCycleHireDockingStationData where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerJourneyPlannerCycleHireDockingStationData
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerJourneyPlannerCycleHireDockingStationData where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerJourneyPlannerCycleHireDockingStationData
 
 optionsTflApiPresentationEntitiesJourneyPlannerJourneyPlannerCycleHireDockingStationData :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerJourneyPlannerCycleHireDockingStationData =
@@ -2111,10 +1893,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerJourneyVector where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerJourneyVector
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerJourneyVector where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerJourneyVector
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerJourneyVector where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerJourneyVector
 
 optionsTflApiPresentationEntitiesJourneyPlannerJourneyVector :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerJourneyVector =
@@ -2159,10 +1937,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerLeg where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerLeg
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerLeg where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerLeg
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerLeg where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerLeg
 
 optionsTflApiPresentationEntitiesJourneyPlannerLeg :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerLeg =
@@ -2207,10 +1981,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerObstacle where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerObstacle
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerObstacle where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerObstacle
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerObstacle where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerObstacle
 
 optionsTflApiPresentationEntitiesJourneyPlannerObstacle :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerObstacle =
@@ -2238,10 +2008,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerPath where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerPath
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerPath where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerPath
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerPath where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerPath
 
 optionsTflApiPresentationEntitiesJourneyPlannerPath :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerPath =
@@ -2269,10 +2035,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerPlannedWork where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerPlannedWork
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerPlannedWork where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerPlannedWork
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerPlannedWork where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerPlannedWork
 
 optionsTflApiPresentationEntitiesJourneyPlannerPlannedWork :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerPlannedWork =
@@ -2302,10 +2064,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerRouteOption where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerRouteOption
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerRouteOption where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerRouteOption
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerRouteOption where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerRouteOption
 
 optionsTflApiPresentationEntitiesJourneyPlannerRouteOption :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerRouteOption =
@@ -2334,10 +2092,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerSearchCriteria where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerSearchCriteria
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerSearchCriteria where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerSearchCriteria
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerSearchCriteria where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerSearchCriteria
 
 optionsTflApiPresentationEntitiesJourneyPlannerSearchCriteria :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerSearchCriteria =
@@ -2365,10 +2119,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerTimeAdjustment where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerTimeAdjustment
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerTimeAdjustment where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerTimeAdjustment
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerTimeAdjustment where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerTimeAdjustment
 
 optionsTflApiPresentationEntitiesJourneyPlannerTimeAdjustment :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerTimeAdjustment =
@@ -2397,10 +2147,6 @@ instance FromJSON TflApiPresentationEntitiesJourneyPlannerTimeAdjustments where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesJourneyPlannerTimeAdjustments
 instance ToJSON TflApiPresentationEntitiesJourneyPlannerTimeAdjustments where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesJourneyPlannerTimeAdjustments
-instance ToSchema TflApiPresentationEntitiesJourneyPlannerTimeAdjustments where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesJourneyPlannerTimeAdjustments
 
 optionsTflApiPresentationEntitiesJourneyPlannerTimeAdjustments :: Options
 optionsTflApiPresentationEntitiesJourneyPlannerTimeAdjustments =
@@ -2428,10 +2174,6 @@ instance FromJSON TflApiPresentationEntitiesKnownJourney where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesKnownJourney
 instance ToJSON TflApiPresentationEntitiesKnownJourney where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesKnownJourney
-instance ToSchema TflApiPresentationEntitiesKnownJourney where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesKnownJourney
 
 optionsTflApiPresentationEntitiesKnownJourney :: Options
 optionsTflApiPresentationEntitiesKnownJourney =
@@ -2465,10 +2207,6 @@ instance FromJSON TflApiPresentationEntitiesLine where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesLine
 instance ToJSON TflApiPresentationEntitiesLine where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesLine
-instance ToSchema TflApiPresentationEntitiesLine where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesLine
 
 optionsTflApiPresentationEntitiesLine :: Options
 optionsTflApiPresentationEntitiesLine =
@@ -2502,10 +2240,6 @@ instance FromJSON TflApiPresentationEntitiesLineGroup where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesLineGroup
 instance ToJSON TflApiPresentationEntitiesLineGroup where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesLineGroup
-instance ToSchema TflApiPresentationEntitiesLineGroup where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesLineGroup
 
 optionsTflApiPresentationEntitiesLineGroup :: Options
 optionsTflApiPresentationEntitiesLineGroup =
@@ -2531,10 +2265,6 @@ instance FromJSON TflApiPresentationEntitiesLineModeGroup where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesLineModeGroup
 instance ToJSON TflApiPresentationEntitiesLineModeGroup where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesLineModeGroup
-instance ToSchema TflApiPresentationEntitiesLineModeGroup where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesLineModeGroup
 
 optionsTflApiPresentationEntitiesLineModeGroup :: Options
 optionsTflApiPresentationEntitiesLineModeGroup =
@@ -2564,10 +2294,6 @@ instance FromJSON TflApiPresentationEntitiesLineRouteSection where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesLineRouteSection
 instance ToJSON TflApiPresentationEntitiesLineRouteSection where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesLineRouteSection
-instance ToSchema TflApiPresentationEntitiesLineRouteSection where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesLineRouteSection
 
 optionsTflApiPresentationEntitiesLineRouteSection :: Options
 optionsTflApiPresentationEntitiesLineRouteSection =
@@ -2597,10 +2323,6 @@ instance FromJSON TflApiPresentationEntitiesLineServiceType where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesLineServiceType
 instance ToJSON TflApiPresentationEntitiesLineServiceType where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesLineServiceType
-instance ToSchema TflApiPresentationEntitiesLineServiceType where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesLineServiceType
 
 optionsTflApiPresentationEntitiesLineServiceType :: Options
 optionsTflApiPresentationEntitiesLineServiceType =
@@ -2625,10 +2347,6 @@ instance FromJSON TflApiPresentationEntitiesLineServiceTypeInfo where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesLineServiceTypeInfo
 instance ToJSON TflApiPresentationEntitiesLineServiceTypeInfo where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesLineServiceTypeInfo
-instance ToSchema TflApiPresentationEntitiesLineServiceTypeInfo where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesLineServiceTypeInfo
 
 optionsTflApiPresentationEntitiesLineServiceTypeInfo :: Options
 optionsTflApiPresentationEntitiesLineServiceTypeInfo =
@@ -2653,10 +2371,6 @@ instance FromJSON TflApiPresentationEntitiesLineSpecificServiceType where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesLineSpecificServiceType
 instance ToJSON TflApiPresentationEntitiesLineSpecificServiceType where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesLineSpecificServiceType
-instance ToSchema TflApiPresentationEntitiesLineSpecificServiceType where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesLineSpecificServiceType
 
 optionsTflApiPresentationEntitiesLineSpecificServiceType :: Options
 optionsTflApiPresentationEntitiesLineSpecificServiceType =
@@ -2688,10 +2402,6 @@ instance FromJSON TflApiPresentationEntitiesLineStatus where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesLineStatus
 instance ToJSON TflApiPresentationEntitiesLineStatus where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesLineStatus
-instance ToSchema TflApiPresentationEntitiesLineStatus where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesLineStatus
 
 optionsTflApiPresentationEntitiesLineStatus :: Options
 optionsTflApiPresentationEntitiesLineStatus =
@@ -2731,10 +2441,6 @@ instance FromJSON TflApiPresentationEntitiesMatchedRoute where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesMatchedRoute
 instance ToJSON TflApiPresentationEntitiesMatchedRoute where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesMatchedRoute
-instance ToSchema TflApiPresentationEntitiesMatchedRoute where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesMatchedRoute
 
 optionsTflApiPresentationEntitiesMatchedRoute :: Options
 optionsTflApiPresentationEntitiesMatchedRoute =
@@ -2766,10 +2472,6 @@ instance FromJSON TflApiPresentationEntitiesMatchedRouteSections where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesMatchedRouteSections
 instance ToJSON TflApiPresentationEntitiesMatchedRouteSections where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesMatchedRouteSections
-instance ToSchema TflApiPresentationEntitiesMatchedRouteSections where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesMatchedRouteSections
 
 optionsTflApiPresentationEntitiesMatchedRouteSections :: Options
 optionsTflApiPresentationEntitiesMatchedRouteSections =
@@ -2811,10 +2513,6 @@ instance FromJSON TflApiPresentationEntitiesMatchedStop where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesMatchedStop
 instance ToJSON TflApiPresentationEntitiesMatchedStop where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesMatchedStop
-instance ToSchema TflApiPresentationEntitiesMatchedStop where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesMatchedStop
 
 optionsTflApiPresentationEntitiesMatchedStop :: Options
 optionsTflApiPresentationEntitiesMatchedStop =
@@ -2860,10 +2558,6 @@ instance FromJSON TflApiPresentationEntitiesMessage where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesMessage
 instance ToJSON TflApiPresentationEntitiesMessage where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesMessage
-instance ToSchema TflApiPresentationEntitiesMessage where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesMessage
 
 optionsTflApiPresentationEntitiesMessage :: Options
 optionsTflApiPresentationEntitiesMessage =
@@ -2895,10 +2589,6 @@ instance FromJSON TflApiPresentationEntitiesMode where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesMode
 instance ToJSON TflApiPresentationEntitiesMode where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesMode
-instance ToSchema TflApiPresentationEntitiesMode where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesMode
 
 optionsTflApiPresentationEntitiesMode :: Options
 optionsTflApiPresentationEntitiesMode =
@@ -2929,10 +2619,6 @@ instance FromJSON TflApiPresentationEntitiesNetworkStatus where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesNetworkStatus
 instance ToJSON TflApiPresentationEntitiesNetworkStatus where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesNetworkStatus
-instance ToSchema TflApiPresentationEntitiesNetworkStatus where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesNetworkStatus
 
 optionsTflApiPresentationEntitiesNetworkStatus :: Options
 optionsTflApiPresentationEntitiesNetworkStatus =
@@ -2960,10 +2646,6 @@ instance FromJSON TflApiPresentationEntitiesOrderedRoute where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesOrderedRoute
 instance ToJSON TflApiPresentationEntitiesOrderedRoute where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesOrderedRoute
-instance ToSchema TflApiPresentationEntitiesOrderedRoute where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesOrderedRoute
 
 optionsTflApiPresentationEntitiesOrderedRoute :: Options
 optionsTflApiPresentationEntitiesOrderedRoute =
@@ -2989,10 +2671,6 @@ instance FromJSON TflApiPresentationEntitiesPassengerFlow where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesPassengerFlow
 instance ToJSON TflApiPresentationEntitiesPassengerFlow where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesPassengerFlow
-instance ToSchema TflApiPresentationEntitiesPassengerFlow where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesPassengerFlow
 
 optionsTflApiPresentationEntitiesPassengerFlow :: Options
 optionsTflApiPresentationEntitiesPassengerFlow =
@@ -3017,10 +2695,6 @@ instance FromJSON TflApiPresentationEntitiesPathAttribute where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesPathAttribute
 instance ToJSON TflApiPresentationEntitiesPathAttribute where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesPathAttribute
-instance ToSchema TflApiPresentationEntitiesPathAttribute where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesPathAttribute
 
 optionsTflApiPresentationEntitiesPathAttribute :: Options
 optionsTflApiPresentationEntitiesPathAttribute =
@@ -3047,10 +2721,6 @@ instance FromJSON TflApiPresentationEntitiesPeriod where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesPeriod
 instance ToJSON TflApiPresentationEntitiesPeriod where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesPeriod
-instance ToSchema TflApiPresentationEntitiesPeriod where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesPeriod
 
 optionsTflApiPresentationEntitiesPeriod :: Options
 optionsTflApiPresentationEntitiesPeriod =
@@ -3085,10 +2755,6 @@ instance FromJSON TflApiPresentationEntitiesPlace where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesPlace
 instance ToJSON TflApiPresentationEntitiesPlace where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesPlace
-instance ToSchema TflApiPresentationEntitiesPlace where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesPlace
 
 optionsTflApiPresentationEntitiesPlace :: Options
 optionsTflApiPresentationEntitiesPlace =
@@ -3121,10 +2787,6 @@ instance FromJSON TflApiPresentationEntitiesPlaceCategory where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesPlaceCategory
 instance ToJSON TflApiPresentationEntitiesPlaceCategory where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesPlaceCategory
-instance ToSchema TflApiPresentationEntitiesPlaceCategory where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesPlaceCategory
 
 optionsTflApiPresentationEntitiesPlaceCategory :: Options
 optionsTflApiPresentationEntitiesPlaceCategory =
@@ -3149,10 +2811,6 @@ instance FromJSON TflApiPresentationEntitiesPlacePolygon where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesPlacePolygon
 instance ToJSON TflApiPresentationEntitiesPlacePolygon where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesPlacePolygon
-instance ToSchema TflApiPresentationEntitiesPlacePolygon where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesPlacePolygon
 
 optionsTflApiPresentationEntitiesPlacePolygon :: Options
 optionsTflApiPresentationEntitiesPlacePolygon =
@@ -3177,10 +2835,6 @@ instance FromJSON TflApiPresentationEntitiesPoint where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesPoint
 instance ToJSON TflApiPresentationEntitiesPoint where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesPoint
-instance ToSchema TflApiPresentationEntitiesPoint where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesPoint
 
 optionsTflApiPresentationEntitiesPoint :: Options
 optionsTflApiPresentationEntitiesPoint =
@@ -3225,10 +2879,6 @@ instance FromJSON TflApiPresentationEntitiesPrediction where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesPrediction
 instance ToJSON TflApiPresentationEntitiesPrediction where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesPrediction
-instance ToSchema TflApiPresentationEntitiesPrediction where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesPrediction
 
 optionsTflApiPresentationEntitiesPrediction :: Options
 optionsTflApiPresentationEntitiesPrediction =
@@ -3289,10 +2939,6 @@ instance FromJSON TflApiPresentationEntitiesPredictionTiming where
 
 instance ToJSON TflApiPresentationEntitiesPredictionTiming where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesPredictionTiming
-instance ToSchema TflApiPresentationEntitiesPredictionTiming where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesPredictionTiming
 
 optionsTflApiPresentationEntitiesPredictionTiming :: Options
 optionsTflApiPresentationEntitiesPredictionTiming =
@@ -3322,10 +2968,6 @@ instance FromJSON TflApiPresentationEntitiesRedirect where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesRedirect
 instance ToJSON TflApiPresentationEntitiesRedirect where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesRedirect
-instance ToSchema TflApiPresentationEntitiesRedirect where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesRedirect
 
 optionsTflApiPresentationEntitiesRedirect :: Options
 optionsTflApiPresentationEntitiesRedirect =
@@ -3359,10 +3001,6 @@ instance FromJSON TflApiPresentationEntitiesRoadCorridor where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesRoadCorridor
 instance ToJSON TflApiPresentationEntitiesRoadCorridor where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesRoadCorridor
-instance ToSchema TflApiPresentationEntitiesRoadCorridor where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesRoadCorridor
 
 optionsTflApiPresentationEntitiesRoadCorridor :: Options
 optionsTflApiPresentationEntitiesRoadCorridor =
@@ -3424,10 +3062,6 @@ instance FromJSON TflApiPresentationEntitiesRoadDisruption where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesRoadDisruption
 instance ToJSON TflApiPresentationEntitiesRoadDisruption where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesRoadDisruption
-instance ToSchema TflApiPresentationEntitiesRoadDisruption where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesRoadDisruption
 
 optionsTflApiPresentationEntitiesRoadDisruption :: Options
 optionsTflApiPresentationEntitiesRoadDisruption =
@@ -3486,10 +3120,6 @@ instance FromJSON TflApiPresentationEntitiesRoadDisruptionImpactArea where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesRoadDisruptionImpactArea
 instance ToJSON TflApiPresentationEntitiesRoadDisruptionImpactArea where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesRoadDisruptionImpactArea
-instance ToSchema TflApiPresentationEntitiesRoadDisruptionImpactArea where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesRoadDisruptionImpactArea
 
 optionsTflApiPresentationEntitiesRoadDisruptionImpactArea :: Options
 optionsTflApiPresentationEntitiesRoadDisruptionImpactArea =
@@ -3525,10 +3155,6 @@ instance FromJSON TflApiPresentationEntitiesRoadDisruptionLine where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesRoadDisruptionLine
 instance ToJSON TflApiPresentationEntitiesRoadDisruptionLine where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesRoadDisruptionLine
-instance ToSchema TflApiPresentationEntitiesRoadDisruptionLine where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesRoadDisruptionLine
 
 optionsTflApiPresentationEntitiesRoadDisruptionLine :: Options
 optionsTflApiPresentationEntitiesRoadDisruptionLine =
@@ -3559,10 +3185,6 @@ instance FromJSON TflApiPresentationEntitiesRoadDisruptionSchedule where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesRoadDisruptionSchedule
 instance ToJSON TflApiPresentationEntitiesRoadDisruptionSchedule where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesRoadDisruptionSchedule
-instance ToSchema TflApiPresentationEntitiesRoadDisruptionSchedule where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesRoadDisruptionSchedule
 
 optionsTflApiPresentationEntitiesRoadDisruptionSchedule :: Options
 optionsTflApiPresentationEntitiesRoadDisruptionSchedule =
@@ -3602,10 +3224,6 @@ instance FromJSON TflApiPresentationEntitiesRoadProject where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesRoadProject
 instance ToJSON TflApiPresentationEntitiesRoadProject where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesRoadProject
-instance ToSchema TflApiPresentationEntitiesRoadProject where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesRoadProject
 
 optionsTflApiPresentationEntitiesRoadProject :: Options
 optionsTflApiPresentationEntitiesRoadProject =
@@ -3654,10 +3272,6 @@ instance FromJSON TflApiPresentationEntitiesRouteSearchMatch where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesRouteSearchMatch
 instance ToJSON TflApiPresentationEntitiesRouteSearchMatch where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesRouteSearchMatch
-instance ToSchema TflApiPresentationEntitiesRouteSearchMatch where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesRouteSearchMatch
 
 optionsTflApiPresentationEntitiesRouteSearchMatch :: Options
 optionsTflApiPresentationEntitiesRouteSearchMatch =
@@ -3691,10 +3305,6 @@ instance FromJSON TflApiPresentationEntitiesRouteSearchResponse where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesRouteSearchResponse
 instance ToJSON TflApiPresentationEntitiesRouteSearchResponse where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesRouteSearchResponse
-instance ToSchema TflApiPresentationEntitiesRouteSearchResponse where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesRouteSearchResponse
 
 optionsTflApiPresentationEntitiesRouteSearchResponse :: Options
 optionsTflApiPresentationEntitiesRouteSearchResponse =
@@ -3719,10 +3329,6 @@ instance FromJSON TflApiPresentationEntitiesRouteSectionNaptanEntrySequence wher
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesRouteSectionNaptanEntrySequence
 instance ToJSON TflApiPresentationEntitiesRouteSectionNaptanEntrySequence where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesRouteSectionNaptanEntrySequence
-instance ToSchema TflApiPresentationEntitiesRouteSectionNaptanEntrySequence where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesRouteSectionNaptanEntrySequence
 
 optionsTflApiPresentationEntitiesRouteSectionNaptanEntrySequence :: Options
 optionsTflApiPresentationEntitiesRouteSectionNaptanEntrySequence =
@@ -3754,10 +3360,6 @@ instance FromJSON TflApiPresentationEntitiesRouteSequence where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesRouteSequence
 instance ToJSON TflApiPresentationEntitiesRouteSequence where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesRouteSequence
-instance ToSchema TflApiPresentationEntitiesRouteSequence where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesRouteSequence
 
 optionsTflApiPresentationEntitiesRouteSequence :: Options
 optionsTflApiPresentationEntitiesRouteSequence =
@@ -3792,10 +3394,6 @@ instance FromJSON TflApiPresentationEntitiesSchedule where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesSchedule
 instance ToJSON TflApiPresentationEntitiesSchedule where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesSchedule
-instance ToSchema TflApiPresentationEntitiesSchedule where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesSchedule
 
 optionsTflApiPresentationEntitiesSchedule :: Options
 optionsTflApiPresentationEntitiesSchedule =
@@ -3826,10 +3424,6 @@ instance FromJSON TflApiPresentationEntitiesSearchMatch where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesSearchMatch
 instance ToJSON TflApiPresentationEntitiesSearchMatch where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesSearchMatch
-instance ToSchema TflApiPresentationEntitiesSearchMatch where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesSearchMatch
 
 optionsTflApiPresentationEntitiesSearchMatch :: Options
 optionsTflApiPresentationEntitiesSearchMatch =
@@ -3863,10 +3457,6 @@ instance FromJSON TflApiPresentationEntitiesSearchResponse where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesSearchResponse
 instance ToJSON TflApiPresentationEntitiesSearchResponse where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesSearchResponse
-instance ToSchema TflApiPresentationEntitiesSearchResponse where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesSearchResponse
 
 optionsTflApiPresentationEntitiesSearchResponse :: Options
 optionsTflApiPresentationEntitiesSearchResponse =
@@ -3897,10 +3487,6 @@ instance FromJSON TflApiPresentationEntitiesServiceFrequency where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesServiceFrequency
 instance ToJSON TflApiPresentationEntitiesServiceFrequency where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesServiceFrequency
-instance ToSchema TflApiPresentationEntitiesServiceFrequency where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesServiceFrequency
 
 optionsTflApiPresentationEntitiesServiceFrequency :: Options
 optionsTflApiPresentationEntitiesServiceFrequency =
@@ -3925,10 +3511,6 @@ instance FromJSON TflApiPresentationEntitiesStationInterval where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesStationInterval
 instance ToJSON TflApiPresentationEntitiesStationInterval where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesStationInterval
-instance ToSchema TflApiPresentationEntitiesStationInterval where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesStationInterval
 
 optionsTflApiPresentationEntitiesStationInterval :: Options
 optionsTflApiPresentationEntitiesStationInterval =
@@ -3954,10 +3536,6 @@ instance FromJSON TflApiPresentationEntitiesStatusSeverity where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesStatusSeverity
 instance ToJSON TflApiPresentationEntitiesStatusSeverity where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesStatusSeverity
-instance ToSchema TflApiPresentationEntitiesStatusSeverity where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesStatusSeverity
 
 optionsTflApiPresentationEntitiesStatusSeverity :: Options
 optionsTflApiPresentationEntitiesStatusSeverity =
@@ -4009,10 +3587,6 @@ instance FromJSON TflApiPresentationEntitiesStopPoint where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesStopPoint
 instance ToJSON TflApiPresentationEntitiesStopPoint where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesStopPoint
-instance ToSchema TflApiPresentationEntitiesStopPoint where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesStopPoint
 
 optionsTflApiPresentationEntitiesStopPoint :: Options
 optionsTflApiPresentationEntitiesStopPoint =
@@ -4063,10 +3637,6 @@ instance FromJSON TflApiPresentationEntitiesStopPointCategory where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesStopPointCategory
 instance ToJSON TflApiPresentationEntitiesStopPointCategory where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesStopPointCategory
-instance ToSchema TflApiPresentationEntitiesStopPointCategory where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesStopPointCategory
 
 optionsTflApiPresentationEntitiesStopPointCategory :: Options
 optionsTflApiPresentationEntitiesStopPointCategory =
@@ -4101,10 +3671,6 @@ instance FromJSON TflApiPresentationEntitiesStopPointRouteSection where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesStopPointRouteSection
 instance ToJSON TflApiPresentationEntitiesStopPointRouteSection where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesStopPointRouteSection
-instance ToSchema TflApiPresentationEntitiesStopPointRouteSection where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesStopPointRouteSection
 
 optionsTflApiPresentationEntitiesStopPointRouteSection :: Options
 optionsTflApiPresentationEntitiesStopPointRouteSection =
@@ -4145,10 +3711,6 @@ instance FromJSON TflApiPresentationEntitiesStopPointSequence where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesStopPointSequence
 instance ToJSON TflApiPresentationEntitiesStopPointSequence where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesStopPointSequence
-instance ToSchema TflApiPresentationEntitiesStopPointSequence where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesStopPointSequence
 
 optionsTflApiPresentationEntitiesStopPointSequence :: Options
 optionsTflApiPresentationEntitiesStopPointSequence =
@@ -4182,10 +3744,6 @@ instance FromJSON TflApiPresentationEntitiesStopPointsResponse where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesStopPointsResponse
 instance ToJSON TflApiPresentationEntitiesStopPointsResponse where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesStopPointsResponse
-instance ToSchema TflApiPresentationEntitiesStopPointsResponse where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesStopPointsResponse
 
 optionsTflApiPresentationEntitiesStopPointsResponse :: Options
 optionsTflApiPresentationEntitiesStopPointsResponse =
@@ -4217,10 +3775,6 @@ instance FromJSON TflApiPresentationEntitiesStreet where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesStreet
 instance ToJSON TflApiPresentationEntitiesStreet where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesStreet
-instance ToSchema TflApiPresentationEntitiesStreet where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesStreet
 
 optionsTflApiPresentationEntitiesStreet :: Options
 optionsTflApiPresentationEntitiesStreet =
@@ -4251,10 +3805,6 @@ instance FromJSON TflApiPresentationEntitiesStreetSegment where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesStreetSegment
 instance ToJSON TflApiPresentationEntitiesStreetSegment where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesStreetSegment
-instance ToSchema TflApiPresentationEntitiesStreetSegment where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesStreetSegment
 
 optionsTflApiPresentationEntitiesStreetSegment :: Options
 optionsTflApiPresentationEntitiesStreetSegment =
@@ -4281,10 +3831,6 @@ instance FromJSON TflApiPresentationEntitiesTimetable where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesTimetable
 instance ToJSON TflApiPresentationEntitiesTimetable where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesTimetable
-instance ToSchema TflApiPresentationEntitiesTimetable where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesTimetable
 
 optionsTflApiPresentationEntitiesTimetable :: Options
 optionsTflApiPresentationEntitiesTimetable =
@@ -4316,10 +3862,6 @@ instance FromJSON TflApiPresentationEntitiesTimetableResponse where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesTimetableResponse
 instance ToJSON TflApiPresentationEntitiesTimetableResponse where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesTimetableResponse
-instance ToSchema TflApiPresentationEntitiesTimetableResponse where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesTimetableResponse
 
 optionsTflApiPresentationEntitiesTimetableResponse :: Options
 optionsTflApiPresentationEntitiesTimetableResponse =
@@ -4351,10 +3893,6 @@ instance FromJSON TflApiPresentationEntitiesTimetableRoute where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesTimetableRoute
 instance ToJSON TflApiPresentationEntitiesTimetableRoute where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesTimetableRoute
-instance ToSchema TflApiPresentationEntitiesTimetableRoute where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesTimetableRoute
 
 optionsTflApiPresentationEntitiesTimetableRoute :: Options
 optionsTflApiPresentationEntitiesTimetableRoute =
@@ -4378,10 +3916,6 @@ instance FromJSON TflApiPresentationEntitiesTimetablesDisambiguation where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesTimetablesDisambiguation
 instance ToJSON TflApiPresentationEntitiesTimetablesDisambiguation where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesTimetablesDisambiguation
-instance ToSchema TflApiPresentationEntitiesTimetablesDisambiguation where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesTimetablesDisambiguation
 
 optionsTflApiPresentationEntitiesTimetablesDisambiguation :: Options
 optionsTflApiPresentationEntitiesTimetablesDisambiguation =
@@ -4405,10 +3939,6 @@ instance FromJSON TflApiPresentationEntitiesTimetablesDisambiguationOption where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesTimetablesDisambiguationOption
 instance ToJSON TflApiPresentationEntitiesTimetablesDisambiguationOption where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesTimetablesDisambiguationOption
-instance ToSchema TflApiPresentationEntitiesTimetablesDisambiguationOption where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesTimetablesDisambiguationOption
 
 optionsTflApiPresentationEntitiesTimetablesDisambiguationOption :: Options
 optionsTflApiPresentationEntitiesTimetablesDisambiguationOption =
@@ -4438,10 +3968,6 @@ instance FromJSON TflApiPresentationEntitiesTrainLoading where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesTrainLoading
 instance ToJSON TflApiPresentationEntitiesTrainLoading where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesTrainLoading
-instance ToSchema TflApiPresentationEntitiesTrainLoading where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesTrainLoading
 
 optionsTflApiPresentationEntitiesTrainLoading :: Options
 optionsTflApiPresentationEntitiesTrainLoading =
@@ -4471,10 +3997,6 @@ instance FromJSON TflApiPresentationEntitiesTwentyFourHourClockTime where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesTwentyFourHourClockTime
 instance ToJSON TflApiPresentationEntitiesTwentyFourHourClockTime where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesTwentyFourHourClockTime
-instance ToSchema TflApiPresentationEntitiesTwentyFourHourClockTime where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesTwentyFourHourClockTime
 
 optionsTflApiPresentationEntitiesTwentyFourHourClockTime :: Options
 optionsTflApiPresentationEntitiesTwentyFourHourClockTime =
@@ -4500,10 +4022,6 @@ instance FromJSON TflApiPresentationEntitiesValidityPeriod where
   parseJSON = genericParseJSON optionsTflApiPresentationEntitiesValidityPeriod
 instance ToJSON TflApiPresentationEntitiesValidityPeriod where
   toJSON = genericToJSON optionsTflApiPresentationEntitiesValidityPeriod
-instance ToSchema TflApiPresentationEntitiesValidityPeriod where
-  declareNamedSchema = Swagger.genericDeclareNamedSchema
-    $ Swagger.fromAesonOptions
-    $ optionsTflApiPresentationEntitiesValidityPeriod
 
 optionsTflApiPresentationEntitiesValidityPeriod :: Options
 optionsTflApiPresentationEntitiesValidityPeriod =
