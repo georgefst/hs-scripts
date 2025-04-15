@@ -1,4 +1,4 @@
--- TODO aside from this comment and the module name, this is an exact copy of https://github.com/georgefst/tfl-haskell/blob/3fdb4b080a1d5d6edced9799065d276585b89b43/lib/TransportForLondonUnified/Types.hs
+-- TODO aside from this comment, the module name, and some removed imports, this is an exact copy of https://github.com/georgefst/tfl-haskell/blob/3fdb4b080a1d5d6edced9799065d276585b89b43/lib/TransportForLondonUnified/Types.hs
 -- it's factored out of that project due to some dependencies which don't work on Wasm
 -- it does still depend on `swagger2`, which depends on `network`
 -- but this code should still run since we're not using the problematic parts
@@ -10,7 +10,6 @@
 {-# LANGUAGE DuplicateRecordFields      #-}
 {-# LANGUAGE LambdaCase                 #-}
 {-# LANGUAGE OverloadedStrings          #-}
-{-# OPTIONS_GHC -fno-warn-unused-binds -fno-warn-unused-imports #-}
 
 module Util.TFLTypes (
   SystemDataSpatialDbGeography (..),
@@ -136,20 +135,14 @@ module Util.TFLTypes (
   ) where
 
 import Data.Data (Data)
-import Data.UUID (UUID)
-import Data.List (lookup)
 import Data.Maybe (fromMaybe)
 import Data.Aeson (Value(..), FromJSON(..), ToJSON(..), genericToJSON, genericParseJSON, (.:?), withObject)
-import Data.Aeson.Types (Options(..), defaultOptions, Parser)
-import Data.Set (Set)
+import Data.Aeson.Types (Options(..), defaultOptions)
 import Data.Text (Text)
 import Data.Time
 import Data.Time.Calendar.OrdinalDate (fromOrdinalDate)
 import Data.Swagger (ToSchema, declareNamedSchema)
 import qualified Data.Swagger as Swagger
-import qualified Data.Char as Char
-import qualified Data.Text as T
-import qualified Data.Map as Map
 import GHC.Generics (Generic)
 
 
