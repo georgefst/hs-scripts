@@ -6,6 +6,10 @@
   color: white;
 }
 
+::selection {
+  background-color: var(--blue-light);
+}
+
 body {
   margin: 0;
   font-family: Helvetica, Arial, sans-serif;
