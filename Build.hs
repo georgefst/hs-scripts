@@ -143,7 +143,8 @@ main = shakeArgs shakeOpts do
                                 -- but this currently shows the root directory listing:
                                 -- https://github.com/TheWaWaR/simple-http-server/issues/108#issuecomment-2798241667
                                 [ "cp $HERE/" <> name <> ".html $HERE/index.html"
-                                , "simple-http-server --nocache --index $([[ ! \"$@\" =~ '--no-open' ]] && echo '--open') $HERE"
+                                , "simple-http-server $HERE --nocache --index \\"
+                                , "$([[ ! \"$@\" =~ '--no-open' ]] && echo '--open')"
                                 ]
                             else
                                 [ "wasmtime --dir . $HERE/" <> inToOut hs <> ".wasm $*"
