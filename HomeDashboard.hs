@@ -146,7 +146,6 @@ weather =
                     liftIO $ threadDelay 300_000_000
                 ]
             }
-
 data WeatherState = WeatherState
     { current :: CurrentWeather
     , forecast :: ForecastWeather
