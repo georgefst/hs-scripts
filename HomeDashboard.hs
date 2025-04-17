@@ -12,13 +12,13 @@
 
 module HomeDashboard (main) where
 
+import Util.OpenWeatherMap (CurrentWeather (..), ForecastWeather (..), Main (..), getForecast, getWeather)
 import Util.TFL (QueryList (QueryList))
 import Util.TFLMiso (lineArrivals)
 import Util.TFLTypes (TflApiPresentationEntitiesPrediction (..))
 
 import Control.Concurrent
 import Control.Monad
-import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
 import Data.Bifunctor (bimap)
@@ -37,22 +37,9 @@ import GHC.Generics (Generic)
 import Miso hiding (for_, sink)
 import Miso.String (MisoString, fromMisoString, ms)
 import Optics
-import Servant.Client (ClientError)
+import Optics.State.Operators ((?=))
 import System.Environment
 import Text.Printf
-import Web.OpenWeatherMap.Client
-import Web.OpenWeatherMap.Types.City
-import Web.OpenWeatherMap.Types.Clouds
-import Web.OpenWeatherMap.Types.Coord
-import Web.OpenWeatherMap.Types.CurrentWeather hiding (main, weather)
-import Web.OpenWeatherMap.Types.CurrentWeather qualified
-import Web.OpenWeatherMap.Types.Forecast hiding (main, weather)
-import Web.OpenWeatherMap.Types.ForecastWeather
-import Web.OpenWeatherMap.Types.Location
-import Web.OpenWeatherMap.Types.Main
-import Web.OpenWeatherMap.Types.Sys
-import Web.OpenWeatherMap.Types.Weather hiding (main)
-import Web.OpenWeatherMap.Types.Wind
 import Prelude hiding (lines)
 
 main :: IO ()
@@ -120,37 +107,40 @@ weather =
     component
         "weather"
         ( defaultApp
-            Nothing
-            (put . Just)
+            (WeatherState Nothing Nothing)
+            ( \case
+                SetCurrentWeather w -> #current ?= w
+                SetForecast w -> #forecast ?= w
+            )
             \case
-                Nothing -> div_ [] []
-                Just s ->
+                WeatherState (Just current) (Just _forecast) ->
                     div_
                         []
                         -- TODO show more of this data
-                        [text $ ms @String $ printf "%.1f°C" $ s.current.main.temp - 273.15]
+                        [text $ ms @String $ printf "%.1f°C" $ current.main.temp - 273.15]
+                _ -> div_ [] []
         )
             { subs =
                 [ \sink -> forever do
                     -- TODO obvs an env var isn't the right approach for a frontend-only app
-                    -- but this component doesn't even work yet with Wasm, due to `network` lib
-                    -- also error handling could be better but who cares seeing as its temporary
                     appId <- liftIO $ getEnv "OPENWEATHERMAP_APPID"
                     -- TODO use coords instead? take from env var rather than hardcoding, since this code isn't secret
-                    let location = Name "London"
-                    either (\e -> consoleLog $ "failed to get weather: " <> ms (show e)) sink =<< runWeather appId do
-                        current <- getWeather' location
-                        forecast <- getForecast' location
-                        pure WeatherState{..}
+                    let location = Left "London"
+                    getWeather appId location (sink . SetCurrentWeather) (consoleLog . ("failed to get weather: " <>))
+                    getForecast appId location (sink . SetForecast) (consoleLog . ("failed to get forecast: " <>))
                     -- API limit is 60 per minute, so this is actually extremely conservative
                     liftIO $ threadDelay 300_000_000
                 ]
             }
 data WeatherState = WeatherState
-    { current :: CurrentWeather
-    , forecast :: ForecastWeather
+    { current :: Maybe CurrentWeather
+    , forecast :: Maybe ForecastWeather
     }
     deriving (Eq, Show, Generic)
+data WeatherAction
+    = SetCurrentWeather CurrentWeather
+    | SetForecast ForecastWeather
+    deriving (Eq, Show)
 
 transport :: Component Effect (Map StationLineId StationData) (StationLineId, StationData) ()
 transport =
@@ -248,29 +238,6 @@ classifyOn :: (Ord b) => (a -> b) -> [a] -> [(b, NonEmpty a)]
 classifyOn f = Map.toList . Map.fromListWith (<>) . map (f &&& pure @NonEmpty)
 classifyOnFst :: (Ord a) => [(a, b)] -> [(a, NonEmpty b)]
 classifyOnFst = map (second $ fmap snd) . classifyOn fst
-
--- TODO `openweathermap` really isn't a great library
--- here are just a few things we should (improve further, then) try to upstream
--- module structure could also be better, and I've had to hide a lot of imports
--- note also that utility functions like `getWeather` (as opposed to `currentWeather`) call `newTlsManager` every time
--- that should be in the `Reader` env instead
--- plus all such functions should throw a nicer domain-specific error rather than Servant's `ClientError`
-runWeather :: String -> ReaderT String (ExceptT ClientError m) WeatherState -> m (Either ClientError WeatherState)
-runWeather appId = runExceptT . flip runReaderT appId
-getWeather' :: (MonadIO m) => Location -> ReaderT String (ExceptT ClientError m) CurrentWeather
-getWeather' location = ReaderT \appId -> ExceptT $ liftIO $ getWeather appId location
-getForecast' :: (MonadIO m) => Location -> ReaderT String (ExceptT ClientError m) ForecastWeather
-getForecast' location = ReaderT \appId -> ExceptT $ liftIO $ getForecast appId location
-deriving instance Eq Clouds
-deriving instance Eq Coord
-deriving instance Eq CurrentWeather
-deriving instance Eq Forecast
-deriving instance Eq City
-deriving instance Eq ForecastWeather
-deriving instance Eq Main
-deriving instance Eq Sys
-deriving instance Eq Weather
-deriving instance Eq Wind
 
 #ifdef wasi_HOST_OS
 foreign export javascript "hs" main :: IO ()
