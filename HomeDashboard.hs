@@ -14,14 +14,7 @@
 
 module HomeDashboard (main) where
 
-import Util.OpenWeatherMap (
-    CurrentWeather (..),
-    ForecastWeather (..),
-    Location (..),
-    Main (..),
-    getForecast,
-    getWeather,
- )
+import Util.OpenWeatherMap
 import Util.TFL (QueryList (QueryList))
 import Util.TFLMiso (lineArrivals)
 import Util.TFLTypes (TflApiPresentationEntitiesPrediction (..))
