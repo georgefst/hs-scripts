@@ -12,7 +12,14 @@
 
 module HomeDashboard (main) where
 
-import Util.OpenWeatherMap (CurrentWeather (..), ForecastWeather (..), Main (..), getForecast, getWeather)
+import Util.OpenWeatherMap (
+    CurrentWeather (..),
+    ForecastWeather (..),
+    Location (..),
+    Main (..),
+    getForecast,
+    getWeather,
+ )
 import Util.TFL (QueryList (QueryList))
 import Util.TFLMiso (lineArrivals)
 import Util.TFLTypes (TflApiPresentationEntitiesPrediction (..))
@@ -125,7 +132,7 @@ weather =
                     -- TODO obvs an env var isn't the right approach for a frontend-only app
                     appId <- liftIO $ getEnv "OPENWEATHERMAP_APPID"
                     -- TODO use coords instead? take from env var rather than hardcoding, since this code isn't secret
-                    let location = Left "London"
+                    let location = LocationName "London"
                     getWeather appId location (sink . SetCurrentWeather) (consoleLog . ("failed to get weather: " <>))
                     getForecast appId location (sink . SetForecast) (consoleLog . ("failed to get forecast: " <>))
                     -- API limit is 60 per minute, so this is actually extremely conservative

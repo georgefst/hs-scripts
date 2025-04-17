@@ -12,6 +12,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE NoFieldSelectors #-}
 {-# OPTIONS_GHC -Wall #-}
@@ -22,39 +23,44 @@ import Data.Aeson (FromJSON)
 import Data.Data (Proxy (Proxy))
 import GHC.Generics (Generic)
 import Language.Javascript.JSaddle (JSM)
-import Miso (fetch)
+import Miso (Fetch (..), fetch)
 import Miso.String (MisoString)
-import Servant.API (Get, JSON, QueryParam, QueryParam', Required, Strict, (:<|>) ((:<|>)), (:>))
+import Servant.API (Get, JSON, QueryParam', Required, Strict, (:<|>) ((:<|>)), (:>))
 
 type CurrentAPI =
     "weather"
         :> QueryParam' '[Required, Strict] "appid" String
-        :> QueryParam "q" String
-        :> QueryParam "lat" Double
-        :> QueryParam "lon" Double
+        :> Location
         :> Get '[JSON] CurrentWeather
 type ForecastAPI =
     "forecast"
         :> QueryParam' '[Required, Strict] "appid" String
-        :> QueryParam "q" String
-        :> QueryParam "lat" Double
-        :> QueryParam "lon" Double
+        :> Location
         :> Get '[JSON] ForecastWeather
 type API = CurrentAPI :<|> ForecastAPI
 
-getWeather :: String -> Either String (Double, Double) -> (CurrentWeather -> JSM ()) -> (MisoString -> JSM ()) -> JSM ()
-getWeather appId =
-    either
-        (\q -> getWeather' appId (Just q) Nothing Nothing)
-        (\(lat, lon) -> getWeather' appId Nothing (Just lat) (Just lon))
-getForecast :: String -> Either String (Double, Double) -> (ForecastWeather -> JSM ()) -> (MisoString -> JSM ()) -> JSM ()
-getForecast appId =
-    either
-        (\q -> getForecast' appId (Just q) Nothing Nothing)
-        (\(lat, lon) -> getForecast' appId Nothing (Just lat) (Just lon))
-getWeather' :: String -> Maybe String -> Maybe Double -> Maybe Double -> (CurrentWeather -> JSM ()) -> (MisoString -> JSM ()) -> JSM ()
-getForecast' :: String -> Maybe String -> Maybe Double -> Maybe Double -> (ForecastWeather -> JSM ()) -> (MisoString -> JSM ()) -> JSM ()
-getWeather' :<|> getForecast' = fetch (Proxy @API) "https://api.openweathermap.org/data/2.5"
+getWeather :: String -> Location -> (CurrentWeather -> JSM ()) -> (MisoString -> JSM ()) -> JSM ()
+getForecast :: String -> Location -> (ForecastWeather -> JSM ()) -> (MisoString -> JSM ()) -> JSM ()
+getWeather :<|> getForecast = fetch (Proxy @API) "https://api.openweathermap.org/data/2.5"
+
+instance (Fetch api) => Fetch (Location :> api) where
+    type ToFetch (Location :> api) = Location -> ToFetch api
+    fetchWith Proxy options = \case
+        LocationName q -> fetchWith (Proxy @(QueryParam' '[Required, Strict] "q" String :> api)) options q
+        LocationCoord{latitude, longitude} ->
+            fetchWith
+                ( Proxy
+                    @( QueryParam' '[Required, Strict] "lat" Double
+                        :> QueryParam' '[Required, Strict] "lon" Double
+                        :> api
+                     )
+                )
+                options
+                latitude
+                longitude
+data Location
+    = LocationName String
+    | LocationCoord {latitude :: Double, longitude :: Double}
 
 data City = City
     { name :: String
