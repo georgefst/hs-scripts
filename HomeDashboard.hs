@@ -57,7 +57,7 @@ main = do
     run $ startApp app {styles}
 #endif
 
-app :: App Effect () () ()
+app :: App () ()
 app =
     defaultApp
         ()
@@ -71,7 +71,7 @@ app =
                 ]
         )
 
-clock :: Component Effect LocalTime LocalTime ()
+clock :: Component LocalTime LocalTime
 clock =
     component "clock" $
         ( defaultApp
@@ -102,7 +102,7 @@ clock =
                 ]
             }
 
-weather :: Component Effect (Maybe WeatherState) WeatherState ()
+weather :: Component WeatherState WeatherAction
 weather =
     component
         "weather"
@@ -142,7 +142,7 @@ data WeatherAction
     | SetForecast ForecastWeather
     deriving (Eq, Show)
 
-transport :: Component Effect (Map StationLineId StationData) (StationLineId, StationData) ()
+transport :: Component (Map StationLineId StationData) (StationLineId, StationData)
 transport =
     component
         "transport"
