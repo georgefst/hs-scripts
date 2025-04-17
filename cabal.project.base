@@ -4,7 +4,7 @@ index-state: 2025-03-06T12:04:16Z
 source-repository-package
     type: git
     location: https://github.com/dmjio/miso
-    tag: 3b22505eb3db670895ad3c9adbdc0ca01b29ef60
+    tag: a6e92ac92c1042674dfe61af631e4a5567f8d9e7
 
 if impl(ghc >= 9.8)
     -- support is unreleased
