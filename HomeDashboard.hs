@@ -125,7 +125,7 @@ weather =
                     appId <- liftIO $ getEnv "OPENWEATHERMAP_APPID"
                     -- TODO use coords instead? take from env var rather than hardcoding, since this code isn't secret
                     let location = Left "London"
-                    flip runContT pure do
+                    evalContT do
                         current <- ContT $ flip (getWeather appId location) (consoleLog . ("failed to get weather: " <>))
                         forecast <- ContT $ flip (getForecast appId location) (consoleLog . ("failed to get forecast: " <>))
                         lift $ sink WeatherState{..}
