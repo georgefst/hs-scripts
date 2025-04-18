@@ -13,7 +13,7 @@ import Miso.String
 main :: IO ()
 main = run $ startApp app
 
-app :: App Effect Word () ()
+app :: App Word ()
 app =
     defaultApp
         0
