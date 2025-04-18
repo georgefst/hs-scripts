@@ -39,7 +39,6 @@ import GHC.Generics (Generic)
 import Miso hiding (for_, sink)
 import Miso.String (MisoString, fromMisoString, ms)
 import Optics
-import Optics.State.Operators ((?=))
 import System.Environment
 import Text.Printf
 import Prelude hiding (lines)
@@ -104,23 +103,20 @@ clock =
                 ]
             }
 
-weather :: Component WeatherState WeatherAction
+weather :: Component (Maybe WeatherState) WeatherState
 weather =
     component
         "weather"
         ( defaultApp
-            (WeatherState Nothing Nothing)
-            ( \case
-                SetCurrentWeather w -> #current ?= w
-                SetForecast w -> #forecast ?= w
-            )
+            Nothing
+            (put . Just)
             \case
-                WeatherState (Just current) _forecast ->
+                Nothing -> div_ [] []
+                Just WeatherState{current} ->
                     div_
                         []
                         -- TODO show more of this data
                         [text $ ms @String $ printf "%.1f°C" $ current.main.temp - 273.15]
-                _ -> div_ [] []
         )
             { subs =
                 [ \sink -> forever do
@@ -128,21 +124,18 @@ weather =
                     appId <- liftIO $ getEnv "OPENWEATHERMAP_APPID"
                     -- TODO use coords instead? take from env var rather than hardcoding, since this code isn't secret
                     let location = Left "London"
-                    getWeather appId location (sink . SetCurrentWeather) (consoleLog . ("failed to get weather: " <>))
-                    getForecast appId location (sink . SetForecast) (consoleLog . ("failed to get forecast: " <>))
+                    flip (getWeather appId location) (consoleLog . ("failed to get weather: " <>)) \current ->
+                        flip (getForecast appId location) (consoleLog . ("failed to get forecast: " <>)) \forecast ->
+                            sink WeatherState{..}
                     -- API limit is 60 per minute, so this is actually extremely conservative
                     liftIO $ threadDelay 300_000_000
                 ]
             }
 data WeatherState = WeatherState
-    { current :: Maybe CurrentWeather
-    , forecast :: Maybe ForecastWeather
+    { current :: CurrentWeather
+    , forecast :: ForecastWeather
     }
     deriving (Eq, Show, Generic)
-data WeatherAction
-    = SetCurrentWeather CurrentWeather
-    | SetForecast ForecastWeather
-    deriving (Eq, Show)
 
 transport :: Component (Map StationLineId StationData) (StationLineId, StationData)
 transport =
