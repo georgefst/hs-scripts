@@ -6,7 +6,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -Wall #-}
 
-module Util.ServantAlgebra where
+module Util.ServantAlgebra (Sum, Product) where
 
 import Data.Data (Proxy (Proxy))
 import Miso (Fetch (ToFetch, fetchWith))
