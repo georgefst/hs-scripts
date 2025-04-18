@@ -15,6 +15,7 @@
 module HomeDashboard (main) where
 
 import Util.OpenWeatherMap
+import Util.Secrets
 import Util.TFL (QueryList (QueryList))
 import Util.TFLMiso (lineArrivals)
 import Util.TFLTypes (TflApiPresentationEntitiesPrediction (..))
@@ -32,6 +33,7 @@ import Data.List.NonEmpty (NonEmpty)
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Maybe
+import Data.Text qualified as T
 import Data.Time
 import Data.Time.Calendar.OrdinalDate
 import Data.Traversable
@@ -40,7 +42,6 @@ import GHC.Generics (Generic)
 import Miso hiding (for_, sink)
 import Miso.String (MisoString, fromMisoString, ms)
 import Optics
-import System.Environment
 import Text.Printf
 import Prelude hiding (lines)
 
@@ -121,8 +122,7 @@ weather =
         )
             { subs =
                 [ \sink -> forever do
-                    -- TODO obvs an env var isn't the right approach for a frontend-only app
-                    appId <- liftIO $ getEnv "OPENWEATHERMAP_APPID"
+                    let appId = T.unpack secrets.openWeatherMapAppId
                     -- TODO use coords instead? take from env var rather than hardcoding, since this code isn't secret
                     let location = Left "London"
                     evalContT do
