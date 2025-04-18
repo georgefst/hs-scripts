@@ -127,7 +127,7 @@ weather =
                     -- TODO obvs an env var isn't the right approach for a frontend-only app
                     appId <- liftIO $ getEnv "OPENWEATHERMAP_APPID"
                     -- TODO use coords instead? take from env var rather than hardcoding, since this code isn't secret
-                    let location = LocationName "London"
+                    let location = Left "London"
                     getWeather appId location (sink . SetCurrentWeather) (consoleLog . ("failed to get weather: " <>))
                     getForecast appId location (sink . SetForecast) (consoleLog . ("failed to get forecast: " <>))
                     -- API limit is 60 per minute, so this is actually extremely conservative

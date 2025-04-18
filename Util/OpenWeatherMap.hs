@@ -26,41 +26,40 @@ import Language.Javascript.JSaddle (JSM)
 import Miso (Fetch (..), fetch)
 import Miso.String (MisoString)
 import Servant.API (Get, JSON, QueryParam', Required, Strict, (:<|>) ((:<|>)), (:>))
+import Util.ServantAlgebra (Product, Sum)
 
+type LocationParams =
+    Sum
+        (QueryParam' '[Required, Strict] "q" String)
+        ( Product
+            (QueryParam' '[Required, Strict] "lat" Double)
+            (QueryParam' '[Required, Strict] "lon" Double)
+        )
 type CurrentAPI =
     "weather"
         :> QueryParam' '[Required, Strict] "appid" String
-        :> Location
+        :> LocationParams
         :> Get '[JSON] CurrentWeather
 type ForecastAPI =
     "forecast"
         :> QueryParam' '[Required, Strict] "appid" String
-        :> Location
+        :> LocationParams
         :> Get '[JSON] ForecastWeather
 type API = CurrentAPI :<|> ForecastAPI
 
-getWeather :: String -> Location -> (CurrentWeather -> JSM ()) -> (MisoString -> JSM ()) -> JSM ()
-getForecast :: String -> Location -> (ForecastWeather -> JSM ()) -> (MisoString -> JSM ()) -> JSM ()
+getWeather ::
+    String ->
+    Either String (Double, Double) ->
+    (CurrentWeather -> JSM ()) ->
+    (MisoString -> JSM ()) ->
+    JSM ()
+getForecast ::
+    String ->
+    Either String (Double, Double) ->
+    (ForecastWeather -> JSM ()) ->
+    (MisoString -> JSM ()) ->
+    JSM ()
 getWeather :<|> getForecast = fetch (Proxy @API) "https://api.openweathermap.org/data/2.5"
-
-instance (Fetch api) => Fetch (Location :> api) where
-    type ToFetch (Location :> api) = Location -> ToFetch api
-    fetchWith Proxy options = \case
-        LocationName q -> fetchWith (Proxy @(QueryParam' '[Required, Strict] "q" String :> api)) options q
-        LocationCoord{latitude, longitude} ->
-            fetchWith
-                ( Proxy
-                    @( QueryParam' '[Required, Strict] "lat" Double
-                        :> QueryParam' '[Required, Strict] "lon" Double
-                        :> api
-                     )
-                )
-                options
-                latitude
-                longitude
-data Location
-    = LocationName String
-    | LocationCoord {latitude :: Double, longitude :: Double}
 
 data City = City
     { name :: String
