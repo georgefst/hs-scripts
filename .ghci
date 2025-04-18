@@ -1,3 +1,4 @@
 :set -fobject-code
 :cmd pure $ ":set -odir .build/" <> System.Info.arch <> "-" <> System.Info.os
 :cmd pure $ ":set -hidir .build/" <> System.Info.arch <> "-" <> System.Info.os
+:cmd pure $ ":set -stubdir .build/" <> System.Info.arch <> "-" <> System.Info.os
