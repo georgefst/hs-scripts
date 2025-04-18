@@ -12,15 +12,6 @@ import Data.Data (Proxy (Proxy))
 import Miso (Fetch (ToFetch, fetchWith))
 import Servant.API (type (:>))
 
-type family SplitFun a where
-    SplitFun (a -> b) = (a, b)
-
-type family Fst a where
-    Fst (x, _) = x
-
-type family Snd a where
-    Snd (_, y) = y
-
 type data Sum a b
 
 instance
@@ -33,7 +24,7 @@ instance
     where
     type
         ToFetch (Sum a b :> api) =
-            Either (Fst (SplitFun (ToFetch (a :> api)))) (Fst (SplitFun (ToFetch (b :> api)))) -> ToFetch api
+            Either (Arg (ToFetch (a :> api))) (Arg (ToFetch (b :> api))) -> ToFetch api
     fetchWith Proxy options = \case
         Left a -> fetchWith (Proxy @(a :> api)) options a
         Right b -> fetchWith (Proxy @(b :> api)) options b
@@ -48,6 +39,12 @@ instance
     where
     type
         ToFetch (Product a b :> api) =
-            (Fst (SplitFun (ToFetch (a :> b :> api))), Fst (SplitFun (Snd (SplitFun (ToFetch (a :> b :> api)))))) -> ToFetch api
+            (Arg (ToFetch (a :> b :> api)), Arg (Res (ToFetch (a :> b :> api)))) -> ToFetch api
     fetchWith Proxy options = \(a, b) ->
         fetchWith (Proxy @(a :> b :> api)) options a b
+
+type family Arg a where
+    Arg (a -> _) = a
+
+type family Res a where
+    Res (_ -> b) = b
