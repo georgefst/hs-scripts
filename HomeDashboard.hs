@@ -126,8 +126,9 @@ weather =
                     -- TODO use coords instead? take from env var rather than hardcoding, since this code isn't secret
                     let location = Left "London"
                     evalContT do
-                        current <- ContT $ flip (getWeather appId location) (consoleLog . ("failed to get weather: " <>))
-                        forecast <- ContT $ flip (getForecast appId location) (consoleLog . ("failed to get forecast: " <>))
+                        let h s = (consoleLog . (("failed to get " <> s <> ": ") <>))
+                        current <- ContT $ flip (getWeather appId location) $ h "weather"
+                        forecast <- ContT $ flip (getForecast appId location) $ h "forecast"
                         lift $ sink WeatherState{..}
                     -- API limit is 60 per minute, so this is actually extremely conservative
                     liftIO $ threadDelay 300_000_000
