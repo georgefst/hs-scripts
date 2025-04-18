@@ -41,6 +41,7 @@ import Development.Shake.FilePath
 import Lucid qualified
 import System.Directory qualified as Dir
 import System.IO.Error
+import System.Info qualified
 import System.Posix hiding (getEnv)
 import System.Process.Extra
 
@@ -100,7 +101,7 @@ main = shakeArgs shakeOpts do
                 hs
                 (mwhen (hs /= "Build.hs") ["-main-is", takeBaseName hs])
                 (mwhen (isWasmModule && wasm) ["-no-hs-main", "-optl-mexec-model=reactor", "-optl-Wl,--export=hs"])
-                ["-outputdir", ".build" </> fromMaybe "standard" target]
+                ["-outputdir", ".build" </> fromMaybe (System.Info.arch <> "-" <> System.Info.os) target]
                 ["-o", out]
                 "-fdiagnostics-color=always"
                 "-O1"
