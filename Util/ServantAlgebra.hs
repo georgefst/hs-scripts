@@ -15,13 +15,16 @@ import Servant.API (type (:>))
 type family FirstArg a where
     FirstArg (a -> b) = a
 
+type family SecondArg a where
+    SecondArg (a -> b -> c) = b
+
 type data Sum a b
 
 instance
     ( Fetch (a :> api)
     , Fetch (b :> api)
-    , ToFetch (a :> api) ~ (FirstArg (ToFetch (a :> api)) -> ToFetch api)
-    , ToFetch (b :> api) ~ (FirstArg (ToFetch (b :> api)) -> ToFetch api)
+    , ToFetch (a :> api) ~ (a' -> ToFetch api)
+    , ToFetch (b :> api) ~ (b' -> ToFetch api)
     ) =>
     Fetch (Sum a b :> api)
     where
@@ -36,12 +39,12 @@ type data Product a b
 
 instance
     ( Fetch (a :> b :> api)
-    , ToFetch (a :> b :> api) ~ (FirstArg (ToFetch (a :> api)) -> FirstArg (ToFetch (b :> api)) -> ToFetch api)
+    , ToFetch (a :> b :> api) ~ (a' -> b' -> ToFetch api)
     ) =>
     Fetch (Product a b :> api)
     where
     type
         ToFetch (Product a b :> api) =
-            (FirstArg (ToFetch (a :> api)), FirstArg (ToFetch (b :> api))) -> ToFetch api
+            (FirstArg (ToFetch (a :> b :> api)), SecondArg (ToFetch (a :> b :> api))) -> ToFetch api
     fetchWith Proxy options = \(a, b) ->
         fetchWith (Proxy @(a :> b :> api)) options a b
