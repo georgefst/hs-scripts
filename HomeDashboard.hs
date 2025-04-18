@@ -115,7 +115,7 @@ weather =
                 SetForecast w -> #forecast ?= w
             )
             \case
-                WeatherState (Just current) (Just _forecast) ->
+                WeatherState (Just current) _forecast ->
                     div_
                         []
                         -- TODO show more of this data
