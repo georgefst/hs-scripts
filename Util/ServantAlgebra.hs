@@ -25,9 +25,7 @@ instance
     type
         ToFetch (Sum a b :> api) =
             Either (Arg (ToFetch (a :> api))) (Arg (ToFetch (b :> api))) -> ToFetch api
-    fetchWith Proxy options = \case
-        Left a -> fetchWith (Proxy @(a :> api)) options a
-        Right b -> fetchWith (Proxy @(b :> api)) options b
+    fetchWith Proxy options = either (fetchWith (Proxy @(a :> api)) options) (fetchWith (Proxy @(b :> api)) options)
 
 type data Product a b
 
@@ -40,8 +38,7 @@ instance
     type
         ToFetch (Product a b :> api) =
             (Arg (ToFetch (a :> b :> api)), Arg (Res (ToFetch (a :> b :> api)))) -> ToFetch api
-    fetchWith Proxy options = \(a, b) ->
-        fetchWith (Proxy @(a :> b :> api)) options a b
+    fetchWith Proxy options = uncurry $ fetchWith (Proxy @(a :> b :> api)) options
 
 type family Arg a where
     Arg (a -> _) = a
