@@ -16,6 +16,7 @@ module HomeDashboard (main) where
 
 import Util.OpenWeatherMap
 import Util.Secrets
+import Util.Spotify
 import Util.TFL (QueryList (QueryList))
 import Util.TFLMiso (lineArrivals)
 import Util.TFLTypes (TflApiPresentationEntitiesPrediction (..))
@@ -42,6 +43,11 @@ import GHC.Generics (Generic)
 import Miso hiding (for_, sink)
 import Miso.String (MisoString, fromMisoString, ms)
 import Optics
+import Spotify.Types.Auth
+import Spotify.Types.Misc
+import Spotify.Types.Player
+import Spotify.Types.Simple
+import Spotify.Types.Tracks
 import Text.Printf
 import Prelude hiding (lines)
 
@@ -71,6 +77,7 @@ app =
                 [ embed clock [id_ "clock"]
                 , embed weather [id_ "weather"]
                 , embed transport [id_ "transport"]
+                , embed music [id_ "music"]
                 ]
         )
 
@@ -231,6 +238,47 @@ data TrainData = TrainData
     , currentLocation :: MisoString
     }
     deriving (Eq, Show)
+
+music :: Component (Maybe PlaybackState) PlaybackState
+music =
+    component
+        "music"
+        ( defaultApp
+            (Nothing)
+            (put . Just)
+            \case
+                Just ps ->
+                    div_
+                        []
+                        [ div_
+                            []
+                            [ div_ [] [text $ ms ps.item.name]
+                            , let showTime = ms . formatTime defaultTimeLocale "%0m:%0S" . secondsToNominalDiffTime . (/ 1000) . fromIntegral
+                               in div_ [] [text $ showTime ps.progressMs <> "/" <> showTime ps.item.durationMs]
+                            ]
+                        , -- we ignore later images, since they always seem to be just the same with lower resolutions
+                          img_ [src_ $ ms $ maybe "" (.url) $ listToMaybe ps.item.album.images]
+                        ]
+                _ -> div_ [] []
+        )
+            { subs =
+                [ \sink -> forever do
+                    getPlaybackState
+                        Nothing
+                        (AccessToken secrets.spotifyAccessToken)
+                        sink
+                        -- TODO this will fire when there's nothing playing, due to a 204
+                        -- does Servant have a good way to capture this?
+                        (consoleLog . ("failed to get playback state: " <>))
+                    -- TODO how often? Spotify intentionally don't say what the API limit is
+                    -- and we can't just subscribe to be notified: https://github.com/spotify/web-api/issues/492
+                    -- one is supposed to check for 429s and read the `Retry-After` header to know how long to back off
+                    -- I've been banned for 18 hours for just calling twice a second
+                    -- though this might have been unlucky - Spotify outages were in the news that day
+                    -- if we can't call every second, then we'll have to go manually increasing the counter
+                    liftIO $ threadDelay 5_000_000
+                ]
+            }
 
 classifyOn :: (Ord b) => (a -> b) -> [a] -> [(b, NonEmpty a)]
 classifyOn f = Map.toList . Map.fromListWith (<>) . map (f &&& pure @NonEmpty)

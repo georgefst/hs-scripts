@@ -15,11 +15,12 @@ import Language.Haskell.TH.Syntax (addDependentFile)
 
 data Secrets = Secrets
     { openWeatherMapAppId :: Text
+    , spotifyAccessToken :: Text
     }
 
 loadSecret :: FilePath -> Q Exp
 loadSecret path = do
     addDependentFile path
     runIO (T.lines . T.strip <$> T.readFile path) >>= \case
-        [openWeatherMapAppId] -> [|Secrets{..}|]
+        [openWeatherMapAppId, spotifyAccessToken] -> [|Secrets{..}|]
         _ -> fail "bad secrets file"

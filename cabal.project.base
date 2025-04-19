@@ -6,6 +6,11 @@ source-repository-package
     location: https://github.com/dmjio/miso
     tag: 7f1629528e742fbcb9c33fbeec4737d047f02a09
 
+source-repository-package
+    type: git
+    location: https://github.com/georgefst/spotify
+    tag: 2877934d3f836d975a6a2297499d3fad6e3c8bc9
+
 if impl(ghc >= 9.8)
     -- support is unreleased
     -- https://github.com/brendanhay/amazonka/pull/973
