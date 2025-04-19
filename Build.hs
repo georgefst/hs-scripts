@@ -272,6 +272,7 @@ main = shakeArgs shakeOpts do
             ("diagrams-svg" & munless noDiagrams)
             ("directory")
             ("evdev" & mwhen linux)
+            ("file-embed" & munless noTH)
             ("exceptions")
             ("extra")
             ("file-io")
