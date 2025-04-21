@@ -185,9 +185,7 @@ transport =
                 [ \sink -> forever do
                     timeZone <- liftIO getCurrentTimeZone
                     for_ stations \(station, stationNameShort, lines) ->
-                        (lineArrivals (QueryList $ map fromMisoString lines) (fromMisoString station) Nothing Nothing)
-                        (\s -> consoleLog $ "error fetching train data: " <> s)
-                        \entries ->
+                        (lineArrivals (QueryList $ map fromMisoString lines) (fromMisoString station) Nothing Nothing) (\s -> consoleLog $ "error fetching train data: " <> s) \entries ->
                             either
                                 (consoleLog . ("train field missing: " <>))
                                 (traverse_ $ sink . bimap (station,) (stationNameShort,))
