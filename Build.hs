@@ -346,6 +346,7 @@ main = shakeArgs shakeOpts do
             ("th-lift" & munless noTH)
             ("time")
             ("transformers")
+            ("udev" & mwhen linux)
             ("uniplate")
             ("unix")
             ("unordered-containers")
