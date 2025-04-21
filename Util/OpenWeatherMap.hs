@@ -50,14 +50,14 @@ type API = CurrentAPI :<|> ForecastAPI
 getWeather ::
     String ->
     Either String (Double, Double) ->
-    (CurrentWeather -> JSM ()) ->
     (MisoString -> JSM ()) ->
+    (CurrentWeather -> JSM ()) ->
     JSM ()
 getForecast ::
     String ->
     Either String (Double, Double) ->
-    (ForecastWeather -> JSM ()) ->
     (MisoString -> JSM ()) ->
+    (ForecastWeather -> JSM ()) ->
     JSM ()
 getWeather :<|> getForecast = fetch (Proxy @API) "https://api.openweathermap.org/data/2.5"
 

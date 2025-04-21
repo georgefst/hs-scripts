@@ -44,6 +44,7 @@ import Miso hiding (for_, sink)
 import Miso.String (MisoString, fromMisoString, ms)
 import Optics
 import Spotify.Types.Auth
+import Spotify.Types.Episodes
 import Spotify.Types.Misc
 import Spotify.Types.Player
 import Spotify.Types.Simple
@@ -134,8 +135,8 @@ weather =
                     let location = Left "London"
                     evalContT do
                         let h s = (consoleLog . (("failed to get " <> s <> ": ") <>))
-                        current <- ContT $ flip (getWeather appId location) $ h "weather"
-                        forecast <- ContT $ flip (getForecast appId location) $ h "forecast"
+                        current <- ContT $ getWeather appId location $ h "weather"
+                        forecast <- ContT $ getForecast appId location $ h "forecast"
                         lift $ sink WeatherState{..}
                     -- API limit is 60 per minute, so this is actually extremely conservative
                     liftIO $ threadDelay 300_000_000
@@ -183,7 +184,7 @@ transport =
             { subs =
                 [ \sink -> forever do
                     timeZone <- liftIO getCurrentTimeZone
-                    for_ stations \(station, stationNameShort, lines) -> flip
+                    for_ stations \(station, stationNameShort, lines) ->
                         (lineArrivals (QueryList $ map fromMisoString lines) (fromMisoString station) Nothing Nothing)
                         (\s -> consoleLog $ "error fetching train data: " <> s)
                         \entries ->
@@ -239,26 +240,30 @@ data TrainData = TrainData
     }
     deriving (Eq, Show)
 
-music :: Component (Maybe PlaybackState) PlaybackState
+music :: Component (Maybe PlaybackState) (Maybe PlaybackState)
 music =
     component
         "music"
         ( defaultApp
             (Nothing)
-            (put . Just)
+            put
             \case
-                Just ps ->
+                Just ps@(PlaybackState{item = Just item}) ->
                     div_
                         []
                         [ div_
                             []
-                            [ div_ [] [text $ ms ps.item.name]
+                            [ div_ [] [text $ ms name]
                             , let showTime = ms . formatTime defaultTimeLocale "%0m:%0S" . secondsToNominalDiffTime . (/ 1000) . fromIntegral
-                               in div_ [] [text $ showTime ps.progressMs <> "/" <> showTime ps.item.durationMs]
+                               in div_ [] [text $ maybe "?" showTime ps.progressMs <> "/" <> showTime durationMs]
                             ]
                         , -- we ignore later images, since they always seem to be just the same with lower resolutions
-                          img_ [src_ $ ms $ maybe "" (.url) $ listToMaybe ps.item.album.images]
+                          img_ [src_ $ ms $ maybe "" (.url) $ listToMaybe images]
                         ]
+                  where
+                    (name, durationMs, images) = case item of
+                        PlaybackItemEpisode e -> (e.name, e.durationMs, e.images)
+                        PlaybackItemTrack t -> (t.name, t.durationMs, t.album.images)
                 _ -> div_ [] []
         )
             { subs =
@@ -266,10 +271,8 @@ music =
                     getPlaybackState
                         Nothing
                         (AccessToken secrets.spotifyAccessToken)
-                        sink
-                        -- TODO this will fire when there's nothing playing, due to a 204
-                        -- does Servant have a good way to capture this?
                         (consoleLog . ("failed to get playback state: " <>))
+                        sink
                     -- TODO how often? Spotify intentionally don't say what the API limit is
                     -- and we can't just subscribe to be notified: https://github.com/spotify/web-api/issues/492
                     -- one is supposed to check for 429s and read the `Retry-After` header to know how long to back off
