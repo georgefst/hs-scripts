@@ -52,4 +52,8 @@ main = do
     B.putStr $ SB.fromShort $ byteStringFromJSBytes $ byteStringToJSBytes $ SB.toShort $ encodeUtf8 "lorem ipsum"
     putStrLn ""
 
+#else
+
+main = putStrLn "native stub"
+
 #endif
