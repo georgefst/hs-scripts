@@ -282,6 +282,7 @@ main = shakeArgs shakeOpts do
             ("fsnotify" & munless wasm)
             ("generic-data")
             ("generics-sop")
+            ("ghc-experimental")
             ("graphviz")
             ("hashable")
             ("hashtables")
