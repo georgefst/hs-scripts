@@ -94,7 +94,8 @@ main = shakeArgs shakeOpts do
                         -- perhaps just put them in a separate folder?
                         -- we could then have a new template which starts with this line, and no CLI stuff
                         let marker = "#ifdef wasi_HOST_OS\nforeign export javascript \"hs\" main :: IO ()\n#endif\n"
-                         in liftIO $ (marker `isSuffixOf`) <$> readFile hs
+                            markerSync = "#ifdef wasi_HOST_OS\nforeign export javascript \"hs sync\" main :: IO ()\n#endif\n"
+                         in liftIO $ readFile hs <&> \s -> marker `isSuffixOf` s || markerSync `isSuffixOf` s
             cmd_
                 (WithStderr False)
                 ghc
