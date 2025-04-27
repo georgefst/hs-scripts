@@ -20,6 +20,7 @@ import Data.Maybe
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
+import Data.Time
 import System.Environment
 import System.Exit
 
@@ -38,9 +39,9 @@ main' p = do
             $ stripUtf8Bom fileContents
     for_ matches \match ->
         T.putStrLn $
-            match.homeTeam
+            match.homeTeam.unwrap
                 <> " vs "
-                <> match.awayTeam
+                <> match.awayTeam.unwrap
                 <> ": "
                 <> showT match.homeGoals
                 <> "-"
@@ -48,26 +49,38 @@ main' p = do
 
 data Match = Match
     { league :: Text
-    , date :: Text
-    , time :: Text
-    , homeTeam :: Text
-    , awayTeam :: Text
-    , homeGoals :: Int
-    , awayGoals :: Int
-    , result :: Text
+    , date :: Day
+    , time :: TimeOfDay
+    , homeTeam :: Team
+    , awayTeam :: Team
+    , homeGoals :: Word
+    , awayGoals :: Word
+    , result :: Result
     }
     deriving (Show)
 instance FromNamedRecord Match where
     parseNamedRecord r = do
         league <- r .: "Div"
-        date <- r .: "Date"
-        time <- r .: "Time"
-        homeTeam <- r .: "HomeTeam"
-        awayTeam <- r .: "AwayTeam"
+        date <- maybe (fail "bad date") pure . parseTimeM False defaultTimeLocale "%d/%m/%Y" =<< r .: "Date"
+        time <- maybe (fail "bad time") pure . parseTimeM False defaultTimeLocale "%R" =<< r .: "Time"
+        homeTeam <- Team <$> r .: "HomeTeam"
+        awayTeam <- Team <$> r .: "AwayTeam"
         homeGoals <- r .: "FTHG"
         awayGoals <- r .: "FTAG"
-        result <- r .: "FTR"
+        result <-
+            r .: "FTR" >>= \case
+                "H" -> pure HomeWin
+                "D" -> pure Draw
+                "A" -> pure AwayWin
+                (_ :: String) -> fail "bad result"
         pure Match{..}
+data Result
+    = HomeWin
+    | Draw
+    | AwayWin
+    deriving (Show)
+newtype Team = Team {unwrap :: Text}
+    deriving newtype (Eq, Ord, Show)
 
 showT :: (Show a) => a -> Text
 showT = T.pack . show
