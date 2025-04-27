@@ -50,7 +50,10 @@ main' inPath outPath = do
         either (const $ T.putStrLn "Error parsing CSV" >> exitFailure) (pure . second toList)
             . decodeByName
             $ stripUtf8Bom fileContents
-    BL.writeFile outPath $ encodeDefaultOrderedByName $ processMatches $ matches
+    BL.writeFile outPath
+        . encodeDefaultOrderedByName
+        . processMatches
+        $ matches
 
 processMatches :: [Match] -> [TableRow]
 processMatches =
