@@ -40,11 +40,11 @@ import System.Exit
 main :: IO ()
 main =
     getArgs >>= \case
-        [p, p'] -> main' p p'
+        [p, p'] -> main' p p' Nothing Nothing
         _ -> T.putStrLn "Expected two argument, the input and output file paths"
 
-main' :: FilePath -> FilePath -> IO ()
-main' inPath outPath = do
+main' :: FilePath -> FilePath -> Maybe Day -> Maybe Day -> IO ()
+main' inPath outPath startDate endDate = do
     fileContents <- BL.readFile inPath
     (_header, matches) <-
         either (const $ T.putStrLn "Error parsing CSV" >> exitFailure) (pure . second toList)
@@ -53,6 +53,8 @@ main' inPath outPath = do
     BL.writeFile outPath
         . encodeDefaultOrderedByName
         . processMatches
+        . filter (maybe (const True) (<=) startDate . (.date))
+        . filter (maybe (const True) (>=) endDate . (.date))
         $ matches
 
 processMatches :: [Match] -> [TableRow]
