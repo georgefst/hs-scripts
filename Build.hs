@@ -324,6 +324,7 @@ main = shakeArgs shakeOpts do
             ("process")
             ("random")
             ("Rasterific")
+            ("rapid")
             ("raw-strings-qq")
             ("repline")
             ("safe")
