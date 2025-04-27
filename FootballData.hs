@@ -50,18 +50,18 @@ main' inPath outPath = do
         either (const $ T.putStrLn "Error parsing CSV" >> exitFailure) (pure . second toList)
             . decodeByName
             $ stripUtf8Bom fileContents
-    BL.writeFile outPath $ encode $ processMatches matches
+    BL.writeFile outPath $ encodeDefaultOrderedByName $ processMatches $ matches
 
 processMatches :: [Match] -> [TableRow]
 processMatches =
-    sortOn (Down . ((.points) &&& (.goalDifference)))
+    sortOn (Down . ((.points) &&& (.diff)))
         . map
             ( \(team, TableRowRaw{..}) ->
                 TableRow
                     { team
                     , played = wins + draws + losses
                     , points = fromIntegral wins * 3 + fromIntegral draws
-                    , goalDifference = fromIntegral for - fromIntegral against
+                    , diff = fromIntegral for - fromIntegral against
                     , ..
                     }
             )
@@ -100,14 +100,14 @@ data TableRow = TableRow
     { team :: Team
     , played :: Word
     , points :: Int
-    , goalDifference :: Int
+    , diff :: Int
     , wins :: Word
     , draws :: Word
     , losses :: Word
     , for :: Word
     , against :: Word
     }
-    deriving (Show, Generic, ToRecord)
+    deriving (Show, Generic, ToRecord, ToNamedRecord, DefaultOrdered)
 data TableRowRaw = TableRowRaw
     { wins :: Word
     , draws :: Word
