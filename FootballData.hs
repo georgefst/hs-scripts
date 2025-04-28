@@ -53,8 +53,8 @@ parseOpts = do
     inPath <- argument str $ metavar "IN"
     outPath <- argument str $ metavar "OUT"
     (startDate, endDate) <-
-        (uncurry (liftA2 (,)) . (($ "Start") &&& ($ "End")))
-            (\s -> optional $ option auto $ long (map toLower s) <> metavar "DATE" <> help (s <> " date (inclusive) in YYYY-MM-DD format"))
+        let f s = optional $ option auto $ long (map toLower s) <> metavar "DATE" <> help (s <> " date (inclusive) in YYYY-MM-DD format")
+         in (,) <$> f "Start" <*> f "End"
     pure Opts{..}
 
 main :: IO ()
