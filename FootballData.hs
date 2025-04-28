@@ -33,6 +33,7 @@ import Data.Csv hiding (Parser, header)
 import Data.Foldable
 import Data.Function
 import Data.List (sortOn)
+import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Maybe
 import Data.Ord (Down (Down))
@@ -97,31 +98,14 @@ processMatches =
             foldl'
             mempty
             ( flip \m ->
-                id
-                    . ( let
-                            f r =
-                                let r' = r{for = r.for + m.homeGoals, against = r.against + m.awayGoals} :: TableRowRaw
-                                 in case m.result of
-                                        HomeWin -> r'{wins = r.wins + 1} :: TableRowRaw
-                                        Draw -> r'{draws = r.draws + 1} :: TableRowRaw
-                                        AwayWin -> r'{losses = r.losses + 1} :: TableRowRaw
-                         in
-                            flip Map.alter m.homeTeam \case
-                                Nothing -> Just $ f $ TableRowRaw 0 0 0 0 0
-                                Just r -> Just $ f r
-                      )
-                    . ( let
-                            f r =
-                                let r' = r{for = r.for + m.awayGoals, against = r.against + m.homeGoals} :: TableRowRaw
-                                 in case m.result of
-                                        AwayWin -> r'{wins = r.wins + 1} :: TableRowRaw
-                                        Draw -> r'{draws = r.draws + 1} :: TableRowRaw
-                                        HomeWin -> r'{losses = r.losses + 1} :: TableRowRaw
-                         in
-                            flip Map.alter m.awayTeam \case
-                                Nothing -> Just $ f $ TableRowRaw 0 0 0 0 0
-                                Just r -> Just $ f r
-                      )
+                let applyTeamResult (team, for, against) = flip (adjustWithDefault (TableRowRaw 0 0 0 0 0)) team \r ->
+                        let r' = r{for = r.for + for, against = r.against + against} :: TableRowRaw
+                         in case compare for against of
+                                GT -> r'{wins = r.wins + 1} :: TableRowRaw
+                                EQ -> r'{draws = r.draws + 1} :: TableRowRaw
+                                LT -> r'{losses = r.losses + 1} :: TableRowRaw
+                 in applyTeamResult (m.homeTeam, m.homeGoals, m.awayGoals)
+                        . applyTeamResult (m.awayTeam, m.awayGoals, m.homeGoals)
             )
 data TableRow = TableRow
     { team :: Team
@@ -182,3 +166,6 @@ newtype Team = Team Text
 -- https://github.com/haskell-hvr/cassava/issues/106
 stripUtf8Bom :: BL.ByteString -> BL.ByteString
 stripUtf8Bom bs = fromMaybe bs $ BL.stripPrefix "\239\187\191" bs
+
+adjustWithDefault :: (Ord k) => a -> (a -> a) -> k -> Map k a -> Map k a
+adjustWithDefault d f = Map.alter (maybe (Just $ f d) (Just . f))
