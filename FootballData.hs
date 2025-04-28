@@ -12,7 +12,6 @@
 {-# LANGUAGE NoFieldSelectors #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
-{-# OPTIONS_GHC -Wno-ambiguous-fields #-}
 
 {- | For processing data from https://www.football-data.co.uk.
 
@@ -99,11 +98,11 @@ processMatches =
             mempty
             ( flip \m ->
                 let applyTeamResult (team, for, against) = flip (adjustWithDefault (TableRowRaw 0 0 0 0 0)) team \r ->
-                        let r' = r{for = r.for + for, against = r.against + against} :: TableRowRaw
-                         in case compare for against of
-                                GT -> r'{wins = r.wins + 1} :: TableRowRaw
-                                EQ -> r'{draws = r.draws + 1} :: TableRowRaw
-                                LT -> r'{losses = r.losses + 1} :: TableRowRaw
+                        let (wins, draws, losses) = case compare for against of
+                                GT -> (r.wins + 1, r.draws, r.losses)
+                                EQ -> (r.wins, r.draws + 1, r.losses)
+                                LT -> (r.wins, r.draws, r.losses + 1)
+                         in TableRowRaw{for = r.for + for, against = r.against + against, ..}
                  in applyTeamResult (m.homeTeam, m.homeGoals, m.awayGoals)
                         . applyTeamResult (m.awayTeam, m.awayGoals, m.homeGoals)
             )
