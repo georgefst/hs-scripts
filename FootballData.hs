@@ -31,22 +31,25 @@ import Data.List (sortOn)
 import Data.Map qualified as Map
 import Data.Maybe
 import Data.Ord (Down (Down))
-import Data.Text (Text)
 import Data.Text.IO qualified as T
 import Data.Time
 import Data.Tuple.Extra ((&&&))
-import GHC.Generics (Generic)
-import System.Environment
+import Options.Generic
 import System.Exit
 
-main :: IO ()
-main =
-    getArgs >>= \case
-        [p, p'] -> main' p p' Nothing Nothing
-        _ -> T.putStrLn "Expected two argument, the input and output file paths"
+data Opts w = Opts
+    { inPath :: w ::: FilePath <?> "Input CSV"
+    , outPath :: w ::: FilePath <?> "Output CSV"
+    , startDate :: w ::: Maybe Day <?> "Start date (inclusive) in YYYY-MM-DD format"
+    , endDate :: w ::: Maybe Day <?> "End date (inclusive) in YYYY-MM-DD format"
+    }
+    deriving (Generic)
+deriving instance ParseRecord (Opts Wrapped)
+deriving instance Show (Opts Unwrapped)
 
-main' :: FilePath -> FilePath -> Maybe Day -> Maybe Day -> IO ()
-main' inPath outPath startDate endDate = do
+main :: IO ()
+main = do
+    Opts{..} <- unwrapRecord "Football Data Processor"
     fileContents <- BL.readFile inPath
     (_header, matches) <-
         either (const $ T.putStrLn "Error parsing CSV" >> exitFailure) (pure . second toList)
