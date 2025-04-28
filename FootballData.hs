@@ -26,6 +26,7 @@ module FootballData (main) where
 
 import Data.Bifunctor
 import Data.ByteString.Lazy qualified as BL
+import Data.Char
 import Data.Csv hiding (Parser, header)
 import Data.Foldable
 import Data.List (sortOn)
@@ -51,8 +52,9 @@ parseOpts :: Parser Opts
 parseOpts = do
     inPath <- argument str $ metavar "IN"
     outPath <- argument str $ metavar "OUT"
-    startDate <- optional $ option auto $ long "start" <> metavar "DATE" <> help "Start date (inclusive) in YYYY-MM-DD format"
-    endDate <- optional $ option auto $ long "end" <> metavar "DATE" <> help "End date (inclusive) in YYYY-MM-DD format"
+    (startDate, endDate) <-
+        (uncurry (liftA2 (,)) . (($ "Start") &&& ($ "End")))
+            (\s -> optional $ option auto $ long (map toLower s) <> metavar "DATE" <> help (s <> " date (inclusive) in YYYY-MM-DD format"))
     pure Opts{..}
 
 main :: IO ()
