@@ -39,7 +39,6 @@ import Data.Ord (Down (Down))
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 import Data.Time
-import Data.Tuple.Extra ((&&&))
 import GHC.Generics (Generic)
 import Options.Applicative
 import System.Exit
@@ -81,16 +80,24 @@ main = do
 
 processMatches :: [Match] -> [TableRow]
 processMatches =
-    sortOn (Down . ((.points) &&& (.diff)))
+    zipWith (&) [1 ..]
         . map
-            ( \(team, TableRowRaw{..}) ->
+            ( \((team, TableRowRaw{..}), TableRankInputs{..}) rank ->
                 TableRow
-                    { team
+                    { rank
                     , played = wins + draws + losses
-                    , points = fromIntegral wins * 3 + fromIntegral draws
-                    , diff = fromIntegral for - fromIntegral against
                     , ..
                     }
+            )
+        . sortOn @(Down TableRankInputs) (Down . snd)
+        . map
+            ( \r@(_, TableRowRaw{..}) ->
+                ( r
+                , TableRankInputs
+                    { points = fromIntegral wins * 3 + fromIntegral draws
+                    , diff = fromIntegral for - fromIntegral against
+                    }
+                )
             )
         . Map.toList
         . flip
@@ -107,7 +114,8 @@ processMatches =
                         . applyTeamResult (m.awayTeam, m.awayGoals, m.homeGoals)
             )
 data TableRow = TableRow -- field names and order matter here for CSV output instances
-    { team :: Team
+    { rank :: Word
+    , team :: Team
     , played :: Word
     , points :: Int
     , diff :: Int
@@ -126,6 +134,11 @@ data TableRowRaw = TableRowRaw
     , against :: Word
     }
     deriving (Show)
+data TableRankInputs = TableRankInputs -- field order is important here for `Ord` instance
+    { points :: Int
+    , diff :: Int
+    }
+    deriving (Eq, Ord)
 
 data Match = Match
     { league :: Text
