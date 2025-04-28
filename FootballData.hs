@@ -25,6 +25,7 @@ Limitations:
 module FootballData (main) where
 
 import Data.Bifunctor
+import Data.Bitraversable
 import Data.ByteString.Lazy qualified as BL
 import Data.Char
 import Data.Csv hiding (Parser, header)
@@ -36,7 +37,7 @@ import Data.Ord (Down (Down))
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 import Data.Time
-import Data.Tuple.Extra ((&&&))
+import Data.Tuple.Extra (both, (&&&))
 import GHC.Generics (Generic)
 import Options.Applicative
 import System.Exit
@@ -53,8 +54,8 @@ parseOpts = do
     inPath <- argument str $ metavar "IN"
     outPath <- argument str $ metavar "OUT"
     (startDate, endDate) <-
-        let f s = optional $ option auto $ long (map toLower s) <> metavar "DATE" <> help (s <> " date (inclusive) in YYYY-MM-DD format")
-         in (,) <$> f "Start" <*> f "End"
+        let f s = long (map toLower s) <> metavar "DATE" <> help (s <> " date (inclusive) in YYYY-MM-DD format")
+         in bisequence $ both (optional . option auto) (f "Start", f "End")
     pure Opts{..}
 
 main :: IO ()
