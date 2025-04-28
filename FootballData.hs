@@ -1,4 +1,5 @@
 {-# LANGUAGE GHC2024 #-}
+{-# LANGUAGE ApplicativeDo #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DisambiguateRecordFields #-}
@@ -25,31 +26,38 @@ module FootballData (main) where
 
 import Data.Bifunctor
 import Data.ByteString.Lazy qualified as BL
-import Data.Csv
+import Data.Csv hiding (Parser, header)
 import Data.Foldable
 import Data.List (sortOn)
 import Data.Map qualified as Map
 import Data.Maybe
 import Data.Ord (Down (Down))
+import Data.Text (Text)
 import Data.Text.IO qualified as T
 import Data.Time
 import Data.Tuple.Extra ((&&&))
-import Options.Generic
+import GHC.Generics (Generic)
+import Options.Applicative
 import System.Exit
 
-data Opts w = Opts
-    { inPath :: w ::: FilePath <?> "Input CSV"
-    , outPath :: w ::: FilePath <?> "Output CSV"
-    , startDate :: w ::: Maybe Day <?> "Start date (inclusive) in YYYY-MM-DD format"
-    , endDate :: w ::: Maybe Day <?> "End date (inclusive) in YYYY-MM-DD format"
+data Opts = Opts
+    { inPath :: FilePath
+    , outPath :: FilePath
+    , startDate :: Maybe Day
+    , endDate :: Maybe Day
     }
-    deriving (Generic)
-deriving instance ParseRecord (Opts Wrapped)
-deriving instance Show (Opts Unwrapped)
+    deriving (Show)
+parseOpts :: Parser Opts
+parseOpts = do
+    inPath <- argument str $ metavar "IN"
+    outPath <- argument str $ metavar "OUT"
+    startDate <- optional $ option auto $ long "start" <> metavar "DATE" <> help "Start date (inclusive) in YYYY-MM-DD format"
+    endDate <- optional $ option auto $ long "end" <> metavar "DATE" <> help "End date (inclusive) in YYYY-MM-DD format"
+    pure Opts{..}
 
 main :: IO ()
 main = do
-    Opts{..} <- unwrapRecord "Football Data Processor"
+    Opts{..} <- execParser $ info (parseOpts <**> helper) $ header "Football Data Processor"
     fileContents <- BL.readFile inPath
     (_header, matches) <-
         either (const $ T.putStrLn "Error parsing CSV" >> exitFailure) (pure . second toList)
