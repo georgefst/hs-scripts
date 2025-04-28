@@ -24,12 +24,14 @@ Limitations:
 -}
 module FootballData (main) where
 
+import Control.Monad
 import Data.Bifunctor
 import Data.Bitraversable
 import Data.ByteString.Lazy qualified as BL
 import Data.Char
 import Data.Csv hiding (Parser, header)
 import Data.Foldable
+import Data.Function
 import Data.List (sortOn)
 import Data.Map qualified as Map
 import Data.Maybe
@@ -37,7 +39,7 @@ import Data.Ord (Down (Down))
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 import Data.Time
-import Data.Tuple.Extra (both, (&&&))
+import Data.Tuple.Extra ((&&&))
 import GHC.Generics (Generic)
 import Options.Applicative
 import System.Exit
@@ -54,8 +56,12 @@ parseOpts = do
     inPath <- argument str $ metavar "IN"
     outPath <- argument str $ metavar "OUT"
     (startDate, endDate) <-
-        let f s = long (map toLower s) <> metavar "DATE" <> help (s <> " date (inclusive) in YYYY-MM-DD format")
-         in join bitraverse (optional . option auto . f) ("Start", "End")
+        ("Start", "End")
+            & join
+                bitraverse
+                ( optional . option auto . \s ->
+                    long (map toLower s) <> metavar "DATE" <> help (s <> " date (inclusive) in YYYY-MM-DD format")
+                )
     pure Opts{..}
 
 main :: IO ()
