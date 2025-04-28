@@ -335,6 +335,10 @@ main = shakeArgs shakeOpts do
             ("servant")
             ("shake")
             ("split")
+            -- TODO we should only need `spotify-miso`
+            -- upstream should we maybe just export everything from the top module? especially due to `OverloadedRecordDot`
+            -- actually that's kind of already the case for `spotify`
+            -- also we should combine the APIs in to a single type
             ("spotify-servant")
             ("spotify-types")
             ("spotify")

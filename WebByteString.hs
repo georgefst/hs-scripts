@@ -1,3 +1,4 @@
+-- TODO look at 24/04/2025 Haskell Wasm Matrix for better options, and maybe retire this
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE MagicHash #-}
 {-# LANGUAGE OverloadedStrings #-}
