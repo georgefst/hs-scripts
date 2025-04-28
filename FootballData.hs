@@ -106,7 +106,7 @@ processMatches =
                  in applyTeamResult (m.homeTeam, m.homeGoals, m.awayGoals)
                         . applyTeamResult (m.awayTeam, m.awayGoals, m.homeGoals)
             )
-data TableRow = TableRow
+data TableRow = TableRow -- field names and order matter here for CSV output instances
     { team :: Team
     , played :: Word
     , points :: Int
