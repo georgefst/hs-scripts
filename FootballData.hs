@@ -18,6 +18,8 @@
 Limitations:
 - Points deductions not accounted for.
 - Tie breakers after goal difference not applied.
+- Data source can take a few days to update (does so on "at least" Sunday and Wednesday nights).
+- Data source only contains match odds, not outrights (the latter seems very difficult to find).
 -}
 module FootballData (main) where
 
