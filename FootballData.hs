@@ -55,7 +55,7 @@ parseOpts = do
     outPath <- argument str $ metavar "OUT"
     (startDate, endDate) <-
         let f s = long (map toLower s) <> metavar "DATE" <> help (s <> " date (inclusive) in YYYY-MM-DD format")
-         in bisequence $ both (optional . option auto) (f "Start", f "End")
+         in bisequence $ both (optional . option auto . f) ("Start", "End")
     pure Opts{..}
 
 main :: IO ()
