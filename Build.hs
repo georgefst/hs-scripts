@@ -282,7 +282,7 @@ main = shakeArgs shakeOpts do
             ("freer-simple")
             ("fsnotify" & munless wasm)
             ("generic-data")
-            ("generics-sop")
+            ("generics-sop" & munless noTH)
             ("ghc-experimental")
             ("graphviz")
             ("hashable")
@@ -308,7 +308,7 @@ main = shakeArgs shakeOpts do
             ("network-uri")
             ("network")
             ("nonempty-containers")
-            ("openapi3" & munless wasm) -- https://github.com/biocad/openapi3/issues/110
+            ("openapi3" & munless cross) -- https://github.com/biocad/openapi3/issues/110
             ("optics-operators")
             ("optics")
             ("optparse-applicative")
@@ -349,7 +349,7 @@ main = shakeArgs shakeOpts do
             ("th-lift" & munless noTH)
             ("time")
             ("transformers")
-            ("udev" & mwhen linux)
+            ("udev" & mwhen (linux && not cross)) -- part of systemd, and no clear instructions to cross compile
             ("uniplate")
             ("unix")
             ("unordered-containers")
