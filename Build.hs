@@ -63,7 +63,7 @@ main = shakeArgs shakeOpts do
                         ( ["Scratch.hs"]
                             <> mwhen
                                 (target.triple.machine == "aarch64")
-                                ["MagicMouse.hs"]
+                                ["MagicMouse.hs", "HomeDashboard.hs", "MisoCounter.hs"]
                             <> mwhen
                                 (not target.linux)
                                 ["Scoreboard.hs", "MagicMouse.hs"]
