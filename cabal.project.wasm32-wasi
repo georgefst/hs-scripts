@@ -2,11 +2,11 @@ import: cabal.project.cross
 
 shared: True
 
--- no PR - implementations are only stubs (as with `network`)
+-- https://github.com/haskell-pkg-janitors/unix-compat/pull/16
 source-repository-package
     type: git
-    location: https://github.com/amesgen/unix-compat
-    tag: 50f40eae46ae1719b483888298596805143fda21
+    location: https://github.com/haskell-pkg-janitors/unix-compat
+    tag: 0fb4f1c08686bd5c19a05507cad29876937ef462
 
 -- https://github.com/haskellari/splitmix/pull/73
 source-repository-package
