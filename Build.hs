@@ -101,12 +101,12 @@ main = shakeArgs shakeOpts do
                 ghc
                 hs
                 (mwhen (hs /= "Build.hs") ["-main-is", takeBaseName hs])
-                (mwhen (isWasmModule && wasm) ["-no-hs-main", "-optl-mexec-model=reactor", "-optl-Wl,--export=hs"])
+                (mwhen isWasmModule ["-no-hs-main", "-optl-mexec-model=reactor", "-optl-Wl,--export=hs"])
                 ["-outputdir", ".build" </> fromMaybe (System.Info.arch <> "-" <> System.Info.os) target]
                 ["-o", out]
                 "-fdiagnostics-color=always"
                 "-O1"
-            when (isWasmModule && wasm) do
+            when isWasmModule do
                 -- TODO we should really actually register these files as Shake deps
                 -- in fact, even the `.wasm` files could be separate targets
                 StdoutTrim ghcLibDir <- cmd ghc "--print-libdir"
