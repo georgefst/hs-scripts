@@ -2,12 +2,6 @@ import: cabal.project.cross
 
 shared: True
 
--- https://github.com/haskell-pkg-janitors/unix-compat/pull/16
-source-repository-package
-    type: git
-    location: https://github.com/haskell-pkg-janitors/unix-compat
-    tag: 0fb4f1c08686bd5c19a05507cad29876937ef462
-
 -- https://github.com/haskellari/splitmix/pull/73
 source-repository-package
     type: git
