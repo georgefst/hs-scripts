@@ -10,7 +10,7 @@ source-repository-package
 source-repository-package
     type: git
     location: https://github.com/georgefst/spotify
-    tag: 8c3d942960d8ff0996193d1b1efd2396b7acd5a9
+    tag: eb6a813c0e1d048678fdfdb07c3958c714cb822a
 
 if impl(ghc >= 9.8)
     -- support is unreleased
