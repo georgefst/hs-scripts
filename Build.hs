@@ -327,6 +327,7 @@ main = shakeArgs shakeOpts do
             ("rapid")
             ("raw-strings-qq")
             ("repline")
+            ("req")
             ("safe")
             ("sbv")
             ("scientific")
@@ -360,6 +361,7 @@ main = shakeArgs shakeOpts do
             ("wai")
             ("warp" & munless noWarp)
             ("websockets")
+            ("wreq" & munless cross) -- https://github.com/haskell/wreq/pull/147
             ("yaml")
 
 data Triple = Triple
