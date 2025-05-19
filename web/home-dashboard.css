@@ -66,6 +66,7 @@ body {
       /* station */
       grid-row: span 3;
       overflow: auto;
+      overscroll-behavior: none;
       > div:first-child {
         text-align: center;
         &.district {
