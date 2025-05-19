@@ -331,6 +331,7 @@ main = shakeArgs shakeOpts do
             ("scientific")
             ("servant-client-js")
             ("servant-client")
+            ("servant-flatten")
             ("servant-server" & munless noWarp)
             ("servant")
             ("shake")
