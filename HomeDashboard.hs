@@ -261,7 +261,6 @@ music =
             [ \sink -> forever do
                 either (consoleLog . ("failed to get playback state: " <>) . ms . show) sink
                     =<< getPlaybackState
-                        Nothing
                         (AccessToken secrets.spotifyAccessToken) -- sink
                         -- TODO how often? Spotify intentionally don't say what the API limit is
                         -- and we can't just subscribe to be notified: https://github.com/spotify/web-api/issues/492
