@@ -260,7 +260,7 @@ music =
         { subs =
             [ \sink -> forever do
                 either (consoleLog . ("failed to get playback state: " <>) . ms . show) sink
-                    =<< getPlaybackState (AccessToken secrets.spotifyAccessToken) -- sink
+                    =<< getPlaybackState (AccessToken secrets.spotifyAccessToken)
                     -- TODO how often? Spotify intentionally don't say what the API limit is
                     -- and we can't just subscribe to be notified: https://github.com/spotify/web-api/issues/492
                     -- one is supposed to check for 429s and read the `Retry-After` header to know how long to back off
