@@ -11,13 +11,13 @@ module Util.Spotify (
 import Data.Proxy (Proxy (Proxy))
 import Servant.API (type (:<|>) ((:<|>)))
 import Servant.API.Flatten (flatten)
-import Servant.Client.JS (BaseUrl (BaseUrl), ClientEnv (ClientEnv), Scheme (Https), client, runClientM)
-import Spotify (marketFromToken)
+import Servant.Client.JS (ClientEnv (ClientEnv), baseUrlPath, client, runClientM)
+import Spotify (mainBase, marketFromToken)
 import Spotify.Servant (API)
 import Spotify.Servant.Core (handleAllJSONOrNoContent)
 
 -- TODO leading slash can be dropped with https://github.com/morganthomas/servant-client-js/pull/7
-run = flip runClientM $ ClientEnv $ BaseUrl Https "api.spotify.com" 443 "/v1"
+run = flip runClientM $ ClientEnv mainBase{baseUrlPath = "/" <> baseUrlPath mainBase}
 
 getPlaybackState t = run $ handleAllJSONOrNoContent <$> getPlaybackState' t marketFromToken (Just "episode")
 getAlbum a t = run $ getAlbum' t a marketFromToken
