@@ -232,8 +232,6 @@ main = shakeArgs shakeOpts do
             (maybeTarget <&> \t -> AddEnv "PKG_CONFIG_PATH" $ "/usr/" <> t <> "/lib/pkgconfig")
             "--package-env ."
             "--lib"
-            -- TODO this doesn't get picked up if placed in project file - seems to be a WASM-specific issue
-            (mwhen wasm "--constraint=zlib+bundled-c-zlib")
             -- TODO versions, maybe via a `cabal.project.freeze`? less of a problem now that we just pin `index-state`
             ("active")
             ("aeson-optics")
