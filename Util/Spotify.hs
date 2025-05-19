@@ -3,7 +3,10 @@
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 
-module Util.Spotify where
+module Util.Spotify (
+    getPlaybackState,
+    getAlbum,
+) where
 
 import Data.Proxy (Proxy (Proxy))
 import Servant.API (type (:<|>) ((:<|>)))

@@ -16,7 +16,7 @@ module HomeDashboard (main) where
 
 import Util.OpenWeatherMap
 import Util.Secrets
-import Util.Spotify hiding (run)
+import Util.Spotify
 import Util.TFL (QueryList (QueryList))
 import Util.TFLMiso (lineArrivals, runTFL)
 import Util.TFLTypes (TflApiPresentationEntitiesPrediction (..))
