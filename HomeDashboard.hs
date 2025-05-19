@@ -16,17 +16,17 @@ module HomeDashboard (main) where
 
 import Util.OpenWeatherMap
 import Util.Secrets
-import Util.Spotify
+import Util.Spotify hiding (run)
 import Util.TFL (QueryList (QueryList))
-import Util.TFLMiso (lineArrivals)
+import Util.TFLMiso (lineArrivals, runTFL)
 import Util.TFLTypes (TflApiPresentationEntitiesPrediction (..))
 
 import Control.Concurrent
 import Control.Monad
-import Control.Monad.Cont
+import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
-import Data.Bifunctor (bimap)
+import Data.Bifunctor (bimap, first, second)
 import Data.Either.Extra
 import Data.Foldable
 import Data.List.Extra hiding (lines)
@@ -38,9 +38,9 @@ import Data.Text qualified as T
 import Data.Time
 import Data.Time.Calendar.OrdinalDate
 import Data.Traversable
-import Data.Tuple.Extra (second, (&&&))
+import Data.Tuple.Extra ((&&&))
 import GHC.Generics (Generic)
-import Miso hiding (for_, sink)
+import Miso hiding (for, for_)
 import Miso.String (MisoString, fromMisoString, ms)
 import Optics
 import Spotify.Types.Auth
@@ -55,7 +55,7 @@ import Prelude hiding (lines)
 main :: IO ()
 main = do
 #ifdef wasi_HOST_OS
-    run $ startApp app
+    run $ startComponent app
 #else
     -- TODO there's got to be a better way to do this
     -- I guess we need to modify runner to spin up file server alongside `jsaddle-warp`
@@ -64,28 +64,27 @@ main = do
     -- also the availability of this new `styles` field kind of makes some of my build script stylesheet logic redundant
     -- then again, it's at least in theory to be more general rather than ties to Miso
     styles <- pure . Style . ms <$> readFile "web/home-dashboard.css"
-    run $ startApp app {styles}
+    run $ startComponent app {styles}
 #endif
 
-app :: App () ()
+app :: Component "app" () ()
 app =
-    defaultApp
+    defaultComponent
         ()
         (\() -> pure ())
         ( \() ->
             div_
                 []
-                [ embed clock [id_ "clock"]
-                , embed weather [id_ "weather"]
-                , embed transport [id_ "transport"]
-                , embed music [id_ "music"]
+                [ component clock
+                , component weather
+                , component transport
+                , component music
                 ]
         )
 
-clock :: Component LocalTime LocalTime
+clock :: Component "clock" LocalTime LocalTime
 clock =
-    component "clock" $
-        ( defaultApp
+        ( defaultComponent
             -- TODO hmm, would be nice to be able to do IO for initial state...
             -- here it's fine in practice because the sub gets run immediately
             -- we'd want it for other components as well
@@ -113,11 +112,9 @@ clock =
                 ]
             }
 
-weather :: Component (Maybe WeatherState) WeatherState
+weather :: Component "weather" (Maybe WeatherState) WeatherState
 weather =
-    component
-        "weather"
-        ( defaultApp
+        ( defaultComponent
             Nothing
             (put . Just)
             \case
@@ -133,11 +130,11 @@ weather =
                     let appId = T.unpack secrets.openWeatherMapAppId
                     -- TODO use coords instead? take from env var rather than hardcoding, since this code isn't secret
                     let location = Left "London"
-                    evalContT do
-                        let h s = (consoleLog . (("failed to get " <> s <> ": ") <>))
-                        current <- ContT $ getWeather appId location $ h "weather"
-                        forecast <- ContT $ getForecast appId location $ h "forecast"
-                        lift $ sink WeatherState{..}
+                    let h s = (consoleLog . (("failed to get " <> s <> ": ") <>)) . ms . show
+                    either (uncurry h) sink =<< runExceptT do
+                        current <- liftEither . first ("weather",) =<< lift (getWeather appId location)
+                        forecast <- liftEither . first ("forecast",) =<< lift (getForecast appId location)
+                        pure WeatherState{..}
                     -- API limit is 60 per minute, so this is actually extremely conservative
                     liftIO $ threadDelay 300_000_000
                 ]
@@ -148,11 +145,9 @@ data WeatherState = WeatherState
     }
     deriving (Eq, Show, Generic)
 
-transport :: Component (Map StationLineId StationData) (StationLineId, StationData)
+transport :: Component "transport" (Map StationLineId StationData) (StationLineId, StationData)
 transport =
-    component
-        "transport"
-        ( defaultApp
+        ( defaultComponent
             mempty
             (modify . uncurry Map.insert)
             \allData ->
@@ -185,7 +180,7 @@ transport =
                 [ \sink -> forever do
                     timeZone <- liftIO getCurrentTimeZone
                     for_ stations \(station, stationNameShort, lines) ->
-                        (lineArrivals (QueryList $ map fromMisoString lines) (fromMisoString station) Nothing Nothing) (\s -> consoleLog $ "error fetching train data: " <> s) \entries ->
+                        runTFL (lineArrivals (QueryList $ map fromMisoString lines) (fromMisoString station) Nothing Nothing) >>= either (\e -> consoleLog $ "error fetching train data: " <> ms (show e)) \entries ->
                             either
                                 (consoleLog . ("train field missing: " <>))
                                 (traverse_ $ sink . bimap (station,) (stationNameShort,))
@@ -238,11 +233,9 @@ data TrainData = TrainData
     }
     deriving (Eq, Show)
 
-music :: Component (Maybe PlaybackState) (Maybe PlaybackState)
+music :: Component "music" (Maybe PlaybackState) (Maybe PlaybackState)
 music =
-    component
-        "music"
-        ( defaultApp
+        ( defaultComponent
             (Nothing)
             put
             \case
@@ -266,11 +259,9 @@ music =
         )
             { subs =
                 [ \sink -> forever do
-                    getPlaybackState
+                    either (consoleLog . ("failed to get playback state: " <>) . ms . show) sink =<< getPlaybackState
                         Nothing
-                        (AccessToken secrets.spotifyAccessToken)
-                        (consoleLog . ("failed to get playback state: " <>))
-                        sink
+                        (AccessToken secrets.spotifyAccessToken)                        -- sink
                     -- TODO how often? Spotify intentionally don't say what the API limit is
                     -- and we can't just subscribe to be notified: https://github.com/spotify/web-api/issues/492
                     -- one is supposed to check for 429s and read the `Retry-After` header to know how long to back off

@@ -1,11 +1,15 @@
-index-state: 2025-04-30T21:22:34Z
+index-state: 2025-05-02T00:00:00Z
 
 -- using HEAD for components, better Wasm support and various API improvements
--- https://github.com/dmjio/miso/pull/888
 source-repository-package
     type: git
-    location: https://github.com/georgefst/miso
-    tag: 94e8f097b568258f4e253316cd71e373c39e2918
+    location: https://github.com/dmjio/miso
+    tag: 8c151aa1a76ffc9ed6eaa2849c4e6e304c451675
+-- outdated on Hackage - this stanza is copied from Miso at the above commit
+source-repository-package
+    type: git
+    location: https://github.com/amesgen/servant-client-js
+    tag: 2853fb4f26175f51ae7b9aaf0ec683c45070d06e
 
 source-repository-package
     type: git
