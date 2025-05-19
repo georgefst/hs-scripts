@@ -331,6 +331,7 @@ main = shakeArgs shakeOpts do
             ("safe")
             ("sbv")
             ("scientific")
+            ("servant-client-js")
             ("servant-client")
             ("servant-server" & munless noWarp)
             ("servant")

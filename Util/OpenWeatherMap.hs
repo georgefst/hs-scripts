@@ -20,12 +20,13 @@
 module Util.OpenWeatherMap where
 
 import Data.Aeson (FromJSON)
+import Data.Composition ((.:))
 import Data.Data (Proxy (Proxy))
+import Data.Maybe (fromMaybe)
 import GHC.Generics (Generic)
 import Language.Javascript.JSaddle (JSM)
-import Miso (Fetch (..), fetch)
-import Miso.String (MisoString)
 import Servant.API (Get, JSON, QueryParam', Required, Strict, (:<|>) ((:<|>)), (:>))
+import Servant.Client.JS (ClientEnv (ClientEnv), ClientError, client, parseBaseUrl, runClientM)
 import Util.ServantAlgebra (Product, Sum)
 
 type LocationParams =
@@ -50,16 +51,23 @@ type API = CurrentAPI :<|> ForecastAPI
 getWeather ::
     String ->
     Either String (Double, Double) ->
-    (MisoString -> JSM ()) ->
-    (CurrentWeather -> JSM ()) ->
-    JSM ()
+    JSM (Either ClientError CurrentWeather)
 getForecast ::
     String ->
     Either String (Double, Double) ->
-    (MisoString -> JSM ()) ->
-    (ForecastWeather -> JSM ()) ->
-    JSM ()
-getWeather :<|> getForecast = fetch (Proxy @API) "https://api.openweathermap.org/data/2.5"
+    JSM (Either ClientError ForecastWeather)
+(getWeather, getForecast) =
+    ( run .: getWeather'
+    , run .: getForecast'
+    )
+  where
+    run =
+        flip runClientM
+            . ClientEnv
+            . fromMaybe (error "failed to parse openweathermap base url")
+            $ parseBaseUrl "https://api.openweathermap.org/data/2.5"
+    getWeather'
+        :<|> getForecast' = client $ Proxy @API
 
 data City = City
     { name :: String

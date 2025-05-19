@@ -11,11 +11,11 @@ import Miso
 import Miso.String
 
 main :: IO ()
-main = run $ startApp app
+main = run $ startComponent app
 
-app :: App Word ()
+app :: Component s Word ()
 app =
-    defaultApp
+    defaultComponent
         0
         (\() -> modify succ)
         (\n -> div_ [] [button_ [onClick ()] [span_ [] [text "+"]], text $ ms n])
