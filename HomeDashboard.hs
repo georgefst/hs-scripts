@@ -236,7 +236,7 @@ data TrainData = TrainData
 music :: Component "music" (Maybe PlaybackState) (Maybe PlaybackState)
 music =
     ( defaultComponent
-        (Nothing)
+        Nothing
         put
         \case
             Just ps@(PlaybackState{item = Just item}) ->
