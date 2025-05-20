@@ -75,10 +75,10 @@ app =
         ( \() ->
             div_
                 []
-                [ componentWith clock Nothing [id_ "clock"]
-                , componentWith weather Nothing [id_ "weather"]
-                , componentWith transport Nothing [id_ "transport"]
-                , componentWith music Nothing [id_ "music"]
+                [ component clock [id_ "clock"]
+                , component weather [id_ "weather"]
+                , component transport [id_ "transport"]
+                , component music [id_ "music"]
                 ]
         )
 

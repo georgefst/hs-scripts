@@ -4,7 +4,7 @@ index-state: 2025-05-02T00:00:00Z
 source-repository-package
     type: git
     location: https://github.com/dmjio/miso
-    tag: 8c151aa1a76ffc9ed6eaa2849c4e6e304c451675
+    tag: 2813cf4581792a93bdd3211b935a0e8bbe60a107
 -- outdated on Hackage - this stanza is copied from Miso at the above commit
 source-repository-package
     type: git
