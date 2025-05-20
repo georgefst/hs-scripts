@@ -19,6 +19,7 @@ source-repository-package
 if impl(ghc >= 9.8)
     -- support is unreleased
     -- https://github.com/brendanhay/amazonka/pull/973
+    -- https://github.com/brendanhay/amazonka/pull/1036
     -- https://github.com/brendanhay/amazonka/issues/1001
     allow-newer:
         amazonka:base,
@@ -26,6 +27,11 @@ if impl(ghc >= 9.8)
         amazonka-ses:base,
         amazonka-sso:base,
         amazonka-sts:base,
+        amazonka:containers,
+        amazonka-core:containers,
+        amazonka-ses:containers,
+        amazonka-sso:containers,
+        amazonka-sts:containers,
     package amazonka-ses
         ghc-options: -XDuplicateRecordFields
     package amazonka-sso
@@ -78,7 +84,6 @@ if impl(ghc >= 9.12)
         tag: 940e3a4c369d6262db3a54eaffe16e18b851df51
         subdir: dhall
     allow-newer:
-        brillo:bytestring,
         cborg:base,
         cborg:ghc-prim,
         cborg-json:base,
@@ -101,3 +106,9 @@ if impl(ghc >= 9.12)
         servant-client-core:template-haskell,
         servant-server:base,
         svg-builder:base,
+
+-- barely-maintained libraries - less inclined to open a PR for every issue
+allow-newer:
+    brillo:bytestring,
+    brillo:containers,
+    brillo-rendering:containers,
