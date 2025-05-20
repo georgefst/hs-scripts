@@ -21,11 +21,11 @@ if impl(ghc >= 9.8)
     -- https://github.com/brendanhay/amazonka/pull/973
     -- https://github.com/brendanhay/amazonka/issues/1001
     allow-newer:
+        amazonka:base,
         amazonka-core:base,
         amazonka-ses:base,
         amazonka-sso:base,
         amazonka-sts:base,
-        amazonka:base,
     package amazonka-ses
         ghc-options: -XDuplicateRecordFields
     package amazonka-sso
