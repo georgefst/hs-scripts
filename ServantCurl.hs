@@ -6,7 +6,6 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
@@ -49,8 +48,6 @@ import Servant.Foreign (
     unPathSegment,
     unSegment,
  )
-import Test.QuickCheck
-import Test.QuickCheck.Gen (generate)
 
 type UserAPI =
     "users" :> Get '[JSON] [User]
@@ -63,13 +60,6 @@ data User = User
     }
     deriving (Eq, Show, Generic)
 
-instance Arbitrary User where
-    arbitrary = do
-        name <- arbitrary
-        age <- arbitrary
-        email <- arbitrary
-        pure User{..}
-    shrink = genericShrink
 instance ToJSON User
 instance FromJSON User
 
@@ -78,19 +68,10 @@ api = Proxy
 
 data NoLang
 
-data Mocked = Mocked (IO Text)
+data Mocked = Mocked Text
 
-instance (ToJSON a, Arbitrary a) => HasForeignType NoLang Mocked a where
-    typeFor _ _ _ =
-        Mocked (genText (Proxy :: Proxy a))
-
-genText :: (ToJSON a, Arbitrary a) => Proxy a -> IO Text
-genText p =
-    fmap (LazyT.toStrict . encodeToLazyText) (genArb p)
-
-genArb :: (Arbitrary a) => Proxy a -> IO a
-genArb _ =
-    generate arbitrary
+instance (ToJSON a) => HasForeignType NoLang Mocked a where
+    typeFor _ _ _ = Mocked "this is the body"
 
 generateCurl ::
     (GenerateList Mocked (Foreign Mocked api), HasForeign NoLang Mocked api) =>
@@ -108,18 +89,17 @@ generateEndpoint :: Text -> Req Mocked -> IO Text
 generateEndpoint host req =
     case maybeBody of
         Just body ->
-            body >>= \b ->
-                return $
-                    T.intercalate
-                        " "
-                        [ "curl"
-                        , "-X"
-                        , method
-                        , "-d"
-                        , "'" <> b <> "'"
-                        , "-H 'Content-Type: application/json'"
-                        , host <> "/" <> url
-                        ]
+            return $
+                T.intercalate
+                    " "
+                    [ "curl"
+                    , "-X"
+                    , method
+                    , "-d"
+                    , "'" <> body <> "'"
+                    , "-H 'Content-Type: application/json'"
+                    , host <> "/" <> url
+                    ]
         Nothing ->
             return $ T.intercalate " " ["curl", "-X", method, host <> "/" <> url]
   where
