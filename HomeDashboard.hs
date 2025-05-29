@@ -180,11 +180,10 @@ transport =
             [ \sink -> forever do
                 timeZone <- liftIO getCurrentTimeZone
                 for_ stations \(station, stationNameShort, lines) ->
-                    runTFL (lineArrivals (QueryList $ map fromMisoString lines) (fromMisoString station) Nothing Nothing) >>= either (\e -> consoleLog $ "error fetching train data: " <> ms (show e)) \entries ->
-                        either
-                            (consoleLog . ("train field missing: " <>))
-                            (traverse_ (sink . bimap (station,) ((stationNameShort,) . toList)) . classifyOnFst)
-                            $ for entries \prediction -> do
+                    either consoleLog (traverse_ sink) =<< runExceptT do
+                        entries <- withExceptT (\e -> "error fetching train data: " <> ms (show e)) $ runTFL $ lineArrivals (QueryList $ map fromMisoString lines) (fromMisoString station) Nothing Nothing
+                        map (bimap (station,) ((stationNameShort,) . toList)) . classifyOnFst <$> for entries \prediction -> liftEither $
+                            first ("train field missing: " <>) do
                                 lineId <- maybeToEither "lineId" $ ms <$> tflApiPresentationEntitiesPredictionLineId prediction
                                 stationName <- maybeToEither "stationName" $ ms <$> tflApiPresentationEntitiesPredictionStationName prediction
                                 platformName <- maybeToEither "platformName" $ ms <$> tflApiPresentationEntitiesPredictionPlatformName prediction

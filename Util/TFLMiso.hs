@@ -6,14 +6,16 @@
 
 module Util.TFLMiso where
 
+import Control.Monad.Except (ExceptT (ExceptT))
 import Data.Maybe (fromMaybe)
 import Data.Proxy (Proxy (Proxy))
 import Servant.API (type (:<|>) ((:<|>)))
 import Servant.Client.JS (ClientEnv (ClientEnv), client, parseBaseUrl, runClientM)
 import Util.TFL (TransportForLondonUnifiedAPI)
 
-runTFL =
-    flip runClientM
+runTFL x =
+    ExceptT
+        . runClientM x
         . ClientEnv
         . fromMaybe (error "failed to parse TFL base url")
         $ parseBaseUrl "https://api.tfl.gov.uk"
