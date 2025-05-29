@@ -3,7 +3,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
@@ -87,7 +86,7 @@ instance (ToJSON a, Arbitrary a) => HasForeignType NoLang Mocked a where
 
 genText :: (ToJSON a, Arbitrary a) => Proxy a -> IO Text
 genText p =
-    fmap (\v -> LazyT.toStrict $ encodeToLazyText v) (genArb p)
+    fmap (LazyT.toStrict . encodeToLazyText) (genArb p)
 
 genArb :: (Arbitrary a) => Proxy a -> IO a
 genArb _ =
