@@ -25,7 +25,7 @@ import Control.Monad
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
-import Data.Bifunctor (bimap, first, second)
+import Data.Bifunctor (first, second)
 import Data.Either.Extra
 import Data.Foldable
 import Data.List.Extra hiding (lines)
@@ -182,16 +182,18 @@ transport =
             [ \sink -> forever do
                 timeZone <- liftIO getCurrentTimeZone
                 for_ stations \(station, stationNameShort, lines) ->
-                    either consoleLog (traverse_ sink) =<< runExceptT do
-                        entries <-
-                            withExceptT (\e -> "error fetching train data: " <> ms (show e)) . runTFL $
+                    (either consoleLog (traverse_ (sink . second ((stationNameShort,) . toList)) . classifyOnFst) =<<)
+                        . runExceptT
+                        $ withExceptT
+                            (\e -> "error fetching train data: " <> ms (show e))
+                            ( runTFL $
                                 lineArrivals
                                     (QueryList $ map fromMisoString lines)
                                     (fromMisoString station)
                                     Nothing
                                     Nothing
-                        map (bimap (station,) ((stationNameShort,) . toList)) . classifyOnFst
-                            <$> for entries \prediction -> liftEither $ first ("train field missing: " <>) do
+                            )
+                            >>= liftEither . traverse \prediction -> do
                                 let
                                     -- TODO fix up the generated TFL API code to use shorter names,
                                     -- then this abstraction may no longer be worth it
@@ -202,14 +204,16 @@ transport =
                                         , HasField s' TflApiPresentationEntitiesPrediction (Maybe a)
                                         ) =>
                                         Either MisoString a
-                                    f = maybeToEither (ms $ symbolVal $ Proxy @s) $ getField @s' prediction
+                                    f =
+                                        maybeToEither ("train field missing: " <> ms (symbolVal $ Proxy @s)) $
+                                            getField @s' prediction
                                 lineId <- ms <$> f @"LineId"
                                 stationName <- ms <$> f @"StationName"
                                 platformName <- ms <$> f @"PlatformName"
                                 towards <- ms <$> f @"Towards"
                                 currentLocation <- ms <$> f @"CurrentLocation"
                                 expectedArrival <- utcToLocalTime timeZone <$> f @"ExpectedArrival"
-                                pure (lineId, TrainData{..})
+                                pure ((station, lineId), TrainData{..})
                 -- 50 requests a minute allowed without key (presumably per IP?)
                 -- of course we do `sum $ map (length . thd3) stations` calls on each iteration
                 -- and during development we could easily have three clients running during dev
