@@ -1,4 +1,5 @@
 {-# LANGUAGE GHC2024 #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE LexicalNegation #-}
@@ -34,12 +35,15 @@ import Data.List.NonEmpty (NonEmpty)
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Maybe
+import Data.Proxy (Proxy (Proxy))
 import Data.Text qualified as T
 import Data.Time
 import Data.Time.Calendar.OrdinalDate
 import Data.Traversable
 import Data.Tuple.Extra ((&&&))
 import GHC.Generics (Generic)
+import GHC.Records (HasField (getField))
+import GHC.TypeLits (AppendSymbol, KnownSymbol, symbolVal)
 import Miso hiding (for, for_)
 import Miso.String (MisoString, fromMisoString, ms)
 import Optics
@@ -190,12 +194,23 @@ transport =
                                     Nothing
                         map (bimap (station,) ((stationNameShort,) . toList)) . classifyOnFst
                             <$> for entries \prediction -> liftEither $ first ("train field missing: " <>) do
-                                lineId <- maybeToEither "lineId" $ ms <$> tflApiPresentationEntitiesPredictionLineId prediction
-                                stationName <- maybeToEither "stationName" $ ms <$> tflApiPresentationEntitiesPredictionStationName prediction
-                                platformName <- maybeToEither "platformName" $ ms <$> tflApiPresentationEntitiesPredictionPlatformName prediction
-                                towards <- maybeToEither "towards" $ ms <$> tflApiPresentationEntitiesPredictionTowards prediction
-                                currentLocation <- maybeToEither "currentLocation" $ ms <$> tflApiPresentationEntitiesPredictionCurrentLocation prediction
-                                expectedArrival <- maybeToEither "expectedArrival" $ utcToLocalTime timeZone <$> tflApiPresentationEntitiesPredictionExpectedArrival prediction
+                                let
+                                    -- TODO fix up the generated TFL API code to use shorter names,
+                                    -- then this abstraction may no longer be worth it
+                                    f ::
+                                        forall s s' a.
+                                        ( KnownSymbol s
+                                        , s' ~ AppendSymbol "tflApiPresentationEntitiesPrediction" s
+                                        , HasField s' TflApiPresentationEntitiesPrediction (Maybe a)
+                                        ) =>
+                                        Either MisoString a
+                                    f = maybeToEither (ms $ symbolVal $ Proxy @s) $ getField @s' prediction
+                                lineId <- ms <$> f @"LineId"
+                                stationName <- ms <$> f @"StationName"
+                                platformName <- ms <$> f @"PlatformName"
+                                towards <- ms <$> f @"Towards"
+                                currentLocation <- ms <$> f @"CurrentLocation"
+                                expectedArrival <- utcToLocalTime timeZone <$> f @"ExpectedArrival"
                                 pure (lineId, TrainData{..})
                 -- 50 requests a minute allowed without key (presumably per IP?)
                 -- of course we do `sum $ map (length . thd3) stations` calls on each iteration
