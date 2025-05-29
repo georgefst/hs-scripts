@@ -183,8 +183,8 @@ transport =
                     runTFL (lineArrivals (QueryList $ map fromMisoString lines) (fromMisoString station) Nothing Nothing) >>= either (\e -> consoleLog $ "error fetching train data: " <> ms (show e)) \entries ->
                         either
                             (consoleLog . ("train field missing: " <>))
-                            (traverse_ $ sink . bimap (station,) (stationNameShort,))
-                            $ map (second toList) . classifyOnFst <$> for entries \prediction -> do
+                            (traverse_ (sink . bimap (station,) ((stationNameShort,) . toList)) . classifyOnFst)
+                            $ for entries \prediction -> do
                                 lineId <- maybeToEither "lineId" $ ms <$> tflApiPresentationEntitiesPredictionLineId prediction
                                 stationName <- maybeToEither "stationName" $ ms <$> tflApiPresentationEntitiesPredictionStationName prediction
                                 platformName <- maybeToEither "platformName" $ ms <$> tflApiPresentationEntitiesPredictionPlatformName prediction
