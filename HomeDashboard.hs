@@ -182,18 +182,11 @@ transport =
             [ \sink -> forever do
                 timeZone <- liftIO getCurrentTimeZone
                 for_ stations \(station, stationNameShort, lines) ->
-                    (either consoleLog (traverse_ (sink . second ((stationNameShort,) . toList)) . classifyOnFst) =<<)
-                        . runExceptT
-                        $ withExceptT
-                            (\e -> "error fetching train data: " <> ms (show e))
-                            ( runTFL $
-                                lineArrivals
-                                    (QueryList $ map fromMisoString lines)
-                                    (fromMisoString station)
-                                    Nothing
-                                    Nothing
-                            )
-                            >>= liftEither . traverse \prediction -> do
+                    ( either consoleLog (traverse_ (sink . second ((stationNameShort,) . toList)) . classifyOnFst)
+                        <=< runExceptT
+                    )
+                        $ traverse
+                            ( \prediction -> liftEither do
                                 let
                                     -- TODO fix up the generated TFL API code to use shorter names,
                                     -- then this abstraction may no longer be worth it
@@ -214,6 +207,17 @@ transport =
                                 currentLocation <- ms <$> f @"CurrentLocation"
                                 expectedArrival <- utcToLocalTime timeZone <$> f @"ExpectedArrival"
                                 pure ((station, lineId), TrainData{..})
+                            )
+                            =<< withExceptT
+                                (\e -> "error fetching train data: " <> ms (show e))
+                                ( runTFL $
+                                    lineArrivals
+                                        (QueryList $ map fromMisoString lines)
+                                        (fromMisoString station)
+                                        Nothing
+                                        Nothing
+                                )
+
                 -- 50 requests a minute allowed without key (presumably per IP?)
                 -- of course we do `sum $ map (length . thd3) stations` calls on each iteration
                 -- and during development we could easily have three clients running during dev
