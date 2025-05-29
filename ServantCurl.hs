@@ -48,29 +48,16 @@ import Servant.Foreign (
     unPathSegment,
     unSegment,
  )
+import Spotify
 
-type UserAPI =
-    "users" :> Get '[JSON] [User]
-        :<|> "new" :> "user" :> ReqBody '[JSON] User :> Post '[JSON] ()
-
-data User = User
-    { name :: String
-    , age :: Int
-    , email :: String
-    }
-    deriving (Eq, Show, Generic)
-
-instance ToJSON User
-instance FromJSON User
-
-api :: Proxy UserAPI
+api :: Proxy RefreshAccessToken
 api = Proxy
 
 data NoLang
 
 data Mocked = Mocked Text
 
-instance (ToJSON a) => HasForeignType NoLang Mocked a where
+instance HasForeignType NoLang Mocked RefreshAccessTokenForm where
     typeFor _ _ _ = Mocked "this is the body"
 
 generateCurl ::
@@ -97,7 +84,7 @@ generateEndpoint host req =
                     , method
                     , "-d"
                     , "'" <> body <> "'"
-                    , "-H 'Content-Type: application/json'"
+                    , "-H 'Content-Type: application/x-www-form-urlencoded'"
                     , host <> "/" <> url
                     ]
         Nothing ->
@@ -120,4 +107,4 @@ segment seg =
 
 main :: IO ()
 main =
-    generateCurl api "localhost:8081" >>= T.IO.putStrLn
+    generateCurl api (T.pack $ showBaseUrl accountsBase) >>= T.IO.putStrLn
