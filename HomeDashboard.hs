@@ -8,6 +8,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE NoFieldSelectors #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 
@@ -23,6 +24,7 @@ import Util.TFLTypes (TflApiPresentationEntitiesPrediction (..))
 import Control.Concurrent
 import Control.Monad
 import Control.Monad.Except
+import Control.Monad.Extra (untilJustM)
 import Control.Monad.Reader
 import Control.Monad.State
 import Data.Bifunctor (first, second)
@@ -42,6 +44,7 @@ import Data.Tuple.Extra ((&&&))
 import GHC.Generics (Generic)
 import GHC.Records (HasField (getField))
 import GHC.TypeLits (AppendSymbol, KnownSymbol, symbolVal)
+import Language.Javascript.JSaddle (liftJSM)
 import Miso hiding (for, for_)
 import Miso.String (MisoString, fromMisoString, ms)
 import Optics
@@ -59,6 +62,8 @@ main = do
 #ifdef wasi_HOST_OS
     run $ startComponent app
 #else
+    -- ask David about this
+    -- oh, and now what about the  Wasm `-fghci-browser`...
     -- TODO there's got to be a better way to do this
     -- I guess we need to modify runner to spin up file server alongside `jsaddle-warp`
     -- and that still assumes that relative paths are the same in development as in production
@@ -125,13 +130,16 @@ weather =
                 div_
                     []
                     -- TODO show more of this data
+                    -- typeset `°C` better? maybe superscript?
                     [text $ ms @String $ printf "%.1f°C" $ current.main.temp - 273.15]
     )
         { subs =
             [ \sink -> forever do
                 let appId = T.unpack secrets.openWeatherMapAppId
                 -- TODO use coords instead? take from env var rather than hardcoding, since this code isn't secret
-                let location = Left "London"
+                let location = Right (51.493, -0.234)
+                -- let location = Left "Lima"
+                -- let location = Left "London"
                 let h s = (consoleLog . (("failed to get " <> s <> ": ") <>)) . ms . show
                 either (uncurry h) sink =<< runExceptT do
                     current <- liftEither . first ("weather",) =<< lift (getWeather appId location)
@@ -206,6 +214,8 @@ transport =
                                 towards <- ms <$> f @"Towards"
                                 currentLocation <- ms <$> f @"CurrentLocation"
                                 expectedArrival <- utcToLocalTime timeZone <$> f @"ExpectedArrival"
+                                -- TODO of course what we really want are departures, esp. for termini
+                                -- but there doesn't seem to be an API for this - see https://techforum.tfl.gov.uk/t/how-to-find-departures-from-terminal-stations/72/39
                                 pure ((station, lineId), TrainData{..})
                             )
                             =<< withExceptT
@@ -284,21 +294,57 @@ music =
             _ -> div_ [] []
     )
         { subs =
-            [ \sink -> forever do
-                either (consoleLog . ("failed to get playback state: " <>) . ms . show) sink
-                    =<< runExceptT (runReaderT getPlaybackState $ AccessToken secrets.spotifyAccessToken)
-                -- TODO how often? Spotify intentionally don't say what the API limit is
-                -- and we can't just subscribe to be notified: https://github.com/spotify/web-api/issues/492
-                -- one is supposed to check for 429s and read the `Retry-After` header to know how long to back off
-                -- I've been banned for 18 hours for just calling twice a second
-                -- though this might have been unlucky - Spotify outages were in the news that day
-                -- if we can't call every second, then we'll have to go manually increasing the counter
-                liftIO $ threadDelay 5_000_000
+            [ let refresh wait = do
+                    r <- do
+                        runExceptT $
+                            refreshAccessToken
+                                (RefreshToken secrets.spotifyRefreshToken)
+                                (ClientId secrets.spotifyClientId)
+                                (ClientSecret secrets.spotifyClientSecret)
+                    -- we delay to ensure we don't completely spam, even if something goes horribly wrong
+                    -- TODO even though we want to delay in all cases, putting the delay here feels wrong
+                    -- it makes this less of a general utility function
+                    -- plus we really don't want to pause when succeeding at startup, hence `wait` arg
+                    -- it does make using `untilJustM` easy though...
+                    -- but maybe we just shouldn't call that? a failure here at startup would indicate a serious issue,
+                    -- unlikely to be recoverable without code (or config) changes
+                    -- same goes really for `Nothing -> pure ()` case below, which shouldn't happen
+                    when wait $ liftIO $ threadDelay 3_000_000
+                    either
+                        (\e -> consoleLog ("failed to refresh token: " <> ms (show e)) >> pure Nothing)
+                        (pure . Just)
+                        r
+               in \sink -> do
+                    tok0 <- (.accessToken) <$> untilJustM (refresh False)
+                    flip evalStateT tok0 $ forever do
+                        tok <- get
+                        lift (runExceptT $ runReaderT getPlaybackState tok) >>= \case
+                            Left e -> do
+                                liftJSM . consoleLog $
+                                    "failed to get playback state (will try to refresh token): " <> ms (show e)
+                                -- TODO hmm, would be good to only run refresh token attempt on 401s
+                                -- actually, read `expiresIn` field of response and use that instead of error handling...
+                                lift (refresh True) >>= \case
+                                    Nothing -> pure () -- just try again (this shouldn't generally happen)
+                                    Just tr -> put tr.accessToken
+                            Right r -> do
+                                lift $ sink r
+                                -- TODO how often? Spotify intentionally don't say what the API limit is
+                                -- and we can't just subscribe to be notified: https://github.com/spotify/web-api/issues/492
+                                -- one is supposed to check for 429s and read the `Retry-After` header to know how long to back off
+                                -- I've been banned for 18 hours for just calling twice a second
+                                -- though this might have been unlucky - Spotify outages were in the news that day
+                                -- if we can't call every second, then we'll have to go manually increasing the counter display
+                                liftIO $ threadDelay 5_000_000
             ]
         }
 
+-- TODO David was asking about this function, but I haven't worked out what he was talking about yet
+-- EDIT: ah, he just asked me about this _directly_ 2025/04/15 01:55:05
+-- translate' = translate
+
 classifyOn :: (Ord b) => (a -> b) -> [a] -> [(b, NonEmpty a)]
-classifyOn f = Map.toList . Map.fromListWith (<>) . map (f &&& pure @NonEmpty)
+classifyOn f = Map.toList . Map.fromListWith (<>) . map (f &&& pure)
 classifyOnFst :: (Ord a) => [(a, b)] -> [(a, NonEmpty b)]
 classifyOnFst = map (second $ fmap snd) . classifyOn fst
 
