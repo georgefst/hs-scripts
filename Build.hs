@@ -13,7 +13,7 @@
 build-depends:
     base >= 4.16,
     directory ^>= 1.3,
-    extra ^>= 1.7,
+    extra ^>= {1.7, 1.8},
     lucid2 ^>= 0.0.20250303,
     pretty-simple ^>= 4.1,
     shake ^>= 0.19,
