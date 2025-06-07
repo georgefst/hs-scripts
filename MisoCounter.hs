@@ -6,7 +6,6 @@
 -- | This is basically a "hello world" for Miso, to check that the build script logic for Wasm modules is working etc.
 module MisoCounter (main) where
 
-import Control.Monad.State
 import Miso
 import Miso.String
 
