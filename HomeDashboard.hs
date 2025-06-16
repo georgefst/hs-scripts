@@ -59,7 +59,7 @@ main = do
 #ifdef wasi_HOST_OS
     let styles = []
 #else
-    styles <- pure . Style . ms <$> readFile "web/home-dashboard.css"
+    styles <- pure @[] . Style . ms <$> readFile "web/home-dashboard.css"
 #endif
     run $ startComponent app{styles}
 
