@@ -61,7 +61,7 @@ main = do
 #else
     styles <- pure . Style . ms <$> readFile "web/home-dashboard.css"
 #endif
-    run $ startComponent app {styles}
+    run $ startComponent app{styles}
 
 app :: Component "app" () ()
 app =
