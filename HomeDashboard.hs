@@ -57,7 +57,7 @@ import Prelude hiding (lines)
 main :: IO ()
 main = do
 #ifdef wasi_HOST_OS
-    run $ startComponent app
+    let styles = []
 #else
     -- TODO there's got to be a better way to do this
     -- I guess we need to modify runner to spin up file server alongside `jsaddle-warp`
@@ -66,8 +66,8 @@ main = do
     -- also the availability of this new `styles` field kind of makes some of my build script stylesheet logic redundant
     -- then again, it's at least in theory to be more general rather than ties to Miso
     styles <- pure . Style . ms <$> readFile "web/home-dashboard.css"
-    run $ startComponent app {styles}
 #endif
+    run $ startComponent app {styles}
 
 app :: Component "app" () ()
 app =
