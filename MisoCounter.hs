@@ -10,7 +10,13 @@ import Miso
 import Miso.String
 
 main :: IO ()
-main = run $ startComponent app
+main = do
+#ifdef wasi_HOST_OS
+    let styles = []
+#else
+    styles <- pure @[] . Style . ms <$> readFile "web/miso-counter.css"
+#endif
+    run $ startComponent app{styles}
 
 app :: Component s Word ()
 app =
