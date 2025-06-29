@@ -19,17 +19,17 @@ power = 2
 setColour = PixelRGB8 0 0 0
 iterationsToColour n = PixelRGB8 (floor $ 255 * r) (floor $ 255 * g) (floor $ 255 * b)
   where
-    t = n / fromIntegral maxIterations
+    t = fromIntegral n / fromIntegral maxIterations
     RGB r g b = hsv (290 * (1 - t)) 1 (t * 5)
 
 main = writePng "mandelbrot.png" $ generateImage
     ( \x y ->
         let x' = fromIntegral x / fromIntegral width * (xMax - xMin) + xMin
             y' = fromIntegral y / fromIntegral height * (yMin - yMax) + yMax
-            iterations = zip [0 ..] $ iterate (\z -> z ** power + (x' :+ y')) 0
-        in case find (\(_, n) -> magnitude n >= bound) $ take maxIterations iterations of
-            Nothing -> setColour
-            Just (n, _) -> iterationsToColour n
+         in maybe setColour iterationsToColour
+                $ findIndex ((>= bound) . magnitude)
+                $ take maxIterations
+                $ iterate (\z -> z ** power + (x' :+ y')) 0
     )
     width
     height
