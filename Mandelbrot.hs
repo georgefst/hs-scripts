@@ -4,32 +4,35 @@
 
 module Mandelbrot (main) where
 
+import Codec.Picture
+import Data.ByteString.Lazy qualified as BSL
 import Data.Complex
 import Data.List
-import Diagrams.Backend.SVG.CmdLine
-import Diagrams.Prelude
+import Data.Word
 
-xDomain = let n = 500 in map (\i -> i / n * 4 - 2) [0 .. n - 1]
-yDomain = xDomain
+width = 500
+height = 500
+(xMin, xMax) = (-2, 2)
+(yMin, yMax) = (-2, 2)
 bound = 2
 maxIterations = 50
 power = 2
-setColour = black
-iterationsToColour n = sRGB 0 0 (1 - a / n ** b)
+setColour = PixelRGB8 0 0 0
+iterationsToColour n = PixelRGB8 0 0 $ ceiling $ fromIntegral @Word8 @Double maxBound * (1 - a / n ** b)
   where
     a = 0.9
     b = 1
 
-main = mainWith @(Diagram B) mandelbrot
-
-mandelbrot =
-    hcat $ map (vcat . map (\mn -> square 1 & lcA transparent & fc (mn & maybe setColour iterationsToColour))) iterations
-
-iterations =
-    outerProduct
-        (\x y -> fmap fst $ find ((>= bound) . magnitude . snd) $ zip [0 ..] $ iterateN maxIterations (\z -> z ** power + (x :+ y)) 0)
-        xDomain
-        yDomain
-
--- outerProduct f xs ys = map (\x -> map (\y -> f x y) ys) xs
-outerProduct f xs ys = map (flip map ys . f) xs
+main =
+    BSL.writeFile "mandelbrot.png" . encodePng $
+        generateImage
+            ( \x y ->
+                let x' = fromIntegral x / fromIntegral width * (xMax - xMin) + xMin
+                    y' = fromIntegral (height - y) / fromIntegral height * (yMax - yMin) + yMin
+                    iterations = zip [0 ..] $ iterate (\z -> z ** power + (x' :+ y')) 0
+                 in case find (\(_, n) -> magnitude n >= bound) $ take maxIterations iterations of
+                        Nothing -> setColour
+                        Just (n, _) -> iterationsToColour n
+            )
+            width
+            height
