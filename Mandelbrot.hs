@@ -5,7 +5,6 @@
 module Mandelbrot (main) where
 
 import Codec.Picture
-import Data.ByteString.Lazy qualified as BSL
 import Data.Colour.RGBSpace.HSV
 import Data.Colour.SRGB
 import Data.Complex
@@ -25,7 +24,7 @@ iterationsToColour n = PixelRGB8 (floor $ 255 * r) (floor $ 255 * g) (floor $ 25
     RGB r g b = hsv (290 * (1 - t)) 1 (t * 5)
 
 main =
-    BSL.writeFile "mandelbrot.png" . encodePng $
+    writePng "mandelbrot.png" $
         generateImage
             ( \x y ->
                 let x' = fromIntegral x / fromIntegral width * (xMax - xMin) + xMin
