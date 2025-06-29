@@ -23,16 +23,15 @@ iterationsToColour n = PixelRGB8 (floor $ 255 * r) (floor $ 255 * g) (floor $ 25
     t = fromIntegral n / fromIntegral maxIterations
     RGB r g b = hsv (290 * (1 - t)) 1 (t * 5)
 
+divergenceIterations c = findIndex ((>= bound) . magnitude) . take maxIterations $ iterate (\z -> z ** power + c) 0
+
 main =
     writePng "mandelbrot.png" $
         generateImage
-            ( \x y ->
-                let x' = fromIntegral x / fromIntegral width * (xMax - xMin) + xMin
-                    y' = fromIntegral y / fromIntegral height * (yMin - yMax) + yMax
-                 in maybe setColour iterationsToColour
-                        . findIndex ((>= bound) . magnitude)
-                        . take maxIterations
-                        $ iterate (\z -> z ** power + (x' :+ y')) 0
-            )
+            (curry $ maybe setColour iterationsToColour . divergenceIterations . pixelToComplex)
             width
             height
+  where
+    pixelToComplex (x, y) =
+        (fromIntegral x / fromIntegral width * (xMax - xMin) + xMin)
+            :+ (fromIntegral y / fromIntegral height * (yMin - yMax) + yMax)
