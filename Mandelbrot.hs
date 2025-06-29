@@ -28,7 +28,7 @@ main =
         generateImage
             ( \x y ->
                 let x' = fromIntegral x / fromIntegral width * (xMax - xMin) + xMin
-                    y' = fromIntegral (height - y) / fromIntegral height * (yMax - yMin) + yMin
+                    y' = fromIntegral y / fromIntegral height * (yMin - yMax) + yMax
                     iterations = zip [0 ..] $ iterate (\z -> z ** power + (x' :+ y')) 0
                  in case find (\(_, n) -> magnitude n >= bound) $ take maxIterations iterations of
                         Nothing -> setColour
