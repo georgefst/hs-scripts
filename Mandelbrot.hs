@@ -1,8 +1,7 @@
-{-# OPTIONS_GHC -Wall #-}
-{-# OPTIONS_GHC -Wno-missing-signatures #-}
-{-# OPTIONS_GHC -Wno-type-defaults #-}
-
-module Mandelbrot (main) where
+{- cabal:
+build-depends: base, colour, JuicyPixels
+-}
+{-# LANGUAGE GHC2024 #-}
 
 import Codec.Picture
 import Data.Colour.RGBSpace.HSV
