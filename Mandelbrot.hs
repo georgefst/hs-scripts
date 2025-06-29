@@ -6,9 +6,10 @@ module Mandelbrot (main) where
 
 import Codec.Picture
 import Data.ByteString.Lazy qualified as BSL
+import Data.Colour.RGBSpace.HSV
+import Data.Colour.SRGB
 import Data.Complex
 import Data.List
-import Data.Word
 
 width = 500
 height = 500
@@ -18,10 +19,10 @@ bound = 2
 maxIterations = 50
 power = 2
 setColour = PixelRGB8 0 0 0
-iterationsToColour n = PixelRGB8 0 0 $ ceiling $ fromIntegral @Word8 @Double maxBound * (1 - a / n ** b)
+iterationsToColour n = PixelRGB8 (floor $ 255 * r) (floor $ 255 * g) (floor $ 255 * b)
   where
-    a = 0.9
-    b = 1
+    t = n / fromIntegral maxIterations
+    RGB r g b = hsv (290 * (1 - t)) 1 (t * 5)
 
 main =
     BSL.writeFile "mandelbrot.png" . encodePng $
