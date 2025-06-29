@@ -12,8 +12,8 @@ import Data.List
 
 width = 500
 height = 500
-(xMin, xMax) = (-2, 2)
-(yMin, yMax) = (-2, 2)
+(xMin, xMax) = (-2, 1)
+(yMin, yMax) = (-1.5, 1.5)
 bound = 2
 maxIterations = 50
 power = 2
