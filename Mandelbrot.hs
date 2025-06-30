@@ -9,6 +9,7 @@ import Data.Colour.RGBSpace.HSV
 import Data.Colour.SRGB
 import Data.Complex
 import Data.List
+import Data.Tuple.Extra
 
 width = 500
 height = 500
@@ -17,21 +18,26 @@ height = 500
 bound = 2
 maxIterations = 50
 power = 2
-setColour = PixelRGB8 0 0 0
-iterationsToColour n = PixelRGB8 (floor $ 255 * r) (floor $ 255 * g) (floor $ 255 * b)
+(setColour, iterationsToColour) =
+    ( baseColour
+    , \n ->
+        let t = fromIntegral n / fromIntegral maxIterations
+         in uncurry3 hsv $ third3 (* (t ** e)) $ hsvView baseColour
+    )
   where
-    t = fromIntegral n / fromIntegral maxIterations
-    RGB r g b = hsv (290 * (1 - t)) 1 (t * 5)
+    e = 1.5
+    baseColour = hsv 218 0.68 1
 
 divergenceIterations c = findIndex ((>= bound) . magnitude) . take maxIterations $ iterate (\z -> z ** power + c) 0
 
 main =
     writePng "mandelbrot.png" $
         generateImage
-            (curry $ maybe setColour iterationsToColour . divergenceIterations . pixelToComplex)
+            (curry $ convertColour . maybe setColour iterationsToColour . divergenceIterations . pixelToComplex)
             width
             height
   where
     pixelToComplex (x, y) =
         (fromIntegral x / fromIntegral width * (xMax - xMin) + xMin)
             :+ (fromIntegral y / fromIntegral height * (yMin - yMax) + yMax)
+    convertColour (RGB r g b) = PixelRGB8 (floor $ 255 * r) (floor $ 255 * g) (floor $ 255 * b)
