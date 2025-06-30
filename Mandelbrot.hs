@@ -22,10 +22,11 @@ power = 2
     ( baseColour
     , \n ->
         let t = fromIntegral n / fromIntegral maxIterations
-         in uncurry3 hsv $ third3 (* (t ** e)) $ hsvView baseColour
+         in uncurry3 hsv $ third3 (* ((t ** e - 1 + l) / l)) $ hsvView baseColour
     )
   where
     e = 1.5
+    l = 1.2
     baseColour = hsv 218 0.68 1
 
 divergenceIterations c = findIndex ((>= bound) . magnitude) . take maxIterations $ iterate (\z -> z ** power + c) 0
