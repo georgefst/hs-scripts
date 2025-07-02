@@ -16,7 +16,7 @@ main :: IO ()
 main = do
     dims <- maybe (5, 3) (second pred . swap) <$> getTerminalSize
     pDigit <- randomPos dims
-    chars <- for (mkGrid dims) \row -> for row (bool randomAlpha randomDigit . (== pDigit))
+    chars <- for (mkGrid dims) $ traverse $ bool randomAlpha randomDigit . (== pDigit)
     for_ chars \row -> for_ row putChar >> putChar '\n'
 
 randomDigit :: IO Char
