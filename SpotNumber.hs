@@ -13,10 +13,9 @@ import Util.Util
 
 main :: IO ()
 main = do
-    d@(w, h) <- maybe (5, 3) (second pred . swap) <$> getTerminalSize
+    d <- maybe (5, 3) (second pred . swap) <$> getTerminalSize
     pDigit <- randomPos d
-    let ps = outerProduct (flip (,)) [0 .. h - 1] [0 .. w - 1]
-    grid <- for ps $ traverse \p -> if p == pDigit then randomDigit else randomAlpha
+    grid <- for (mkGrid d) $ traverse \p -> if p == pDigit then randomDigit else randomAlpha
     for_ grid \cs -> for_ cs putChar >> putChar '\n'
 
 randomDigit :: IO Char
@@ -25,3 +24,6 @@ randomAlpha :: IO Char
 randomAlpha = randomRIO ('A', 'Z')
 randomPos :: (Int, Int) -> IO (Int, Int)
 randomPos (w, h) = (,) <$> randomRIO (0, w - 1) <*> randomRIO (0, h - 1)
+
+mkGrid :: (Int, Int) -> [[(Int, Int)]]
+mkGrid (w, h) = outerProduct (flip (,)) [0 .. h - 1] [0 .. w - 1]
