@@ -12,6 +12,9 @@ import Data.Text.IO qualified as T
 (<<$>>) :: (Functor f1, Functor f2) => (a -> b) -> f1 (f2 a) -> f1 (f2 b)
 (<<$>>) = fmap . fmap
 
+(<<&>>) :: (Functor f1, Functor f2) => f1 (f2 a) -> (a -> b) -> f1 (f2 b)
+(<<&>>) = flip (<<$>>)
+
 modifyFile :: (Text -> Text) -> FilePath -> IO ()
 modifyFile f file = T.writeFile file . f =<< T.readFile file
 
