@@ -3,7 +3,6 @@
 
 module SpotNumber (main) where
 
-import Control.Concurrent
 import Control.Monad
 import Data.Bifunctor
 import Data.Bool
@@ -21,7 +20,7 @@ main = do
     chars <- for (mkGrid dims) $ traverse $ (flip fmap . bool randomAlpha randomDigit <*> (,)) . (== pDigit)
     let printChars f = for_ chars \row -> for_ row (f (putChar . snd)) >> putChar '\n'
     printChars id
-    threadDelay 10_000_000
+    void getLine
     clearScreen
     printChars \f x@(b, _) -> do
         when b $ setSGR [SetColor Foreground Vivid Red]
