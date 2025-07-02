@@ -6,6 +6,7 @@ module SpotNumber (main) where
 import Control.Monad
 import Data.Bool
 import Data.Foldable
+import Data.Function
 import Data.List
 import Data.Traversable
 import Data.Tuple
@@ -15,18 +16,25 @@ import Util.Util
 
 main :: IO ()
 main = do
+    hideCursor
     dims <- maybe (5, 3) swap <$> getTerminalSize
     pDigit <- randomPos dims
     chars <- for (mkGrid dims) $ traverse $ (flip fmap . bool randomAlpha randomDigit <*> (,)) . (== pDigit)
-    let printChars f = sequence_ $ intersperse (putChar '\n') $ map (\row -> for_ row (f (putChar . snd))) chars
-    printChars id
+    let printRow f = traverse_ $ f $ putChar . snd
+    sequence_ $ intersperse (putChar '\n') $ map (printRow id) chars
+    cursorUp $ snd dims - 1
     void getLine
-    clearScreen
-    printChars \f x@(b, _) -> do
+    cursorUp 1
+    cursorDown $ snd pDigit
+    cursorForward $ fst pDigit
+    clearFromCursorToLineEnd
+    drop (fst pDigit) (chars !! snd pDigit) & printRow \f x@(b, _) -> do
         when b $ setSGR [SetColor Foreground Vivid Red]
         f x
         when b $ setSGR []
+    cursorDown $ snd dims
     void getLine
+    showCursor
 
 randomDigit :: IO Char
 randomDigit = randomRIO ('0', '9')
