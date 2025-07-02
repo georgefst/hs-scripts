@@ -18,7 +18,7 @@ main :: IO ()
 main = do
     dims <- maybe (5, 3) (second pred . swap) <$> getTerminalSize
     pDigit <- randomPos dims
-    chars <- for (mkGrid dims) $ traverse $ (\b -> (b,) <$> bool randomAlpha randomDigit b) . (== pDigit)
+    chars <- for (mkGrid dims) $ traverse $ (flip fmap . bool randomAlpha randomDigit <*> (,)) . (== pDigit)
     let printChars f = for_ chars \row -> for_ row f >> putChar '\n'
     printChars $ putChar . snd
     threadDelay 10_000_000
