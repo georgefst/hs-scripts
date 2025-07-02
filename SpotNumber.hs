@@ -5,6 +5,7 @@
 module SpotNumber (main) where
 
 import Data.Foldable
+import Data.Maybe
 import Data.Traversable
 import System.Console.ANSI
 import System.Random
@@ -12,7 +13,7 @@ import Util.Util
 
 main :: IO ()
 main = do
-    Just d@(pred -> h, w) <- getTerminalSize
+    d@(pred -> h, w) <- fromMaybe (4, 5) <$> getTerminalSize
     pDigit <- randomPos d
     let ps = outerProduct (flip (,)) [0 .. h - 1] [0 .. w - 1]
     grid <- for ps $ traverse \p -> if p == pDigit then randomDigit else randomAlpha
