@@ -13,9 +13,9 @@ import Util.Util
 
 main :: IO ()
 main = do
-    d <- maybe (5, 3) (second pred . swap) <$> getTerminalSize
-    pDigit <- randomPos d
-    grid <- for (mkGrid d) $ traverse \p -> if p == pDigit then randomDigit else randomAlpha
+    dims <- maybe (5, 3) (second pred . swap) <$> getTerminalSize
+    pDigit <- randomPos dims
+    grid <- for (mkGrid dims) $ traverse \p -> if p == pDigit then randomDigit else randomAlpha
     for_ grid \cs -> for_ cs putChar >> putChar '\n'
 
 randomDigit :: IO Char
