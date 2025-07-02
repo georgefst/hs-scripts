@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wall #-}
 
 module SpotNumber (main) where
@@ -11,7 +12,7 @@ import Util.Util
 
 main :: IO ()
 main = do
-    Just d@(h, w) <- getTerminalSize
+    Just d@(pred -> h, w) <- getTerminalSize
     pDigit <- randomPos d
     let ps = outerProduct (flip (,)) [0 .. h - 1] [0 .. w - 1]
     grid <- for ps $ traverse \p -> if p == pDigit then randomDigit else randomAlpha
