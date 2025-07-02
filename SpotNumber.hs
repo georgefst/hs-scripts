@@ -3,10 +3,10 @@
 
 module SpotNumber (main) where
 
-import Control.Monad
 import Data.Bifunctor
 import Data.Bool
 import Data.Foldable
+import Data.Traversable
 import Data.Tuple
 import System.Console.ANSI
 import System.Random
@@ -16,7 +16,8 @@ main :: IO ()
 main = do
     dims <- maybe (5, 3) (second pred . swap) <$> getTerminalSize
     pDigit <- randomPos dims
-    for_ (mkGrid dims) \row -> for_ row (putChar <=< bool randomAlpha randomDigit . (== pDigit)) >> putChar '\n'
+    chars <- for (mkGrid dims) \row -> for row (bool randomAlpha randomDigit . (== pDigit))
+    for_ chars \row -> for_ row putChar >> putChar '\n'
 
 randomDigit :: IO Char
 randomDigit = randomRIO ('0', '9')
