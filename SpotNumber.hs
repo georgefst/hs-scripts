@@ -19,13 +19,13 @@ main = do
     dims <- maybe (5, 3) (second pred . swap) <$> getTerminalSize
     pDigit <- randomPos dims
     chars <- for (mkGrid dims) $ traverse $ (flip fmap . bool randomAlpha randomDigit <*> (,)) . (== pDigit)
-    let printChars f = for_ chars \row -> for_ row f >> putChar '\n'
-    printChars $ putChar . snd
+    let printChars f = for_ chars \row -> for_ row (f (putChar . snd)) >> putChar '\n'
+    printChars id
     threadDelay 10_000_000
     clearScreen
-    printChars \(b, c) -> do
+    printChars \f x@(b, _) -> do
         when b $ setSGR [SetColor Background Vivid Red]
-        putChar c
+        f x
         when b $ setSGR []
 
 randomDigit :: IO Char
