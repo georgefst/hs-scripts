@@ -4,9 +4,9 @@
 module SpotNumber (main) where
 
 import Control.Monad
-import Data.Bifunctor
 import Data.Bool
 import Data.Foldable
+import Data.List
 import Data.Traversable
 import Data.Tuple
 import System.Console.ANSI
@@ -15,10 +15,10 @@ import Util.Util
 
 main :: IO ()
 main = do
-    dims <- maybe (5, 3) (second pred . swap) <$> getTerminalSize
+    dims <- maybe (5, 3) swap <$> getTerminalSize
     pDigit <- randomPos dims
     chars <- for (mkGrid dims) $ traverse $ (flip fmap . bool randomAlpha randomDigit <*> (,)) . (== pDigit)
-    let printChars f = for_ chars \row -> for_ row (f (putChar . snd)) >> putChar '\n'
+    let printChars f = sequence_ $ intersperse (putChar '\n') $ map (\row -> for_ row (f (putChar . snd))) chars
     printChars id
     void getLine
     clearScreen
@@ -26,6 +26,7 @@ main = do
         when b $ setSGR [SetColor Foreground Vivid Red]
         f x
         when b $ setSGR []
+    void getLine
 
 randomDigit :: IO Char
 randomDigit = randomRIO ('0', '9')
