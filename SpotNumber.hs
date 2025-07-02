@@ -3,6 +3,8 @@
 
 module SpotNumber (main) where
 
+import Control.Concurrent
+import Control.Monad
 import Data.Bifunctor
 import Data.Bool
 import Data.Foldable
@@ -16,8 +18,15 @@ main :: IO ()
 main = do
     dims <- maybe (5, 3) (second pred . swap) <$> getTerminalSize
     pDigit <- randomPos dims
-    chars <- for (mkGrid dims) $ traverse $ bool randomAlpha randomDigit . (== pDigit)
-    for_ chars \row -> for_ row putChar >> putChar '\n'
+    chars <- for (mkGrid dims) $ traverse $ (\b -> (b,) <$> bool randomAlpha randomDigit b) . (== pDigit)
+    let printChars f = for_ chars \row -> for_ row f >> putChar '\n'
+    printChars $ putChar . snd
+    threadDelay 10_000_000
+    clearScreen
+    printChars \(b, c) -> do
+        when b $ setSGR [SetColor Background Vivid Red]
+        putChar c
+        when b $ setSGR []
 
 randomDigit :: IO Char
 randomDigit = randomRIO ('0', '9')
