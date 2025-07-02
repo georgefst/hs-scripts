@@ -24,7 +24,7 @@ main = do
     threadDelay 10_000_000
     clearScreen
     printChars \f x@(b, _) -> do
-        when b $ setSGR [SetColor Background Vivid Red]
+        when b $ setSGR [SetColor Foreground Vivid Red]
         f x
         when b $ setSGR []
 
