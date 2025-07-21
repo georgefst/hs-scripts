@@ -31,8 +31,8 @@ increments = 500
 (lower, upper) = (-10, 10)
 
 functions =
-    [ ("sin", \x -> sin x)
-    , ("cos", \x -> cos x)
+    [ ("sin", sin)
+    , ("cos", cos)
     , ("λx. x³/1000", \x -> x ** 3 / 1000)
     , ("λx. (x ** 2)/200 - x/20 - 1/2", \x -> (x ** 2) / 200 - x / 20 - 1 / 2)
     ]
