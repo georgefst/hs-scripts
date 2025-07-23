@@ -292,7 +292,7 @@ music =
         }
 
 classifyOn :: (Ord b) => (a -> b) -> [a] -> [(b, NonEmpty a)]
-classifyOn f = Map.toList . Map.fromListWith (<>) . map (f &&& pure @NonEmpty)
+classifyOn f = Map.toList . Map.fromListWith (<>) . map (f &&& pure)
 classifyOnFst :: (Ord a) => [(a, b)] -> [(a, NonEmpty b)]
 classifyOnFst = map (second $ fmap snd) . classifyOn fst
 
