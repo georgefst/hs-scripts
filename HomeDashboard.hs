@@ -54,6 +54,7 @@ import Spotify.Types.Tracks
 import Text.Printf
 import Prelude hiding (lines)
 
+{- FOURMOLU_DISABLE -}
 main :: IO ()
 main = do
 #ifdef wasi_HOST_OS
@@ -62,6 +63,7 @@ main = do
     styles <- pure @[] . Style . ms <$> readFile "web/home-dashboard.css"
 #endif
     run $ startComponent app{styles}
+{- FOURMOLU_ENABLE -}
 
 app :: Component "app" () ()
 app =
