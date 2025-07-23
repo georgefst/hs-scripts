@@ -5,6 +5,9 @@
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 
 module Util.Spotify (
+    refreshAccessToken,
+    requestAccessToken,
+    authorize,
     getAlbum,
     getAlbumTracks,
     removeAlbums,
@@ -47,17 +50,37 @@ import Spotify (
     AddToPlaylistBody (AddToPlaylistBody),
     GetAvailableDevicesResponse (..),
     IDs (IDs),
+    IdAndSecret (IdAndSecret),
+    RefreshAccessTokenForm (RefreshAccessTokenForm),
+    RequestAccessTokenForm (RequestAccessTokenForm),
     TransferPlaybackBody (..),
     mainBase,
     marketFromToken,
     noContent,
-    withPagingParams,
+    withPagingParams, accountsBase,
  )
-import Spotify.Servant (API)
+import Spotify.Servant (API, AccountsAPI)
 import Spotify.Servant.Core (handleAllJSONOrNoContent)
+
+-- TODO use multi-verb Servant: https://github.com/georgefst/spotify/pull/1
+-- https://discourse.haskell.org/t/servant-v0-20-3-0-pre-release-try-it-out/12134/9
+-- before my May Spotify refactors, I had a comment about this helping with a weird return type for `getPlaybackState`,
+-- but I'm no longer quite sure what I was talking about...
+-- probably that I'd be able to remove `handleAllJSONOrNoContent`? but not sure that would effect much here, downstream
+-- it may have only been relevant for `miso`'s old `fetch` API, rather than `servant-client-js` which we now use
 
 -- TODO leading slash can be dropped with https://github.com/morganthomas/servant-client-js/pull/7
 run = flip runClientM $ ClientEnv mainBase{baseUrlPath = "/" <> baseUrlPath mainBase}
+run' = flip runClientM $ ClientEnv accountsBase{baseUrlPath = "/" <> baseUrlPath accountsBase}
+
+refreshAccessToken t clientId clientSecret = ExceptT $ run' $ refreshAccessToken' (RefreshAccessTokenForm t) (IdAndSecret clientId clientSecret)
+requestAccessToken t u clientId clientSecret = ExceptT $ run' $ requestAccessToken' (RequestAccessTokenForm t u) (IdAndSecret clientId clientSecret)
+authorize a b c d e f = ExceptT $ run' $ authorize' a b c d e f
+
+refreshAccessToken'
+    :<|> requestAccessToken'
+    :<|> authorize' =
+        client $ flatten $ Proxy @AccountsAPI
 
 getAlbum a = ReaderT $ ExceptT . \t -> run $ getAlbum' t a marketFromToken
 getAlbumTracks a pp = ReaderT $ ExceptT . \t -> run $ withPagingParams pp $ getAlbumTracks' t a marketFromToken
@@ -68,7 +91,7 @@ getEpisode e = ReaderT $ ExceptT . \t -> run $ getEpisode' t e marketFromToken
 getSavedEpisodes pp = ReaderT $ ExceptT . \t -> run $ withPagingParams pp $ getSavedEpisodes' t marketFromToken
 saveEpisodes ids = ReaderT $ ExceptT . \t -> run $ noContent $ saveEpisodes' t $ IDs ids
 removeEpisodes ids = ReaderT $ ExceptT . \t -> run $ noContent $ removeEpisodes' t $ IDs ids
-getPlaybackState = ReaderT $ ExceptT . \t -> run $ handleAllJSONOrNoContent <$> getPlaybackState' t marketFromToken (Just "episode")
+getPlaybackState = ReaderT $ ExceptT . \t -> run $ handleAllJSONOrNoContent <$> getPlaybackState' t marketFromToken (Just "episode") -- TODO repeating `Just "episode"` from library is a bit rubbish
 transferPlayback deviceIds play = ReaderT $ ExceptT . \t -> run $ noContent $ transferPlayback' t $ TransferPlaybackBody deviceIds play
 getAvailableDevices = ReaderT $ ExceptT . \t -> run $ (.devices) <$> getAvailableDevices' t
 getCurrentlyPlayingTrack = ReaderT $ ExceptT . \t -> run $ getCurrentlyPlayingTrack' t marketFromToken
