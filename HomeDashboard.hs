@@ -35,7 +35,8 @@ import Data.Map qualified as Map
 import Data.Maybe
 import Data.Proxy (Proxy (Proxy))
 import Data.Text qualified as T
-import Data.Time
+import Data.Time hiding (getCurrentTimeZone)
+import Data.Time qualified
 import Data.Time.Calendar.OrdinalDate
 import Data.Traversable
 import Data.Tuple.Extra ((&&&))
@@ -297,6 +298,15 @@ classifyOn :: (Ord b) => (a -> b) -> [a] -> [(b, NonEmpty a)]
 classifyOn f = Map.toList . Map.fromListWith (<>) . map (f &&& pure)
 classifyOnFst :: (Ord a) => [(a, b)] -> [(a, NonEmpty b)]
 classifyOnFst = map (second $ fmap snd) . classifyOn fst
+
+-- TODO due to limitations of WASI preview1 (`wasi-libc` doesn't define `tzset`), this is otherwise always UTC on Wasm
+getCurrentTimeZone :: IO TimeZone
+#ifdef wasi_HOST_OS
+foreign import javascript unsafe "new Date().getTimezoneOffset()" js_tz_offset :: IO Int
+getCurrentTimeZone = minutesToTimeZone . negate <$> js_tz_offset
+#else
+getCurrentTimeZone = Data.Time.getCurrentTimeZone
+#endif
 
 #ifdef wasi_HOST_OS
 foreign export javascript "hs" main :: IO ()
