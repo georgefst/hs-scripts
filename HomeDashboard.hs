@@ -202,6 +202,9 @@ transport =
                                 platformName <- ms <$> f @"PlatformName"
                                 towards <- ms <$> f @"Towards"
                                 currentLocation <- ms <$> f @"CurrentLocation"
+                                -- TODO of course what we really want are departures, esp. for termini
+                                -- but there doesn't seem to be an API for this:
+                                -- see https://techforum.tfl.gov.uk/t/how-to-find-departures-from-terminal-stations/72/39
                                 expectedArrival <- utcToLocalTime timeZone <$> f @"ExpectedArrival"
                                 pure ((station, lineId), TrainData{..})
                             )
