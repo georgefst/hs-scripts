@@ -122,7 +122,7 @@ weather =
                 div_
                     []
                     -- TODO show more of this data
-                    [text $ ms @String $ printf "%.1f°C" $ current.main.temp - 273.15]
+                    [text $ ms @String $ printf "%.1f °C" $ current.main.temp - 273.15]
     )
         { subs =
             [ \sink -> forever do
