@@ -10,6 +10,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE NoFieldSelectors #-}
+{-# LANGUAGE NoListTuplePuns #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-name-shadowing #-}
 
@@ -17,22 +18,24 @@ module Util.OpenWeatherMap where
 
 import Data.Aeson (FromJSON, Value, parseJSON, withObject, (.:), (.:?))
 import Data.Data (Proxy (Proxy))
+import Data.List (List)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
+import Data.Tuple.Experimental (Tuple2)
 import Language.Javascript.JSaddle (JSM)
 import Servant.API (Get, JSON, QueryParam', Required, Strict, (:>))
 import Servant.Client.JS (ClientEnv (ClientEnv), ClientError, client, parseBaseUrl, runClientM)
 
 type API =
     "onecall"
-        :> QueryParam' '[Required, Strict] "appid" String
-        :> QueryParam' '[Required, Strict] "lat" Double
-        :> QueryParam' '[Required, Strict] "lon" Double
-        :> Get '[JSON] Weather
+        :> QueryParam' [Required, Strict] "appid" String
+        :> QueryParam' [Required, Strict] "lat" Double
+        :> QueryParam' [Required, Strict] "lon" Double
+        :> Get [JSON] Weather
 
 getWeather ::
     String ->
-    (Double, Double) ->
+    Tuple2 Double Double ->
     JSM (Either ClientError Weather)
 getWeather s (lat, lon) =
     runClientM (client (Proxy @API) s lat lon)
@@ -46,9 +49,9 @@ data Weather = Weather
     , timezone :: Text
     , timezoneOffset :: Int
     , current :: Current
-    , minutely :: Maybe [Minutely]
-    , hourly :: Maybe [Hourly]
-    , daily :: Maybe [Daily]
+    , minutely :: Maybe (List Minutely)
+    , hourly :: Maybe (List Hourly)
+    , daily :: Maybe (List Daily)
     }
     deriving (Eq, Show)
 instance FromJSON Weather where
@@ -80,7 +83,7 @@ data Current = Current
     , windDirection :: Int
     , rain :: Maybe Rain
     , snow :: Maybe Snow
-    , weather :: [Condition]
+    , weather :: List Condition
     , alerts :: Maybe Value
     }
     deriving (Eq, Show)
@@ -133,7 +136,7 @@ data Hourly = Hourly
     , pop :: Double
     , rain :: Maybe Rain
     , snow :: Maybe Snow
-    , weather :: [Condition]
+    , weather :: List Condition
     }
     deriving (Eq, Show)
 instance FromJSON Hourly where
@@ -177,7 +180,7 @@ data Daily = Daily
     , pop :: Double
     , rain :: Maybe Double
     , snow :: Maybe Double
-    , weather :: [Condition]
+    , weather :: List Condition
     }
     deriving (Eq, Show)
 instance FromJSON Daily where
