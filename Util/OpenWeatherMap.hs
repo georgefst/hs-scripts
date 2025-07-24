@@ -41,8 +41,8 @@ getWeather s (lat, lon) =
         $ parseBaseUrl "https://api.openweathermap.org/data/3.0"
 
 data Weather = Weather
-    { lat :: Double
-    , lon :: Double
+    { latitude :: Double
+    , longitude :: Double
     , timezone :: Text
     , timezoneOffset :: Int
     , current :: Current
@@ -53,8 +53,8 @@ data Weather = Weather
     deriving (Eq, Show)
 instance FromJSON Weather where
     parseJSON = withObject "Weather" \o -> do
-        lat <- o .: "lat"
-        lon <- o .: "lon"
+        latitude <- o .: "lat"
+        longitude <- o .: "lon"
         timezone <- o .: "timezone"
         timezoneOffset <- o .: "timezone_offset"
         current <- o .: "current"
@@ -64,20 +64,20 @@ instance FromJSON Weather where
         pure Weather{..}
 
 data Current = Current
-    { dt :: Int
+    { timestamp :: Int
     , sunrise :: Int
     , sunset :: Int
-    , temp :: Double
+    , temperature :: Double
     , feelsLike :: Double
     , pressure :: Int
     , humidity :: Int
     , dewPoint :: Double
-    , uvi :: Double
+    , uv :: Double
     , clouds :: Int
     , visibility :: Int
     , windSpeed :: Double
     , windGust :: Maybe Double
-    , windDeg :: Int
+    , windDirection :: Int
     , rain :: Maybe Rain
     , snow :: Maybe Snow
     , weather :: [Condition]
@@ -86,20 +86,20 @@ data Current = Current
     deriving (Eq, Show)
 instance FromJSON Current where
     parseJSON = withObject "Current" \o -> do
-        dt <- o .: "dt"
+        timestamp <- o .: "dt"
         sunrise <- o .: "sunrise"
         sunset <- o .: "sunset"
-        temp <- o .: "temp"
+        temperature <- o .: "temp"
         feelsLike <- o .: "feels_like"
         pressure <- o .: "pressure"
         humidity <- o .: "humidity"
         dewPoint <- o .: "dew_point"
-        uvi <- o .: "uvi"
+        uv <- o .: "uvi"
         clouds <- o .: "clouds"
         visibility <- o .: "visibility"
         windSpeed <- o .: "wind_speed"
         windGust <- o .:? "wind_gust"
-        windDeg <- o .: "wind_deg"
+        windDirection <- o .: "wind_deg"
         rain <- o .:? "rain"
         snow <- o .:? "snow"
         weather <- o .: "weather"
@@ -107,29 +107,29 @@ instance FromJSON Current where
         pure Current{..}
 
 data Minutely = Minutely
-    { dt :: Int
+    { timestamp :: Int
     , precipitation :: Double
     }
     deriving (Eq, Show)
 instance FromJSON Minutely where
     parseJSON = withObject "Minutely" \o -> do
-        dt <- o .: "dt"
+        timestamp <- o .: "dt"
         precipitation <- o .: "precipitation"
         pure Minutely{..}
 
 data Hourly = Hourly
-    { dt :: Int
-    , temp :: Double
+    { timestamp :: Int
+    , temperature :: Double
     , feelsLike :: Double
     , pressure :: Int
     , humidity :: Int
     , dewPoint :: Double
-    , uvi :: Double
+    , uv :: Double
     , clouds :: Int
     , visibility :: Int
     , windSpeed :: Double
     , windGust :: Maybe Double
-    , windDeg :: Int
+    , windDirection :: Int
     , pop :: Double
     , rain :: Maybe Rain
     , snow :: Maybe Snow
@@ -138,18 +138,18 @@ data Hourly = Hourly
     deriving (Eq, Show)
 instance FromJSON Hourly where
     parseJSON = withObject "Hourly" \o -> do
-        dt <- o .: "dt"
-        temp <- o .: "temp"
+        timestamp <- o .: "dt"
+        temperature <- o .: "temp"
         feelsLike <- o .: "feels_like"
         pressure <- o .: "pressure"
         humidity <- o .: "humidity"
         dewPoint <- o .: "dew_point"
-        uvi <- o .: "uvi"
+        uv <- o .: "uvi"
         clouds <- o .: "clouds"
         visibility <- o .: "visibility"
         windSpeed <- o .: "wind_speed"
         windGust <- o .:? "wind_gust"
-        windDeg <- o .: "wind_deg"
+        windDirection <- o .: "wind_deg"
         pop <- o .: "pop"
         rain <- o .:? "rain"
         snow <- o .:? "snow"
@@ -157,23 +157,23 @@ instance FromJSON Hourly where
         pure Hourly{..}
 
 data Daily = Daily
-    { dt :: Int
+    { timestamp :: Int
     , sunrise :: Int
     , sunset :: Int
     , moonrise :: Int
     , moonset :: Int
     , moonPhase :: Double
     , summary :: Text
-    , temp :: Temperature
+    , temperature :: Temperature
     , feelsLike :: FeelsLike
     , pressure :: Int
     , humidity :: Int
     , dewPoint :: Double
-    , uvi :: Double
+    , uv :: Double
     , clouds :: Int
     , windSpeed :: Double
     , windGust :: Maybe Double
-    , windDeg :: Int
+    , windDirection :: Int
     , pop :: Double
     , rain :: Maybe Double
     , snow :: Maybe Double
@@ -182,23 +182,23 @@ data Daily = Daily
     deriving (Eq, Show)
 instance FromJSON Daily where
     parseJSON = withObject "Daily" \o -> do
-        dt <- o .: "dt"
+        timestamp <- o .: "dt"
         sunrise <- o .: "sunrise"
         sunset <- o .: "sunset"
         moonrise <- o .: "moonrise"
         moonset <- o .: "moonset"
         moonPhase <- o .: "moon_phase"
         summary <- o .: "summary"
-        temp <- o .: "temp"
+        temperature <- o .: "temp"
         feelsLike <- o .: "feels_like"
         pressure <- o .: "pressure"
         humidity <- o .: "humidity"
         dewPoint <- o .: "dew_point"
-        uvi <- o .: "uvi"
+        uv <- o .: "uvi"
         clouds <- o .: "clouds"
         windSpeed <- o .: "wind_speed"
         windGust <- o .:? "wind_gust"
-        windDeg <- o .: "wind_deg"
+        windDirection <- o .: "wind_deg"
         pop <- o .: "pop"
         rain <- o .:? "rain"
         snow <- o .:? "snow"
