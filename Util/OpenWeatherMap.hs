@@ -17,6 +17,8 @@
 {-# LANGUAGE NoFieldSelectors #-}
 {-# OPTIONS_GHC -Wall #-}
 
+{- HLINT ignore "Use newtype instead of data" -}
+
 module Util.OpenWeatherMap where
 
 import Data.Aeson (FromJSON)
