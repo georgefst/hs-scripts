@@ -25,5 +25,8 @@ loadSecret :: FilePath -> Q Exp
 loadSecret path = do
     addDependentFile path
     runIO (T.lines . T.strip <$> T.readFile path) >>= \case
-        [readMaybe @(Double, Double) . T.unpack -> Just coordinates, openWeatherMapAppId, spotifyAccessToken] -> [|Secrets{..}|]
+        [ readMaybe @(Double, Double) . T.unpack -> Just coordinates
+            , openWeatherMapAppId
+            , spotifyAccessToken
+            ] -> [|Secrets{..}|]
         _ -> fail "bad secrets file"
