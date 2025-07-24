@@ -6,6 +6,7 @@
 -- such as using a `Reader` rather than calling `newTlsManager` on every call to `getWeather`,
 -- using `Text` rather than `String`,
 -- and returning a nice domain-specific error rather than Servant's `ClientError`
+{- HLINT ignore "Use newtype instead of data" -}
 {-# LANGUAGE GHC2024 #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveAnyClass #-}
@@ -16,8 +17,6 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE NoFieldSelectors #-}
 {-# OPTIONS_GHC -Wall #-}
-
-{- HLINT ignore "Use newtype instead of data" -}
 
 module Util.OpenWeatherMap where
 
