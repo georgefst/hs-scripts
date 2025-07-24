@@ -127,9 +127,9 @@ weather =
         { subs =
             [ \sink -> forever do
                 let appId = T.unpack secrets.openWeatherMapAppId
-                -- TODO use coords instead? take from env var rather than hardcoding, since this code isn't secret
-                let location = Left "London"
-                let h s = (consoleLog . (("failed to get " <> s <> ": ") <>)) . ms . show
+                    -- TODO use coords instead? take from env var rather than hardcoding, since this code isn't secret
+                    location = Left "London"
+                    h s = (consoleLog . (("failed to get " <> s <> ": ") <>)) . ms . show
                 either (uncurry h) sink =<< runExceptT do
                     current <- liftEither . first ("weather",) =<< lift (getWeather appId location)
                     forecast <- liftEither . first ("forecast",) =<< lift (getForecast appId location)
