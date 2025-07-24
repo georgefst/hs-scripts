@@ -40,7 +40,6 @@ import Data.Time qualified
 import Data.Time.Calendar.OrdinalDate
 import Data.Traversable
 import Data.Tuple.Extra ((&&&))
-import GHC.Generics (Generic)
 import GHC.Records (HasField (getField))
 import GHC.TypeLits (AppendSymbol, KnownSymbol, symbolVal)
 import Miso hiding (for, for_)
@@ -111,37 +110,30 @@ clock =
             ]
         }
 
-weather :: Component "weather" (Maybe WeatherState) WeatherState
+weather :: Component "weather" (Maybe Weather) Weather
 weather =
     ( defaultComponent
         Nothing
         (put . Just)
         \case
             Nothing -> div_ [] []
-            Just WeatherState{current} ->
+            Just Weather{current} ->
                 div_
                     []
                     -- TODO show more of this data
-                    [text $ ms @String $ printf "%.1f °C" $ current.main.temp - 273.15]
+                    [text $ ms @String $ printf "%.1f °C" $ current.temp - 273.15]
     )
         { subs =
             [ \sink -> forever do
                 let appId = T.unpack secrets.openWeatherMapAppId
-                    location = Right secrets.coordinates
+                    location = secrets.coordinates
                     h s = (consoleLog . (("failed to get " <> s <> ": ") <>)) . ms . show
                 either (uncurry h) sink =<< runExceptT do
-                    current <- liftEither . first ("weather",) =<< lift (getWeather appId location)
-                    forecast <- liftEither . first ("forecast",) =<< lift (getForecast appId location)
-                    pure WeatherState{..}
-                -- API limit is 60 per minute, so this is actually extremely conservative
+                    liftEither . first ("weather",) =<< lift (getWeather appId location)
+                -- API limit is 1000 a day, which is one every 1.44 minutes, so we can afford 3 concurrent clients
                 liftIO $ threadDelay 300_000_000
             ]
         }
-data WeatherState = WeatherState
-    { current :: CurrentWeather
-    , forecast :: ForecastWeather
-    }
-    deriving (Eq, Show, Generic)
 
 transport :: Component "transport" (Map StationLineId StationData) (StationLineId, StationData)
 transport =
