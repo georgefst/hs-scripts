@@ -17,13 +17,6 @@ import Unsafe.Coerce (unsafeCoerce)
 
 type data Sum a b
 
--- TODO these `unsafeCoerce`s should work for any sensible instance in practice... what we'd want is to assert:
--- (forall m'. Client m' (a :> api) ~ (a' -> Client m' api), forall m'. Client m' (b :> api) ~ (b' -> Client m' api))
-coerceArg :: forall mon mon' api a. Arg (Client mon' (a :> api)) -> Arg (Client mon (a :> api))
-coerceArg = unsafeCoerce
-coerceArg' :: forall mon mon' api a. Arg (Res (Client mon' (a :> api))) -> Arg (Res (Client mon (a :> api)))
-coerceArg' = unsafeCoerce
-
 instance
     ( HasClient m (a :> api)
     , HasClient m (b :> api)
@@ -83,3 +76,10 @@ type family Arg a where
 
 type family Res a where
     Res (_ -> b) = b
+
+-- TODO these `unsafeCoerce`s should work for any sensible instance in practice... what we'd want is to assert:
+-- (forall m'. Client m' (a :> api) ~ (a' -> Client m' api), forall m'. Client m' (b :> api) ~ (b' -> Client m' api))
+coerceArg :: forall mon mon' api a. Arg (Client mon' (a :> api)) -> Arg (Client mon (a :> api))
+coerceArg = unsafeCoerce
+coerceArg' :: forall mon mon' api a. Arg (Res (Client mon' (a :> api))) -> Arg (Res (Client mon (a :> api)))
+coerceArg' = unsafeCoerce
