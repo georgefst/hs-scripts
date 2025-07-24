@@ -44,7 +44,7 @@ data Weather = Weather
     { lat :: Double
     , lon :: Double
     , timezone :: Text
-    , timezone_offset :: Int
+    , timezoneOffset :: Int
     , current :: Current
     , minutely :: Maybe [Minutely]
     , hourly :: Maybe [Hourly]
@@ -56,7 +56,7 @@ instance FromJSON Weather where
         lat <- o .: "lat"
         lon <- o .: "lon"
         timezone <- o .: "timezone"
-        timezone_offset <- o .: "timezone_offset"
+        timezoneOffset <- o .: "timezone_offset"
         current <- o .: "current"
         minutely <- o .:? "minutely"
         hourly <- o .:? "hourly"
@@ -68,16 +68,16 @@ data Current = Current
     , sunrise :: Int
     , sunset :: Int
     , temp :: Double
-    , feels_like :: Double
+    , feelsLike :: Double
     , pressure :: Int
     , humidity :: Int
-    , dew_point :: Double
+    , dewPoint :: Double
     , uvi :: Double
     , clouds :: Int
     , visibility :: Int
-    , wind_speed :: Double
-    , wind_gust :: Maybe Double
-    , wind_deg :: Int
+    , windSpeed :: Double
+    , windGust :: Maybe Double
+    , windDeg :: Int
     , rain :: Maybe Rain
     , snow :: Maybe Snow
     , weather :: [Condition]
@@ -90,16 +90,16 @@ instance FromJSON Current where
         sunrise <- o .: "sunrise"
         sunset <- o .: "sunset"
         temp <- o .: "temp"
-        feels_like <- o .: "feels_like"
+        feelsLike <- o .: "feels_like"
         pressure <- o .: "pressure"
         humidity <- o .: "humidity"
-        dew_point <- o .: "dew_point"
+        dewPoint <- o .: "dew_point"
         uvi <- o .: "uvi"
         clouds <- o .: "clouds"
         visibility <- o .: "visibility"
-        wind_speed <- o .: "wind_speed"
-        wind_gust <- o .:? "wind_gust"
-        wind_deg <- o .: "wind_deg"
+        windSpeed <- o .: "wind_speed"
+        windGust <- o .:? "wind_gust"
+        windDeg <- o .: "wind_deg"
         rain <- o .:? "rain"
         snow <- o .:? "snow"
         weather <- o .: "weather"
@@ -120,16 +120,16 @@ instance FromJSON Minutely where
 data Hourly = Hourly
     { dt :: Int
     , temp :: Double
-    , feels_like :: Double
+    , feelsLike :: Double
     , pressure :: Int
     , humidity :: Int
-    , dew_point :: Double
+    , dewPoint :: Double
     , uvi :: Double
     , clouds :: Int
     , visibility :: Int
-    , wind_speed :: Double
-    , wind_gust :: Maybe Double
-    , wind_deg :: Int
+    , windSpeed :: Double
+    , windGust :: Maybe Double
+    , windDeg :: Int
     , pop :: Double
     , rain :: Maybe Rain
     , snow :: Maybe Snow
@@ -140,16 +140,16 @@ instance FromJSON Hourly where
     parseJSON = withObject "Hourly" \o -> do
         dt <- o .: "dt"
         temp <- o .: "temp"
-        feels_like <- o .: "feels_like"
+        feelsLike <- o .: "feels_like"
         pressure <- o .: "pressure"
         humidity <- o .: "humidity"
-        dew_point <- o .: "dew_point"
+        dewPoint <- o .: "dew_point"
         uvi <- o .: "uvi"
         clouds <- o .: "clouds"
         visibility <- o .: "visibility"
-        wind_speed <- o .: "wind_speed"
-        wind_gust <- o .:? "wind_gust"
-        wind_deg <- o .: "wind_deg"
+        windSpeed <- o .: "wind_speed"
+        windGust <- o .:? "wind_gust"
+        windDeg <- o .: "wind_deg"
         pop <- o .: "pop"
         rain <- o .:? "rain"
         snow <- o .:? "snow"
@@ -162,18 +162,18 @@ data Daily = Daily
     , sunset :: Int
     , moonrise :: Int
     , moonset :: Int
-    , moon_phase :: Double
+    , moonPhase :: Double
     , summary :: Text
     , temp :: Temperature
-    , feels_like :: FeelsLike
+    , feelsLike :: FeelsLike
     , pressure :: Int
     , humidity :: Int
-    , dew_point :: Double
+    , dewPoint :: Double
     , uvi :: Double
     , clouds :: Int
-    , wind_speed :: Double
-    , wind_gust :: Maybe Double
-    , wind_deg :: Int
+    , windSpeed :: Double
+    , windGust :: Maybe Double
+    , windDeg :: Int
     , pop :: Double
     , rain :: Maybe Double
     , snow :: Maybe Double
@@ -187,18 +187,18 @@ instance FromJSON Daily where
         sunset <- o .: "sunset"
         moonrise <- o .: "moonrise"
         moonset <- o .: "moonset"
-        moon_phase <- o .: "moon_phase"
+        moonPhase <- o .: "moon_phase"
         summary <- o .: "summary"
         temp <- o .: "temp"
-        feels_like <- o .: "feels_like"
+        feelsLike <- o .: "feels_like"
         pressure <- o .: "pressure"
         humidity <- o .: "humidity"
-        dew_point <- o .: "dew_point"
+        dewPoint <- o .: "dew_point"
         uvi <- o .: "uvi"
         clouds <- o .: "clouds"
-        wind_speed <- o .: "wind_speed"
-        wind_gust <- o .:? "wind_gust"
-        wind_deg <- o .: "wind_deg"
+        windSpeed <- o .: "wind_speed"
+        windGust <- o .:? "wind_gust"
+        windDeg <- o .: "wind_deg"
         pop <- o .: "pop"
         rain <- o .:? "rain"
         snow <- o .:? "snow"
