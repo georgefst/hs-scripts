@@ -4,8 +4,6 @@
 {-# LANGUAGE GHC2024 #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -13,14 +11,14 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE NoFieldSelectors #-}
 {-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
 
 module Util.OpenWeatherMap where
 
-import Data.Aeson (FromJSON, Value, parseJSON, withObject, (.:))
+import Data.Aeson (FromJSON, Value, parseJSON, withObject, (.:), (.:?))
 import Data.Data (Proxy (Proxy))
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
-import GHC.Generics (Generic)
 import Language.Javascript.JSaddle (JSM)
 import Servant.API (Get, JSON, QueryParam', Required, Strict, (:>))
 import Servant.Client.JS (ClientEnv (ClientEnv), ClientError, client, parseBaseUrl, runClientM)
@@ -52,7 +50,18 @@ data Weather = Weather
     , hourly :: Maybe [Hourly]
     , daily :: Maybe [Daily]
     }
-    deriving (Eq, Show, Generic, FromJSON)
+    deriving (Eq, Show)
+instance FromJSON Weather where
+    parseJSON = withObject "Weather" \o -> do
+        lat <- o .: "lat"
+        lon <- o .: "lon"
+        timezone <- o .: "timezone"
+        timezone_offset <- o .: "timezone_offset"
+        current <- o .: "current"
+        minutely <- o .:? "minutely"
+        hourly <- o .:? "hourly"
+        daily <- o .:? "daily"
+        pure Weather{..}
 
 data Current = Current
     { dt :: Int
@@ -74,13 +83,39 @@ data Current = Current
     , weather :: [Condition]
     , alerts :: Maybe Value
     }
-    deriving (Eq, Show, Generic, FromJSON)
+    deriving (Eq, Show)
+instance FromJSON Current where
+    parseJSON = withObject "Current" \o -> do
+        dt <- o .: "dt"
+        sunrise <- o .: "sunrise"
+        sunset <- o .: "sunset"
+        temp <- o .: "temp"
+        feels_like <- o .: "feels_like"
+        pressure <- o .: "pressure"
+        humidity <- o .: "humidity"
+        dew_point <- o .: "dew_point"
+        uvi <- o .: "uvi"
+        clouds <- o .: "clouds"
+        visibility <- o .: "visibility"
+        wind_speed <- o .: "wind_speed"
+        wind_gust <- o .:? "wind_gust"
+        wind_deg <- o .: "wind_deg"
+        rain <- o .:? "rain"
+        snow <- o .:? "snow"
+        weather <- o .: "weather"
+        alerts <- o .:? "alerts"
+        pure Current{..}
 
 data Minutely = Minutely
     { dt :: Int
     , precipitation :: Double
     }
-    deriving (Eq, Show, Generic, FromJSON)
+    deriving (Eq, Show)
+instance FromJSON Minutely where
+    parseJSON = withObject "Minutely" \o -> do
+        dt <- o .: "dt"
+        precipitation <- o .: "precipitation"
+        pure Minutely{..}
 
 data Hourly = Hourly
     { dt :: Int
@@ -100,7 +135,26 @@ data Hourly = Hourly
     , snow :: Maybe Snow
     , weather :: [Condition]
     }
-    deriving (Eq, Show, Generic, FromJSON)
+    deriving (Eq, Show)
+instance FromJSON Hourly where
+    parseJSON = withObject "Hourly" \o -> do
+        dt <- o .: "dt"
+        temp <- o .: "temp"
+        feels_like <- o .: "feels_like"
+        pressure <- o .: "pressure"
+        humidity <- o .: "humidity"
+        dew_point <- o .: "dew_point"
+        uvi <- o .: "uvi"
+        clouds <- o .: "clouds"
+        visibility <- o .: "visibility"
+        wind_speed <- o .: "wind_speed"
+        wind_gust <- o .:? "wind_gust"
+        wind_deg <- o .: "wind_deg"
+        pop <- o .: "pop"
+        rain <- o .:? "rain"
+        snow <- o .:? "snow"
+        weather <- o .: "weather"
+        pure Hourly{..}
 
 data Daily = Daily
     { dt :: Int
@@ -125,7 +179,31 @@ data Daily = Daily
     , snow :: Maybe Double
     , weather :: [Condition]
     }
-    deriving (Eq, Show, Generic, FromJSON)
+    deriving (Eq, Show)
+instance FromJSON Daily where
+    parseJSON = withObject "Daily" \o -> do
+        dt <- o .: "dt"
+        sunrise <- o .: "sunrise"
+        sunset <- o .: "sunset"
+        moonrise <- o .: "moonrise"
+        moonset <- o .: "moonset"
+        moon_phase <- o .: "moon_phase"
+        summary <- o .: "summary"
+        temp <- o .: "temp"
+        feels_like <- o .: "feels_like"
+        pressure <- o .: "pressure"
+        humidity <- o .: "humidity"
+        dew_point <- o .: "dew_point"
+        uvi <- o .: "uvi"
+        clouds <- o .: "clouds"
+        wind_speed <- o .: "wind_speed"
+        wind_gust <- o .:? "wind_gust"
+        wind_deg <- o .: "wind_deg"
+        pop <- o .: "pop"
+        rain <- o .:? "rain"
+        snow <- o .:? "snow"
+        weather <- o .: "weather"
+        pure Daily{..}
 
 data Rain = Rain
     { oneHour :: Double
@@ -150,7 +228,14 @@ data Condition = Condition
     , description :: Text
     , icon :: Text
     }
-    deriving (Eq, Show, Generic, FromJSON)
+    deriving (Eq, Show)
+instance FromJSON Condition where
+    parseJSON = withObject "Condition" \o -> do
+        id <- o .: "id"
+        main <- o .: "main"
+        description <- o .: "description"
+        icon <- o .: "icon"
+        pure Condition{..}
 
 data Temperature = Temperature
     { morn :: Double
@@ -160,11 +245,27 @@ data Temperature = Temperature
     , min :: Double
     , max :: Double
     }
-    deriving (Eq, Show, Generic, FromJSON)
+    deriving (Eq, Show)
+instance FromJSON Temperature where
+    parseJSON = withObject "Temperature" \o -> do
+        morn <- o .: "morn"
+        day <- o .: "day"
+        eve <- o .: "eve"
+        night <- o .: "night"
+        min <- o .: "min"
+        max <- o .: "max"
+        pure Temperature{..}
 data FeelsLike = FeelsLike
     { morn :: Double
     , day :: Double
     , eve :: Double
     , night :: Double
     }
-    deriving (Eq, Show, Generic, FromJSON)
+    deriving (Eq, Show)
+instance FromJSON FeelsLike where
+    parseJSON = withObject "FeelsLike" \o -> do
+        morn <- o .: "morn"
+        day <- o .: "day"
+        eve <- o .: "eve"
+        night <- o .: "night"
+        pure FeelsLike{..}
