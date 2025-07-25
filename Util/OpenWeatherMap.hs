@@ -2,13 +2,16 @@
 -- maybe reference/credit `openweathermap` Hackage lib, though there's nothing left from it at this point
 {- HLINT ignore "Use newtype instead of data" -}
 {-# LANGUAGE GHC2024 #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE TypeData #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE NoFieldSelectors #-}
 {-# LANGUAGE NoListTuplePuns #-}
 {-# OPTIONS_GHC -Wall #-}
@@ -16,15 +19,19 @@
 
 module Util.OpenWeatherMap where
 
-import Data.Aeson (FromJSON, Value, parseJSON, withObject, (.:), (.:?))
+import Data.Aeson (FromJSON, Key, Object, Value, parseJSON, withObject, (.:), (.:?))
+import Data.Aeson.Types (Parser)
 import Data.Data (Proxy (Proxy))
 import Data.List (List)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
-import Data.Tuple.Experimental (Tuple2)
+import Data.Tuple.Experimental (Tuple2, Unit)
+import Data.Type.Bool (If)
+import Data.Type.Equality (type (==))
 import Language.Javascript.JSaddle (JSM)
 import Servant.API (Get, JSON, QueryParam', Required, Strict, (:>))
 import Servant.Client.JS (ClientEnv (ClientEnv), ClientError, client, parseBaseUrl, runClientM)
+import Util.Type (Elem, IfElem (ifElem), SBoolI)
 
 type API =
     "onecall"
@@ -48,10 +55,10 @@ data Weather = Weather
     , longitude :: Double
     , timezone :: Text
     , timezoneOffset :: Int
-    , current :: Current
-    , minutely :: Maybe (List Minutely)
-    , hourly :: Maybe (List Hourly)
-    , daily :: Maybe (List Daily)
+    , current :: WeatherData Current
+    , minutely :: Maybe (List (WeatherData Minutely))
+    , hourly :: Maybe (List (WeatherData Hourly))
+    , daily :: Maybe (List (WeatherData Daily))
     }
     deriving (Eq, Show)
 instance FromJSON Weather where
@@ -66,147 +73,93 @@ instance FromJSON Weather where
         daily <- o .:? "daily"
         pure Weather{..}
 
-data Current = Current
-    { timestamp :: Int
-    , sunrise :: Int
-    , sunset :: Int
-    , temperature :: Double
-    , feelsLike :: Double
-    , pressure :: Int
-    , humidity :: Int
-    , dewPoint :: Double
-    , uv :: Double
-    , clouds :: Int
-    , visibility :: Int
-    , windSpeed :: Double
-    , windGust :: Maybe Double
-    , windDirection :: Int
-    , rain :: Maybe Rain
-    , snow :: Maybe Snow
-    , weather :: List Condition
-    , alerts :: Maybe Value
-    }
-    deriving (Eq, Show)
-instance FromJSON Current where
-    parseJSON = withObject "Current" \o -> do
-        timestamp <- o .: "dt"
-        sunrise <- o .: "sunrise"
-        sunset <- o .: "sunset"
-        temperature <- o .: "temp"
-        feelsLike <- o .: "feels_like"
-        pressure <- o .: "pressure"
-        humidity <- o .: "humidity"
-        dewPoint <- o .: "dew_point"
-        uv <- o .: "uvi"
-        clouds <- o .: "clouds"
-        visibility <- o .: "visibility"
-        windSpeed <- o .: "wind_speed"
-        windGust <- o .:? "wind_gust"
-        windDirection <- o .: "wind_deg"
-        rain <- o .:? "rain"
-        snow <- o .:? "snow"
-        weather <- o .: "weather"
-        alerts <- o .:? "alerts"
-        pure Current{..}
+type data Context
+    = Current
+    | Minutely
+    | Hourly
+    | Daily
 
-data Minutely = Minutely
-    { timestamp :: Int
-    , precipitation :: Double
+data WeatherData f = WeatherData
+    { timestamp :: If (Elem f [Current, Minutely, Hourly, Daily]) Int Unit
+    , sunrise :: If (Elem f [Current, Daily]) Int Unit
+    , sunset :: If (Elem f [Current, Daily]) Int Unit
+    , moonrise :: If (Elem f [Daily]) Int Unit
+    , moonset :: If (Elem f [Daily]) Int Unit
+    , moonPhase :: If (Elem f [Daily]) Double Unit
+    , summary :: If (Elem f [Daily]) Text Unit
+    , temperature :: If (Elem f [Daily]) Temperature Unit
+    , temperatureSimple :: If (Elem f [Current, Hourly]) Double Unit
+    , feelsLike :: If (Elem f [Daily]) FeelsLike Unit
+    , feelsLikeSimple :: If (Elem f [Current, Hourly]) Double Unit
+    , pressure :: If (Elem f [Current, Hourly, Daily]) Int Unit
+    , humidity :: If (Elem f [Current, Hourly, Daily]) Int Unit
+    , dewPoint :: If (Elem f [Current, Hourly, Daily]) Double Unit
+    , uv :: If (Elem f [Current, Hourly, Daily]) Double Unit
+    , clouds :: If (Elem f [Current, Hourly, Daily]) Int Unit
+    , visibility :: If (Elem f [Current, Hourly]) Int Unit
+    , windSpeed :: If (Elem f [Current, Hourly, Daily]) Double Unit
+    , windGust :: If (Elem f [Current, Hourly, Daily]) (Maybe Double) Unit
+    , windDirection :: If (Elem f [Current, Hourly, Daily]) Int Unit
+    , precipitation :: If (Elem f [Minutely]) Double Unit
+    , pop :: If (Elem f [Hourly, Daily]) Double Unit
+    , rain :: If (Elem f [Current, Hourly]) (Maybe Rain) Unit
+    , rainSimple :: If (Elem f [Daily]) (Maybe Double) Unit
+    , snow :: If (Elem f [Current, Hourly]) (Maybe Snow) Unit
+    , snowSimple :: If (Elem f [Daily]) (Maybe Double) Unit
+    , weather :: If (Elem f [Current, Hourly, Daily]) (List Condition) Unit
+    , alerts :: If (Elem f [Current]) (Maybe Value) Unit
     }
-    deriving (Eq, Show)
-instance FromJSON Minutely where
-    parseJSON = withObject "Minutely" \o -> do
-        timestamp <- o .: "dt"
-        precipitation <- o .: "precipitation"
-        pure Minutely{..}
-
-data Hourly = Hourly
-    { timestamp :: Int
-    , temperature :: Double
-    , feelsLike :: Double
-    , pressure :: Int
-    , humidity :: Int
-    , dewPoint :: Double
-    , uv :: Double
-    , clouds :: Int
-    , visibility :: Int
-    , windSpeed :: Double
-    , windGust :: Maybe Double
-    , windDirection :: Int
-    , pop :: Double
-    , rain :: Maybe Rain
-    , snow :: Maybe Snow
-    , weather :: List Condition
-    }
-    deriving (Eq, Show)
-instance FromJSON Hourly where
-    parseJSON = withObject "Hourly" \o -> do
-        timestamp <- o .: "dt"
-        temperature <- o .: "temp"
-        feelsLike <- o .: "feels_like"
-        pressure <- o .: "pressure"
-        humidity <- o .: "humidity"
-        dewPoint <- o .: "dew_point"
-        uv <- o .: "uvi"
-        clouds <- o .: "clouds"
-        visibility <- o .: "visibility"
-        windSpeed <- o .: "wind_speed"
-        windGust <- o .:? "wind_gust"
-        windDirection <- o .: "wind_deg"
-        pop <- o .: "pop"
-        rain <- o .:? "rain"
-        snow <- o .:? "snow"
-        weather <- o .: "weather"
-        pure Hourly{..}
-
-data Daily = Daily
-    { timestamp :: Int
-    , sunrise :: Int
-    , sunset :: Int
-    , moonrise :: Int
-    , moonset :: Int
-    , moonPhase :: Double
-    , summary :: Text
-    , temperature :: Temperature
-    , feelsLike :: FeelsLike
-    , pressure :: Int
-    , humidity :: Int
-    , dewPoint :: Double
-    , uv :: Double
-    , clouds :: Int
-    , windSpeed :: Double
-    , windGust :: Maybe Double
-    , windDirection :: Int
-    , pop :: Double
-    , rain :: Maybe Double
-    , snow :: Maybe Double
-    , weather :: List Condition
-    }
-    deriving (Eq, Show)
-instance FromJSON Daily where
-    parseJSON = withObject "Daily" \o -> do
-        timestamp <- o .: "dt"
-        sunrise <- o .: "sunrise"
-        sunset <- o .: "sunset"
-        moonrise <- o .: "moonrise"
-        moonset <- o .: "moonset"
-        moonPhase <- o .: "moon_phase"
-        summary <- o .: "summary"
-        temperature <- o .: "temp"
-        feelsLike <- o .: "feels_like"
-        pressure <- o .: "pressure"
-        humidity <- o .: "humidity"
-        dewPoint <- o .: "dew_point"
-        uv <- o .: "uvi"
-        clouds <- o .: "clouds"
-        windSpeed <- o .: "wind_speed"
-        windGust <- o .:? "wind_gust"
-        windDirection <- o .: "wind_deg"
-        pop <- o .: "pop"
-        rain <- o .:? "rain"
-        snow <- o .:? "snow"
-        weather <- o .: "weather"
-        pure Daily{..}
+deriving instance Eq (WeatherData Current)
+deriving instance Eq (WeatherData Minutely)
+deriving instance Eq (WeatherData Hourly)
+deriving instance Eq (WeatherData Daily)
+deriving instance Show (WeatherData Current)
+deriving instance Show (WeatherData Minutely)
+deriving instance Show (WeatherData Hourly)
+deriving instance Show (WeatherData Daily)
+instance
+    ( SBoolI (f == Current)
+    , SBoolI (f == Minutely)
+    , SBoolI (f == Hourly)
+    , SBoolI (f == Daily)
+    ) =>
+    FromJSON (WeatherData f)
+    where
+    parseJSON = withObject "WeatherData" \o -> do
+        timestamp <- p @[Current, Minutely, Hourly, Daily] @Int o "dt"
+        sunrise <- p @[Current, Daily] @Int o "sunrise"
+        sunset <- p @[Current, Daily] @Int o "sunset"
+        moonrise <- p @[Daily] @Int o "moonrise"
+        moonset <- p @[Daily] @Int o "moonset"
+        moonPhase <- p @[Daily] @Double o "moon_phase"
+        summary <- p @[Daily] @Text o "summary"
+        temperature <- p @[Daily] @Temperature o "temp"
+        temperatureSimple <- p @[Current, Hourly] @Double o "temp"
+        feelsLike <- p @[Daily] @FeelsLike o "feels_like"
+        feelsLikeSimple <- p @[Current, Hourly] @Double o "feels_like"
+        pressure <- p @[Current, Hourly, Daily] @Int o "pressure"
+        humidity <- p @[Current, Hourly, Daily] @Int o "humidity"
+        dewPoint <- p @[Current, Hourly, Daily] @Double o "dew_point"
+        uv <- p @[Current, Hourly, Daily] @Double o "uvi"
+        clouds <- p @[Current, Hourly, Daily] @Int o "clouds"
+        visibility <- p @[Current, Hourly] @Int o "visibility"
+        windSpeed <- p @[Current, Hourly, Daily] @Double o "wind_speed"
+        windGust <- pm @[Current, Hourly, Daily] @Double o "wind_gust"
+        windDirection <- p @[Current, Hourly, Daily] @Int o "wind_deg"
+        precipitation <- p @[Minutely] @Double o "precipitation"
+        pop <- p @[Hourly, Daily] @Double o "pop"
+        rain <- pm @[Current, Hourly] @Rain o "rain"
+        rainSimple <- pm @[Daily] @Double o "rain"
+        snow <- pm @[Current, Hourly] @Snow o "snow"
+        snowSimple <- pm @[Daily] @Double o "snow"
+        weather <- p @[Current, Hourly, Daily] @(List Condition) o "weather"
+        alerts <- pm @[Current] @Value o "alerts"
+        pure WeatherData{..}
+      where
+        p :: forall fs x. (IfElem f fs, FromJSON x) => Object -> Key -> Parser (If (Elem f fs) x Unit)
+        p = ifElem @_ @f @fs (.:) (const $ const $ pure ())
+        pm :: forall fs x. (IfElem f fs, FromJSON x) => Object -> Key -> Parser (If (Elem f fs) (Maybe x) Unit)
+        pm = ifElem @_ @f @fs (.:?) (const $ const $ pure ())
 
 data Rain = Rain
     { oneHour :: Double
