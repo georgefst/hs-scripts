@@ -87,10 +87,8 @@ data WeatherData f = WeatherData
     , moonset :: If (Elem f [Daily]) Int Unit
     , moonPhase :: If (Elem f [Daily]) Double Unit
     , summary :: If (Elem f [Daily]) Text Unit
-    , temperature :: If (Elem f [Daily]) Temperature Unit
-    , temperatureSimple :: If (Elem f [Current, Hourly]) Double Unit
-    , feelsLike :: If (Elem f [Daily]) FeelsLike Unit
-    , feelsLikeSimple :: If (Elem f [Current, Hourly]) Double Unit
+    , temperature :: If (Elem f [Current, Hourly]) Double (If (Elem f [Daily]) Temperature Unit)
+    , feelsLike :: If (Elem f [Current, Hourly]) Double (If (Elem f [Daily]) FeelsLike Unit)
     , pressure :: If (Elem f [Current, Hourly, Daily]) Int Unit
     , humidity :: If (Elem f [Current, Hourly, Daily]) Int Unit
     , dewPoint :: If (Elem f [Current, Hourly, Daily]) Double Unit
@@ -102,10 +100,8 @@ data WeatherData f = WeatherData
     , windDirection :: If (Elem f [Current, Hourly, Daily]) Int Unit
     , precipitation :: If (Elem f [Minutely]) Double Unit
     , pop :: If (Elem f [Hourly, Daily]) Double Unit
-    , rain :: If (Elem f [Current, Hourly]) (Maybe Rain) Unit
-    , rainSimple :: If (Elem f [Daily]) (Maybe Double) Unit
-    , snow :: If (Elem f [Current, Hourly]) (Maybe Snow) Unit
-    , snowSimple :: If (Elem f [Daily]) (Maybe Double) Unit
+    , rain :: If (Elem f [Current, Hourly]) (Maybe Rain) (If (Elem f [Daily]) (Maybe Double) Unit)
+    , snow :: If (Elem f [Current, Hourly]) (Maybe Snow) (If (Elem f [Daily]) (Maybe Double) Unit)
     , weather :: If (Elem f [Current, Hourly, Daily]) (List Condition) Unit
     , alerts :: If (Elem f [Current]) (Maybe Value) Unit
     }
@@ -133,10 +129,8 @@ instance
         moonset <- p @[Daily] @Int o "moonset"
         moonPhase <- p @[Daily] @Double o "moon_phase"
         summary <- p @[Daily] @Text o "summary"
-        temperature <- p @[Daily] @Temperature o "temp"
-        temperatureSimple <- p @[Current, Hourly] @Double o "temp"
-        feelsLike <- p @[Daily] @FeelsLike o "feels_like"
-        feelsLikeSimple <- p @[Current, Hourly] @Double o "feels_like"
+        temperature <- p2 @[Current, Hourly] @Double @[Daily] @Temperature o "temp"
+        feelsLike <- p2 @[Current, Hourly] @Double @[Daily] @FeelsLike o "feels_like"
         pressure <- p @[Current, Hourly, Daily] @Int o "pressure"
         humidity <- p @[Current, Hourly, Daily] @Int o "humidity"
         dewPoint <- p @[Current, Hourly, Daily] @Double o "dew_point"
@@ -148,10 +142,8 @@ instance
         windDirection <- p @[Current, Hourly, Daily] @Int o "wind_deg"
         precipitation <- p @[Minutely] @Double o "precipitation"
         pop <- p @[Hourly, Daily] @Double o "pop"
-        rain <- pm @[Current, Hourly] @Rain o "rain"
-        rainSimple <- pm @[Daily] @Double o "rain"
-        snow <- pm @[Current, Hourly] @Snow o "snow"
-        snowSimple <- pm @[Daily] @Double o "snow"
+        rain <- pm2 @[Current, Hourly] @Rain @[Daily] @Double o "rain"
+        snow <- pm2 @[Current, Hourly] @Snow @[Daily] @Double o "snow"
         weather <- p @[Current, Hourly, Daily] @(List Condition) o "weather"
         alerts <- pm @[Current] @Value o "alerts"
         pure WeatherData{..}
@@ -160,6 +152,10 @@ instance
         p = ifElem @_ @f @fs (.:) (const $ const $ pure ())
         pm :: forall fs x. (IfElem f fs, FromJSON x) => Object -> Key -> Parser (If (Elem f fs) (Maybe x) Unit)
         pm = ifElem @_ @f @fs (.:?) (const $ const $ pure ())
+        p2 :: forall fs x fs' x'. (IfElem f fs, IfElem f fs', FromJSON x, FromJSON x') => Object -> Key -> Parser (If (Elem f fs) x (If (Elem f fs') x' Unit))
+        p2 = ifElem @_ @f @fs (.:) $ p @fs' @x'
+        pm2 :: forall fs x fs' x'. (IfElem f fs, IfElem f fs', FromJSON x, FromJSON x') => Object -> Key -> Parser (If (Elem f fs) (Maybe x) (If (Elem f fs') (Maybe x') Unit))
+        pm2 = ifElem @_ @f @fs (.:?) $ pm @fs' @x'
 
 data Rain = Rain
     { oneHour :: Double
