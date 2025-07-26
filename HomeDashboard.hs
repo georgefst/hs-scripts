@@ -25,7 +25,7 @@ import Control.Monad
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
-import Data.Bifunctor (first, second)
+import Data.Bifunctor (second)
 import Data.Either.Extra
 import Data.Foldable
 import Data.List.Extra hiding (lines)
@@ -34,7 +34,6 @@ import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Maybe
 import Data.Proxy (Proxy (Proxy))
-import Data.Text qualified as T
 import Data.Time hiding (getCurrentTimeZone)
 import Data.Time qualified
 import Data.Time.Calendar.OrdinalDate
@@ -125,11 +124,8 @@ weather =
     )
         { subs =
             [ \sink -> forever do
-                let appId = T.unpack secrets.openWeatherMapAppId
-                    location = secrets.coordinates
-                    h s = (consoleLog . (("failed to get " <> s <> ": ") <>)) . ms . show
-                either (uncurry h) sink =<< runExceptT do
-                    liftEither . first ("weather",) =<< lift (getWeather appId location)
+                either (consoleLog . ("failed to get weather: " <>) . ms . show) sink
+                    =<< getWeather (T.unpack secrets.openWeatherMapAppId) secrets.coordinates
                 -- API limit is 1000 a day, which is one every 1.44 minutes, so we can afford 3 concurrent clients
                 liftIO $ threadDelay 300_000_000
             ]
