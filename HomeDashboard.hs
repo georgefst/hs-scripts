@@ -125,7 +125,7 @@ weather =
         { subs =
             [ \sink -> forever do
                 either (consoleLog . ("failed to get weather: " <>) . ms . show) sink
-                    =<< getWeather (T.unpack secrets.openWeatherMapAppId) secrets.coordinates
+                    =<< getWeather secrets.openWeatherMapAppId secrets.coordinates
                 -- API limit is 1000 a day, which is one every 1.44 minutes, so we can afford 3 concurrent clients
                 liftIO $ threadDelay 300_000_000
             ]

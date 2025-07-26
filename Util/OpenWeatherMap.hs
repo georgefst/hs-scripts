@@ -35,13 +35,13 @@ import Util.Type (Elem, IfElem (ifElem), SBoolI)
 
 type API =
     "onecall"
-        :> QueryParam' [Required, Strict] "appid" String
+        :> QueryParam' [Required, Strict] "appid" Text
         :> QueryParam' [Required, Strict] "lat" Double
         :> QueryParam' [Required, Strict] "lon" Double
         :> Get [JSON] Weather
 
 getWeather ::
-    String ->
+    Text ->
     Tuple2 Double Double ->
     JSM (Either ClientError Weather)
 getWeather s (lat, lon) =
