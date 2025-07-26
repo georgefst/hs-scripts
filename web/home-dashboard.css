@@ -54,8 +54,11 @@ body {
       align-items: baseline;
       justify-content: space-evenly;
       > .uv {
-        padding: 0.7rem;
-        padding-top: 1rem;
+        height: 3.5rem;
+        width: 3.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
     }
   }
