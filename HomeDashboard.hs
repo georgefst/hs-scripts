@@ -136,7 +136,8 @@ weather =
                             ]
                         , div_ [] [text $ ms current.humidity <> " %"]
                         , div_
-                            [ styleInline_ $
+                            [ class_ "uv"
+                            , styleInline_ $
                                 "background-color: "
                                     <> let
                                         uv = current.uv

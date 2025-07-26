@@ -53,6 +53,10 @@ body {
       display: flex;
       align-items: baseline;
       justify-content: space-evenly;
+      > .uv {
+        padding: 0.7rem;
+        padding-top: 1rem;
+      }
     }
   }
 }
