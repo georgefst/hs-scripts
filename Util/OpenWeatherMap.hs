@@ -102,7 +102,7 @@ data WeatherData f = WeatherData
     , pop :: If (Elem f [Hourly, Daily]) Double Unit
     , rain :: If (Elem f [Current, Hourly]) (Maybe Rain) (If (Elem f [Daily]) (Maybe Double) Unit)
     , snow :: If (Elem f [Current, Hourly]) (Maybe Snow) (If (Elem f [Daily]) (Maybe Double) Unit)
-    , weather :: If (Elem f [Current, Hourly, Daily]) (List Condition) Unit
+    , conditions :: If (Elem f [Current, Hourly, Daily]) (List Condition) Unit
     , alerts :: If (Elem f [Current]) (Maybe Value) Unit
     }
 deriving instance Eq (WeatherData Current)
@@ -144,7 +144,7 @@ instance
         pop <- p @[Hourly, Daily] @Double o "pop"
         rain <- pm2 @[Current, Hourly] @Rain @[Daily] @Double o "rain"
         snow <- pm2 @[Current, Hourly] @Snow @[Daily] @Double o "snow"
-        weather <- p @[Current, Hourly, Daily] @(List Condition) o "weather"
+        conditions <- p @[Current, Hourly, Daily] @(List Condition) o "weather"
         alerts <- pm @[Current] @Value o "alerts"
         pure WeatherData{..}
       where
