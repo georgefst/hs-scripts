@@ -3,6 +3,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE LexicalNegation #-}
+{-# LANGUAGE MultiWayIf #-}
 {-# LANGUAGE NegativeLiterals #-}
 {-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -25,6 +26,7 @@ import Control.Monad
 import Control.Monad.Except
 import Control.Monad.Reader
 import Control.Monad.State
+import Data.Aeson.Text qualified as JSON
 import Data.Bifunctor (second)
 import Data.Either.Extra
 import Data.Foldable
@@ -43,6 +45,7 @@ import GHC.Records (HasField (getField))
 import GHC.TypeLits (AppendSymbol, KnownSymbol, symbolVal)
 import Miso hiding (for, for_)
 import Miso.String (MisoString, fromMisoString, ms)
+import Miso.Style (styleInline_)
 import Optics
 import Spotify.Types.Auth
 import Spotify.Types.Episodes
@@ -117,19 +120,67 @@ weather =
         \case
             Nothing -> div_ [] []
             Just Weather{current} ->
-                div_
-                    []
-                    -- TODO show more of this data
-                    [text $ ms @String $ printf "%.1f °C" $ current.temperature - 273.15]
+                div_ [] $
+                    [ div_ [] [text $ ms $ mconcat $ intersperse ", " $ map (.description) current.conditions]
+                    , div_
+                        []
+                        [ div_
+                            []
+                            [ text . ms $
+                                mconcat
+                                    [ showDouble 1 $ current.temperature + absoluteZero
+                                    , " °C ("
+                                    , showDouble 1 $ current.feelsLike + absoluteZero
+                                    , ")"
+                                    ]
+                            ]
+                        , div_ [] [text $ ms current.humidity <> " %"]
+                        , div_
+                            [ styleInline_ $
+                                "background-color: "
+                                    <> let
+                                        uv = current.uv
+                                        zero = "#5f6060"
+                                        low = "#70b466"
+                                        medium = "#f7e71c"
+                                        highish = "#fe950c"
+                                        high = "#d62921"
+                                        extreme = "#6500e0"
+                                        in
+                                        if
+                                            | uv == 0 -> zero
+                                            | uv <= 3.5 -> mix low medium (uv / 3.5)
+                                            | uv <= 6.5 -> mix medium highish ((uv - 3.5) / (6.5 - 3.5))
+                                            | uv <= 9.0 -> mix highish high ((uv - 6.5) / (9.0 - 6.5))
+                                            | uv <= 11.0 -> mix high extreme ((uv - 9.0) / (11.0 - 9.0))
+                                            | otherwise -> extreme
+                            ]
+                            [text $ ms $ showDouble 1 current.uv]
+                        ]
+                    ]
+                        <> foldMap (\rain -> [div_ [] [text $ ms $ showDouble 2 rain.oneHour <> " mm/h"]]) current.rain
+                        <> foldMap (\snow -> [div_ [] [text $ ms $ showDouble 2 snow.oneHour <> " mm/h (snow!)"]]) current.snow
+                        <> foldMap (const [div_ [] [text "alert active: see console"]]) current.alerts
     )
         { subs =
             [ \sink -> forever do
-                either (consoleLog . ("failed to get weather: " <>) . ms . show) sink
+                either
+                    (consoleLog . ("failed to get weather: " <>) . ms . show)
+                    ( \w -> do
+                        -- TODO this (and the view code handling this field) are temporary,
+                        -- until we've seen a few of these alerts and know what data they contain
+                        traverse_ (consoleLog . ms . JSON.encodeToLazyText) w.current.alerts
+                        sink w
+                    )
                     =<< getWeather secrets.openWeatherMapAppId secrets.coordinates
                 -- API limit is 1000 a day, which is one every 1.44 minutes, so we can afford 3 concurrent clients
                 liftIO $ threadDelay 300_000_000
             ]
         }
+  where
+    showDouble (n :: Int) = printf @(Double -> String) $ "%." <> show n <> "f"
+    mix c1 c2 (f :: Double) = "color-mix(in hsl, " <> c1 <> ", " <> c2 <> " " <> ms (showDouble 2 $ f * 100) <> "%)"
+    absoluteZero = -273.15
 
 transport :: Component "transport" (Map StationLineId StationData) (StationLineId, StationData)
 transport =
