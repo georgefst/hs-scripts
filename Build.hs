@@ -208,6 +208,8 @@ main = shakeArgs shakeOpts do
             putStrLn $ "Using compiler: " <> ghc
             maybe mempty (putStrLn . ("Using project file: " <>)) projectFile
         version <- liftIO $ trimEnd <$> readProcess ghc ["--numeric-version"] ""
+        -- TODO we should actually make this file a goal
+        -- then there's very little need to ever specify `TARGET` env var, and we can autocomplete commands instead
         let envFile = ".ghc.environment." <> triple.machine <> "-" <> triple.os <> "-" <> version
         liftIO $
             (Dir.removeFile envFile >> putStrLn ("Deleting env file: " <> envFile)) `catchIOError` \e ->
