@@ -1,3 +1,4 @@
+-- TODO move most (all?) of this to a new `spotify-js` package in the main `spotify` repo
 {-# LANGUAGE GHC2024 #-}
 {-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
