@@ -69,24 +69,24 @@ main = do
     run $ startComponent app{styles}
 {- FOURMOLU_ENABLE -}
 
-app :: Component "app" () ()
+app :: Component () ()
 app =
-    defaultComponent
+    component
         ()
         (\() -> pure ())
         ( \() ->
             div_
                 []
-                [ component clock [id_ "clock"]
-                , component weather [id_ "weather"]
-                , component transport [id_ "transport"]
-                , component music [id_ "music"]
+                [ div_ [id_ "clock"] +> clock
+                , div_ [id_ "weather"] +> weather
+                , div_ [id_ "transport"] +> transport
+                , div_ [id_ "music"] +> music
                 ]
         )
 
-clock :: Component "clock" LocalTime LocalTime
+clock :: Component LocalTime LocalTime
 clock =
-    ( defaultComponent
+    ( component
         -- TODO hmm, would be nice to be able to do IO for initial state...
         -- here it's fine in practice because the sub gets run immediately
         -- we'd want it for other components as well
@@ -114,9 +114,9 @@ clock =
             ]
         }
 
-weather :: Component "weather" (Maybe Weather) Weather
+weather :: Component (Maybe Weather) Weather
 weather =
-    ( defaultComponent
+    ( component
         Nothing
         (put . Just)
         \case
@@ -185,9 +185,9 @@ weather =
     mix c1 c2 (f :: Double) = "color-mix(in hsl, " <> c1 <> ", " <> c2 <> " " <> ms (showDouble 2 $ f * 100) <> "%)"
     absoluteZero = -273.15
 
-transport :: Component "transport" (Map StationLineId StationData) (StationLineId, StationData)
+transport :: Component (Map StationLineId StationData) (StationLineId, StationData)
 transport =
-    ( defaultComponent
+    ( component
         mempty
         (modify . uncurry Map.insert)
         \allData ->
@@ -300,9 +300,9 @@ data TrainData = TrainData
     }
     deriving (Eq, Show)
 
-music :: Component "music" (Maybe PlaybackState) (Maybe PlaybackState)
+music :: Component (Maybe PlaybackState) (Maybe PlaybackState)
 music =
-    ( defaultComponent
+    ( component
         Nothing
         put
         \case
