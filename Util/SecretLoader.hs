@@ -18,7 +18,9 @@ import Text.Read (readMaybe)
 data Secrets = Secrets
     { coordinates :: (Double, Double)
     , openWeatherMapAppId :: Text
-    , spotifyAccessToken :: Text
+    , spotifyClientId :: Text
+    , spotifyClientSecret :: Text
+    , spotifyRefreshToken :: Text
     }
 
 loadSecret :: FilePath -> Q Exp
@@ -27,6 +29,8 @@ loadSecret path = do
     runIO (T.lines . T.strip <$> T.readFile path) >>= \case
         [ readMaybe @(Double, Double) . T.unpack -> Just coordinates
             , openWeatherMapAppId
-            , spotifyAccessToken
+            , spotifyClientId
+            , spotifyClientSecret
+            , spotifyRefreshToken
             ] -> [|Secrets{..}|]
         _ -> fail "bad secrets file"
