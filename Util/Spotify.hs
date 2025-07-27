@@ -6,6 +6,9 @@
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 
 module Util.Spotify (
+    refreshAccessToken,
+    requestAccessToken,
+    authorize,
     getAlbum,
     getAlbumTracks,
     removeAlbums,
@@ -48,17 +51,26 @@ import Spotify (
     AddToPlaylistBody (AddToPlaylistBody),
     GetAvailableDevicesResponse (..),
     IDs (IDs),
+    IdAndSecret (IdAndSecret),
+    RefreshAccessTokenForm (RefreshAccessTokenForm),
+    RequestAccessTokenForm (RequestAccessTokenForm),
     TransferPlaybackBody (..),
+    accountsBase,
     mainBase,
     marketFromToken,
     noContent,
     withPagingParams,
  )
-import Spotify.Servant (API)
+import Spotify.Servant (API, AccountsAPI)
 import Spotify.Servant.Core (handleAllJSONOrNoContent)
 
 -- TODO leading slash can be dropped with https://github.com/morganthomas/servant-client-js/pull/7
+runAccounts = flip runClientM $ ClientEnv accountsBase{baseUrlPath = "/" <> baseUrlPath accountsBase}
 run = flip runClientM $ ClientEnv mainBase{baseUrlPath = "/" <> baseUrlPath mainBase}
+
+refreshAccessToken t clientId clientSecret = ExceptT $ runAccounts $ refreshAccessToken' (RefreshAccessTokenForm t) (IdAndSecret clientId clientSecret)
+requestAccessToken t u clientId clientSecret = ExceptT $ runAccounts $ requestAccessToken' (RequestAccessTokenForm t u) (IdAndSecret clientId clientSecret)
+authorize a b c d e f = ExceptT $ runAccounts $ authorize' a b c d e f
 
 getAlbum a = ReaderT $ ExceptT . \t -> run $ getAlbum' t a marketFromToken
 getAlbumTracks a pp = ReaderT $ ExceptT . \t -> run $ withPagingParams pp $ getAlbumTracks' t a marketFromToken
@@ -90,6 +102,11 @@ removeTracks ids = ReaderT $ ExceptT . \t -> run $ noContent $ removeTracks' t $
 getMe = ReaderT $ ExceptT . \t -> run $ getMe' t
 getUser userId = ReaderT $ ExceptT . \t -> run $ getUser' t userId
 unfollowPlaylist p = ReaderT $ ExceptT . \t -> run $ noContent $ unfollowPlaylist' t p
+
+refreshAccessToken'
+    :<|> requestAccessToken'
+    :<|> authorize' =
+        client $ flatten $ Proxy @AccountsAPI
 
 getAlbum'
     :<|> getAlbumTracks'
