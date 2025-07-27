@@ -18,9 +18,9 @@ main = do
 #endif
     run $ startComponent app{styles}
 
-app :: Component s Word ()
+app :: Component Word ()
 app =
-    defaultComponent
+    component
         0
         (\() -> modify succ)
         (\n -> div_ [] [button_ [onClick ()] [span_ [] [text "+"]], text $ ms n])
