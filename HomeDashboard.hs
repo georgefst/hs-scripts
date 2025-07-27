@@ -329,9 +329,9 @@ music =
                     r <- do
                         runExceptT $
                             refreshAccessToken
-                                (RefreshToken secrets.spotifyRefreshToken)
-                                (ClientId secrets.spotifyClientId)
-                                (ClientSecret secrets.spotifyClientSecret)
+                                secrets.spotifyRefreshToken
+                                secrets.spotifyClientId
+                                secrets.spotifyClientSecret
                     -- we delay to ensure we don't completely spam, even if something goes horribly wrong
                     when wait $ liftIO $ threadDelay 3_000_000
                     either
