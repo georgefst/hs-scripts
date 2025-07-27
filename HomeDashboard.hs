@@ -326,7 +326,7 @@ music =
     )
         { subs =
             [ let refresh wait = do
-                    r <- do
+                    r <-
                         runExceptT $
                             refreshAccessToken
                                 secrets.spotifyRefreshToken
