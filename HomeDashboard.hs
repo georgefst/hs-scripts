@@ -24,6 +24,7 @@ import Util.TFLTypes (TflApiPresentationEntitiesPrediction (..))
 import Control.Concurrent
 import Control.Monad
 import Control.Monad.Except
+import Control.Monad.Extra
 import Control.Monad.Reader
 import Control.Monad.State
 import Data.Aeson.Text qualified as JSON
@@ -43,6 +44,7 @@ import Data.Traversable
 import Data.Tuple.Extra ((&&&))
 import GHC.Records (HasField (getField))
 import GHC.TypeLits (AppendSymbol, KnownSymbol, symbolVal)
+import Language.Javascript.JSaddle (liftJSM)
 import Miso hiding (for, for_)
 import Miso.String (MisoString, fromMisoString, ms)
 import Miso.Style (styleInline_)
@@ -323,16 +325,39 @@ music =
             _ -> div_ [] []
     )
         { subs =
-            [ \sink -> forever do
-                either (consoleLog . ("failed to get playback state: " <>) . ms . show) sink
-                    =<< runExceptT (runReaderT getPlaybackState $ AccessToken secrets.spotifyAccessToken)
-                -- TODO how often? Spotify intentionally don't say what the API limit is
-                -- and we can't just subscribe to be notified: https://github.com/spotify/web-api/issues/492
-                -- one is supposed to check for 429s and read the `Retry-After` header to know how long to back off
-                -- I've been banned for 18 hours for just calling twice a second
-                -- though this might have been unlucky - Spotify outages were in the news that day
-                -- if we can't call every second, then we'll have to go manually increasing the counter
-                liftIO $ threadDelay 5_000_000
+            [ let refresh wait = do
+                    r <- do
+                        runExceptT $
+                            refreshAccessToken
+                                (RefreshToken secrets.spotifyRefreshToken)
+                                (ClientId secrets.spotifyClientId)
+                                (ClientSecret secrets.spotifyClientSecret)
+                    -- we delay to ensure we don't completely spam, even if something goes horribly wrong
+                    when wait $ liftIO $ threadDelay 3_000_000
+                    either
+                        (\e -> consoleLog ("failed to refresh token: " <> ms (show e)) >> pure Nothing)
+                        (pure . Just)
+                        r
+               in \sink -> do
+                    tok0 <- (.accessToken) <$> untilJustM (refresh False)
+                    flip evalStateT tok0 $ forever do
+                        tok <- get
+                        lift (runExceptT $ runReaderT getPlaybackState tok) >>= \case
+                            Left e -> do
+                                liftJSM . consoleLog $
+                                    "failed to get playback state (will try to refresh token): " <> ms (show e)
+                                lift (refresh True) >>= \case
+                                    Nothing -> pure () -- just try again (this shouldn't generally happen)
+                                    Just tr -> put tr.accessToken
+                            Right r -> do
+                                lift $ sink r
+                                -- TODO how often? Spotify intentionally don't say what the API limit is
+                                -- and we can't just subscribe to be notified: https://github.com/spotify/web-api/issues/492
+                                -- one is supposed to check for 429s and read the `Retry-After` header to know how long to back off
+                                -- I've been banned for 18 hours for just calling twice a second
+                                -- though this might have been unlucky - Spotify outages were in the news that day
+                                -- if we can't call every second, then we'll have to go manually increasing the counter display
+                                liftIO $ threadDelay 5_000_000
             ]
         }
 
