@@ -117,7 +117,7 @@ data Piece = O | I | S | Z | L | J | T
     deriving (Eq, Ord, Show, Enum, Bounded)
 instance Uniform Piece where uniformM = uniformEnumM
 
--- inv: returned list always has length 4, and contains very small numbers
+-- inv: list has length 4, and its xs range from -1 to 2 (a single 2 for `I`), and ys from 0 to 1
 shape :: Piece -> List (V2 Int)
 shape =
     (0 :) . \case
