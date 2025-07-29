@@ -44,6 +44,7 @@ import Control.Monad
 import Control.Monad.Extra
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Aeson qualified as Aeson
+import Data.Bifunctor (first)
 import Data.Bool
 import Data.Foldable
 import Data.Foldable1 qualified as NE
@@ -228,9 +229,7 @@ grid initialModel =
         initialModel
         ( \case
             NoOp s -> io_ $ traverse_ consoleLog s
-            Init -> subscribe keysPressedTopic \case
-                Aeson.Error _ -> NoOp Nothing
-                Aeson.Success k -> KeyAction k
+            Init -> subscribe' keysPressedTopic $ either (const $ NoOp Nothing) KeyAction
             Tick -> whenM (not <$> use #gameOver) do
                 success <- tryMove (+ V2 0 1)
                 when (not success) do
@@ -292,10 +291,7 @@ sidebar initialNextPiece =
     ( component
         initialNextPiece
         ( either
-            ( \start -> when start $ subscribe nextPieceTopic \case
-                Aeson.Error _ -> Left False
-                Aeson.Success p -> Right p
-            )
+            (\start -> when start $ subscribe' nextPieceTopic $ first $ const False)
             put
         )
         ( \piece ->
@@ -340,6 +336,14 @@ nextPieceTopic :: Topic Piece
 nextPieceTopic = topic "next-piece"
 keysPressedTopic :: Topic KeyAction
 keysPressedTopic = topic "keys-pressed"
+
+-- TODO this is a slightly better API for upstream, assuming it's not changed more radically
+subscribe' :: (FromJSON message) => Topic message -> (Either MisoString message -> action) -> Effect model action
+subscribe' t f =
+    subscribe t $
+        f . \case
+            Aeson.Error e -> Left $ ms e
+            Aeson.Success r -> Right r
 
 #ifdef wasi_HOST_OS
 foreign export javascript "hs" main :: IO ()
