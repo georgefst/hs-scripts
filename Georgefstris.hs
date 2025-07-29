@@ -230,18 +230,18 @@ grid initialModel =
             NoOp s -> io_ $ traverse_ consoleLog s
             KeysPressed ks -> for_ ks $ io . pure . KeyAction
             Tick -> whenM (not <$> use #gameOver) do
-                        success <- tryMove (+ V2 0 1)
-                        when (not success) do
-                            -- fix piece to pile and move on to the next, unless it's game over
-                            Model{current, next} <- get
-                            #pile %= uncurry3 addPieceToGrid current
-                            #current .= newPiece next
-                            next' <- overAndOut' #random uniform
-                            #next .= next'
-                            publish nextPieceTopic next'
-                            #pile %= removeCompletedLines
-                            gameOver <- uncurry (uncurry3 pieceIntersectsGrid) <$> use (fanout #current #pile)
-                            #gameOver .= gameOver
+                success <- tryMove (+ V2 0 1)
+                when (not success) do
+                    -- fix piece to pile and move on to the next, unless it's game over
+                    Model{current, next} <- get
+                    #pile %= uncurry3 addPieceToGrid current
+                    #current .= newPiece next
+                    next' <- overAndOut' #random uniform
+                    #next .= next'
+                    publish nextPieceTopic next'
+                    #pile %= removeCompletedLines
+                    gameOver <- uncurry (uncurry3 pieceIntersectsGrid) <$> use (fanout #current #pile)
+                    #gameOver .= gameOver
             KeyAction MoveLeft -> void $ tryMove (- V2 1 0)
             KeyAction MoveRight -> void $ tryMove (+ V2 1 0)
             KeyAction RotateLeft -> void $ tryRotate \case
