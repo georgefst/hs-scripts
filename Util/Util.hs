@@ -14,7 +14,7 @@ import Data.Functor ((<&>))
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 import Data.Time (NominalDiffTime, nominalDiffTimeToSeconds)
-import Optics (A_Getter, A_Setter, Is, Optic', set, (^.))
+import Optics (A_Lens, Is, Optic', castOptic, set, (^.))
 
 (<<$>>) :: (Functor f1, Functor f2) => (a -> b) -> f1 (f2 a) -> f1 (f2 b)
 (<<$>>) = fmap . fmap
@@ -34,7 +34,7 @@ outerProduct f xs ys = xs <&> \x -> ys <&> \y -> f x y
 threadDelay' :: (MonadIO m) => NominalDiffTime -> m ()
 threadDelay' = liftIO . threadDelay . round . (* 1_000_000) . nominalDiffTimeToSeconds
 
-overAndOut :: (Is k A_Getter, Is k A_Setter) => Optic' k is s a -> (a -> (b, a)) -> s -> (b, s)
-overAndOut o f s = second (flip (set o) s) $ f $ s ^. o
-overAndOut' :: (MonadState s m, Is k A_Getter, Is k A_Setter) => Optic' k is s a -> (a -> (b, a)) -> m b
+overAndOut :: (Is k A_Lens) => Optic' k is s a -> (a -> (b, a)) -> s -> (b, s)
+overAndOut o f s = second (flip (set (castOptic @A_Lens o)) s) $ f $ s ^. castOptic @A_Lens o
+overAndOut' :: (MonadState s m, Is k A_Lens) => Optic' k is s a -> (a -> (b, a)) -> m b
 overAndOut' o f = fmap (fst @_ @()) $ bitraverse pure put =<< gets (overAndOut o f)
