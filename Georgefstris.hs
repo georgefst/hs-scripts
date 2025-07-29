@@ -223,8 +223,10 @@ app =
                         success <- tryMove (+ V2 0 1)
                         when (not success) do
                             -- fix piece to pile and move on to the next
-                            (#pile %=) . uncurry3 addPieceToGrid =<< use #current
-                            (#current .=) =<< overAndOut' #random newPiece
+                            Model{current} <- get
+                            #pile %= uncurry3 addPieceToGrid current
+                            next <- overAndOut' #random newPiece
+                            #current .= next
                             #pile %= removeCompletedLines
             KeyAction MoveLeft -> void $ tryMove (- V2 1 0)
             KeyAction MoveRight -> void $ tryMove (+ V2 1 0)
