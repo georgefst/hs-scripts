@@ -4,10 +4,17 @@
 
 module Util.Util where
 
+import Control.Concurrent (threadDelay)
+import Control.Monad.IO.Class (MonadIO, liftIO)
+import Control.Monad.State (MonadState, gets, put)
+import Data.Bifunctor (Bifunctor (second))
+import Data.Bitraversable (bitraverse)
 import Data.Bool (bool)
-import Data.Functor
+import Data.Functor ((<&>))
 import Data.Text (Text)
 import Data.Text.IO qualified as T
+import Data.Time (NominalDiffTime, nominalDiffTimeToSeconds)
+import Optics (A_Getter, A_Setter, Is, Optic', set, (^.))
 
 (<<$>>) :: (Functor f1, Functor f2) => (a -> b) -> f1 (f2 a) -> f1 (f2 b)
 (<<$>>) = fmap . fmap
@@ -23,3 +30,11 @@ modifyFile f file = T.writeFile file . f =<< T.readFile file
 
 outerProduct :: (a -> b -> c) -> [a] -> [b] -> [[c]]
 outerProduct f xs ys = xs <&> \x -> ys <&> \y -> f x y
+
+threadDelay' :: (MonadIO m) => NominalDiffTime -> m ()
+threadDelay' = liftIO . threadDelay . round . (* 1_000_000) . nominalDiffTimeToSeconds
+
+overAndOut :: (Is k A_Getter, Is k A_Setter) => Optic' k is s a -> (a -> (b, a)) -> s -> (b, s)
+overAndOut o f s = second (flip (set o) s) $ f $ s ^. o
+overAndOut' :: (MonadState s m, Is k A_Getter, Is k A_Setter) => Optic' k is s a -> (a -> (b, a)) -> m b
+overAndOut' o f = fmap (fst @_ @()) $ bitraverse pure put =<< gets (overAndOut o f)

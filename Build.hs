@@ -300,6 +300,7 @@ main = shakeArgs shakeOpts do
             ("linear")
             ("logging-effect")
             ("lucid2")
+            ("massiv")
             ("megaparsec")
             ("miso" & munless noTH)
             ("monad-loops")

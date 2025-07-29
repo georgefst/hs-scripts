@@ -1,0 +1,55 @@
+:root {
+  font-size: x-large;
+  color: black;
+}
+
+body {
+  margin: 0;
+  font-family: Helvetica, Arial, sans-serif;
+  height: 100vh;
+  > div {
+    height: 100%;
+    display: flex;
+    align-items: center;
+  }
+}
+
+#grid {
+  height: 100%;
+  margin: 3rem;
+  width: 20rem;
+  height: 36rem;
+  border-style: solid;
+  display: grid;
+  grid-auto-flow: column;
+  > .column {
+    display: grid;
+  }
+}
+.cell-o {
+  background-color: red;
+}
+.cell-i {
+  background-color: orange;
+}
+.cell-s {
+  background-color: lightblue;
+}
+.cell-z {
+  background-color: green;
+}
+.cell-l {
+  background-color: blue;
+}
+.cell-j {
+  background-color: purple;
+}
+.cell-t {
+  background-color: yellow;
+}
+
+#sidebar {
+  height: 100%;
+  flex-grow: 1;
+  background-color: saddlebrown;
+}
