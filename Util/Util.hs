@@ -8,13 +8,14 @@ module Util.Util where
 import Control.Concurrent (threadDelay)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.State (MonadState, gets, put)
-import Data.Bifunctor (Bifunctor (second))
+import Data.Bifunctor (bimap, second)
 import Data.Bitraversable (bitraverse)
 import Data.Bool (bool)
 import Data.Functor ((<&>))
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 import Data.Time (NominalDiffTime, nominalDiffTimeToSeconds)
+import Data.Tuple.Extra ((&&&))
 import Optics (A_Lens, Is, Lens', Optic', castOptic, lens, set, (.~), (^.))
 
 (<<$>>) :: (Functor f1, Functor f2) => (a -> b) -> f1 (f2 a) -> f1 (f2 b)
@@ -41,4 +42,4 @@ overAndOut' :: (MonadState s m, Is k A_Lens) => Optic' k is s a -> (a -> (b, a))
 overAndOut' o f = fmap (fst @_ @()) $ bitraverse pure put =<< gets (overAndOut o f)
 
 fanout :: Lens' s a -> Lens' s b -> Lens' s (a, b)
-fanout l1 l2 = lens (\s -> (s ^. l1, s ^. l2)) (flip \(a, b) -> (l1 .~ a) . (l2 .~ b))
+fanout l1 l2 = lens ((^. l1) &&& (^. l2)) (flip $ uncurry (.) . bimap (l1 .~) (l2 .~))
