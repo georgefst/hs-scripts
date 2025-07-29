@@ -1,3 +1,4 @@
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall #-}
@@ -14,7 +15,7 @@ import Data.Functor ((<&>))
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 import Data.Time (NominalDiffTime, nominalDiffTimeToSeconds)
-import Optics (A_Lens, Is, Optic', castOptic, set, (^.))
+import Optics (A_Lens, Is, Lens', Optic', castOptic, lens, set, (.~), (^.))
 
 (<<$>>) :: (Functor f1, Functor f2) => (a -> b) -> f1 (f2 a) -> f1 (f2 b)
 (<<$>>) = fmap . fmap
@@ -38,3 +39,6 @@ overAndOut :: (Is k A_Lens) => Optic' k is s a -> (a -> (b, a)) -> s -> (b, s)
 overAndOut o f s = second (flip (set (castOptic @A_Lens o)) s) $ f $ s ^. castOptic @A_Lens o
 overAndOut' :: (MonadState s m, Is k A_Lens) => Optic' k is s a -> (a -> (b, a)) -> m b
 overAndOut' o f = fmap (fst @_ @()) $ bitraverse pure put =<< gets (overAndOut o f)
+
+fanout :: Lens' s a -> Lens' s b -> Lens' s (a, b)
+fanout l1 l2 = lens (\s -> (s ^. l1, s ^. l2)) (flip \(a, b) -> (l1 .~ a) . (l2 .~ b))
