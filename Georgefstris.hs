@@ -210,16 +210,16 @@ app =
         ( \case
             NoOp s -> io_ $ traverse_ consoleLog s
             Tick -> do
-             gameOver <- uncurry (uncurry3 pieceIntersectsGrid) <$> use (fanout #current #pile)
-             if gameOver
-              then #gameOver .= True
-              else do
-                success <- tryMove $ V2 0 1
-                when (not success) do
-                    -- fix piece to pile and move on to the next
-                    (#pile %=) . uncurry3 addPieceToGrid =<< use #current
-                    (#current .=) =<< overAndOut' #random newPiece
-                    #pile %= removeCompletedLines
+                gameOver <- uncurry (uncurry3 pieceIntersectsGrid) <$> use (fanout #current #pile)
+                if gameOver
+                    then #gameOver .= True
+                    else do
+                        success <- tryMove $ V2 0 1
+                        when (not success) do
+                            -- fix piece to pile and move on to the next
+                            (#pile %=) . uncurry3 addPieceToGrid =<< use #current
+                            (#current .=) =<< overAndOut' #random newPiece
+                            #pile %= removeCompletedLines
             KeyAction MoveLeft -> void $ tryMove $ V2 -1 0
             KeyAction MoveRight -> void $ tryMove $ V2 1 0
             KeyAction RotateLeft -> #current % _3 %= succDef minBound
