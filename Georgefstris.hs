@@ -37,6 +37,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE LexicalNegation #-}
 {-# LANGUAGE NegativeLiterals #-}
+{-# LANGUAGE OrPatterns #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -49,6 +50,7 @@ module Georgefstris (main) where
 
 import Control.Monad
 import Control.Monad.Extra
+import Data.Bool
 import Data.Foldable
 import Data.Functor
 import Data.List.Extra
@@ -222,8 +224,18 @@ app =
                             #pile %= removeCompletedLines
             KeyAction MoveLeft -> void $ tryMove $ V2 -1 0
             KeyAction MoveRight -> void $ tryMove $ V2 1 0
-            KeyAction RotateLeft -> #current % _3 %= succDef minBound
-            KeyAction RotateRight -> #current % _3 %= predDef maxBound
+            KeyAction RotateLeft -> do
+                p <- use $ #current % _1
+                #current % _3 %= case p of
+                    O -> id
+                    I; S; Z -> bool NoRotation Rotation90 . (== NoRotation)
+                    L; J; T -> succDef minBound
+            KeyAction RotateRight -> do
+                p <- use $ #current % _1
+                #current % _3 %= case p of
+                    O -> id
+                    I; S; Z -> bool NoRotation Rotation90 . (== NoRotation)
+                    L; J; T -> predDef maxBound
             KeyAction SoftDrop -> void $ tryMove $ V2 0 1
             KeyAction HardDrop -> whileM $ tryMove $ V2 0 1
         )
