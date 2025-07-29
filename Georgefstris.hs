@@ -121,8 +121,8 @@ instance Uniform Piece where uniformM = uniformEnumM
 shape :: Piece -> List (V2 Int)
 shape =
     (0 :) . \case
-        O -> [V2 -1 0, V2 -1 1, V2 0 1]
-        I -> [V2 -2 0, V2 -1 0, V2 1 0]
+        O -> [V2 0 1, V2 1 0, V2 1 1]
+        I -> [V2 -1 0, V2 1 0, V2 2 0]
         S -> [V2 -1 1, V2 0 1, V2 1 0]
         Z -> [V2 -1 0, V2 0 1, V2 1 1]
         L -> [V2 -1 0, V2 -1 1, V2 1 0]
@@ -257,7 +257,7 @@ app =
         pure b
     newPiece r =
         let (p, r') = uniform @Piece @StdGen r
-         in ((p, V2 (opts.gridWidth `div` 2) 0, NoRotation), r')
+         in ((p, V2 (opts.gridWidth `div` 2 - 1) 0, NoRotation), r')
 
 #ifdef wasi_HOST_OS
 foreign export javascript "hs" main :: IO ()
