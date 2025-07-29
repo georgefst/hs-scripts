@@ -240,14 +240,7 @@ grid initialModel =
             Tick -> whenM (not <$> use #gameOver) do
                 success <- tryMove (+ V2 0 1)
                 when (not success) do
-                    -- fix piece to pile and move on to the next, unless it's game over
-                    Model{current, next} <- get
-                    #pile %= addPieceToGrid current
-                    #current .= newPiece next
-                    next' <- overAndOut' #random uniform
-                    #next .= next'
-                    publish nextPieceTopic next'
-                    #pile %= removeCompletedLines
+                    fixPiece
                     gameOver <- uncurry pieceIntersectsGrid <$> use (fanout #current #pile)
                     #gameOver .= gameOver
             KeyAction MoveLeft -> void $ tryMove (- V2 1 0)
@@ -261,7 +254,7 @@ grid initialModel =
                 I; S; Z -> bool NoRotation Rotation90 . (== NoRotation)
                 L; J; T -> predDef maxBound
             KeyAction SoftDrop -> void $ tryMove (+ V2 0 1)
-            KeyAction HardDrop -> whileM $ tryMove (+ V2 0 1)
+            KeyAction HardDrop -> whileM (tryMove (+ V2 0 1)) >> fixPiece
         )
         ( \Model{..} ->
             div_
@@ -281,6 +274,14 @@ grid initialModel =
         , initialAction = Just Init
         }
   where
+    fixPiece = do
+        Model{current, next} <- get
+        #pile %= addPieceToGrid current
+        #current .= newPiece next
+        next' <- overAndOut' #random uniform
+        #next .= next'
+        publish nextPieceTopic next'
+        #pile %= removeCompletedLines
     tryMove f = tryEdit . (#pos %~ f) =<< use #current
     tryRotate f = tryEdit . (\p -> p & #rotation %~ f p.piece) =<< use #current
     tryEdit p = do
