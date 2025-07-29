@@ -55,7 +55,6 @@ import Data.Massiv.Array qualified as A
 import Data.Maybe
 import Data.Monoid.Extra
 import Data.Time (NominalDiffTime)
-import Data.Tuple.Extra (uncurry3)
 import GHC.Generics (Generic)
 import Linear (R1 (_x), R2 (_y), V2 (V2))
 import Miso hiding (for_)
@@ -139,8 +138,15 @@ shape =
         J -> [V2 -1 0, V2 1 0, V2 1 1]
         T -> [V2 -1 0, V2 0 1, V2 1 0]
 
-newPiece :: Piece -> (Piece, V2 Int, Rotation)
-newPiece = (,V2 (opts.gridWidth `div` 2 - 1) 0,NoRotation)
+data ActivePiece = ActivePiece
+    { piece :: Piece
+    , pos :: V2 Int
+    , rotation :: Rotation
+    }
+    deriving (Eq, Show, Generic)
+
+newPiece :: Piece -> ActivePiece
+newPiece piece = ActivePiece{piece, pos = V2 (opts.gridWidth `div` 2 - 1) 0, rotation = NoRotation}
 
 -- TODO separate module? nothing like this in `linear` or even `diagrams`
 -- actually, we could maybe just use `linear`'s matrices...
@@ -174,20 +180,20 @@ lookupGrid :: Grid -> V2 Int -> Either Bool Cell -- `Left True` means the locati
 lookupGrid (Grid g) (V2 x y) = if y < 0 then Left True else maybeToEither False $ g A.!? A.Ix2 x y
 deconstructGrid :: (Monad m) => Grid -> (V2 Int -> Cell -> m b) -> m ()
 deconstructGrid (Grid g) = A.iforM_ g . \f (A.Ix2 x y) -> f (V2 x y)
-addPieceToGrid :: Piece -> V2 Int -> Rotation -> Grid -> Grid
-addPieceToGrid p v r (Grid g) =
+addPieceToGrid :: ActivePiece -> Grid -> Grid
+addPieceToGrid ActivePiece{..} (Grid g) =
     -- TODO can we avoid a copy?
-    Grid $ A.withMArrayST_ g \gm -> for_ ((+ v) . rotate r <$> shape p) \(V2 x y) ->
+    Grid $ A.withMArrayST_ g \gm -> for_ ((+ pos) . rotate rotation <$> shape piece) \(V2 x y) ->
         A.modify_
             gm
             -- this assumes that the extra piece does not intersect occupied cells - if it does we overwrite
-            (const $ pure $ Occupied p)
+            (const $ pure $ Occupied piece)
             (A.Ix2 x y)
-pieceIntersectsGrid :: Piece -> V2 Int -> Rotation -> Grid -> Bool
-pieceIntersectsGrid p v r (Grid g) =
+pieceIntersectsGrid :: ActivePiece -> Grid -> Bool
+pieceIntersectsGrid ActivePiece{..} (Grid g) =
     getAny $
         A.ifoldMono
-            (\(A.Ix2 x y) e -> Any $ any ((\v' -> e /= Unoccupied && V2 x y == v') . (+ v) . rotate r) (shape p))
+            (\(A.Ix2 x y) e -> Any $ any ((\v' -> e /= Unoccupied && V2 x y == v') . (+ pos) . rotate rotation) (shape piece))
             g
 removeCompletedLines :: Grid -> Grid
 removeCompletedLines (Grid g) = Grid $ fromMaybe g do
@@ -203,7 +209,7 @@ removeCompletedLines (Grid g) = Grid $ fromMaybe g do
 
 data Model = Model
     { pile :: Grid -- the cells fixed in place
-    , current :: (Piece, V2 Int, Rotation)
+    , current :: ActivePiece
     , next :: Piece
     , random :: StdGen
     , gameOver :: Bool
@@ -236,13 +242,13 @@ grid initialModel =
                 when (not success) do
                     -- fix piece to pile and move on to the next, unless it's game over
                     Model{current, next} <- get
-                    #pile %= uncurry3 addPieceToGrid current
+                    #pile %= addPieceToGrid current
                     #current .= newPiece next
                     next' <- overAndOut' #random uniform
                     #next .= next'
                     publish nextPieceTopic next'
                     #pile %= removeCompletedLines
-                    gameOver <- uncurry (uncurry3 pieceIntersectsGrid) <$> use (fanout #current #pile)
+                    gameOver <- uncurry pieceIntersectsGrid <$> use (fanout #current #pile)
                     #gameOver .= gameOver
             KeyAction MoveLeft -> void $ tryMove (- V2 1 0)
             KeyAction MoveRight -> void $ tryMove (+ V2 1 0)
@@ -261,7 +267,7 @@ grid initialModel =
             div_
                 (mwhen gameOver [class_ "game-over"])
                 [ gridCanvas opts.gridWidth opts.gridHeight \f ->
-                    deconstructGrid (uncurry3 addPieceToGrid current pile) \v -> \case
+                    deconstructGrid (addPieceToGrid current pile) \v -> \case
                         Unoccupied -> pure ()
                         Occupied p -> f p v
                 ]
@@ -276,16 +282,16 @@ grid initialModel =
         }
   where
     tryMove f = do
-        (p, v, r) <- use #current
-        tryEdit (p, f v, r)
+        ActivePiece{..} <- use #current
+        tryEdit ActivePiece{piece, pos = f pos, rotation}
     tryRotate f = do
-        (p, v, r) <- use #current
-        tryEdit (p, v, f p r)
-    tryEdit (p, v, r) = do
+        ActivePiece{..} <- use #current
+        tryEdit ActivePiece{piece, pos, rotation = f piece rotation}
+    tryEdit ActivePiece{..} = do
         g <- use #pile
-        let cells = traverse (Validation . first All . lookupGrid g . (+ v) . rotate r) $ shape p
+        let cells = traverse (Validation . first All . lookupGrid g . (+ pos) . rotate rotation) $ shape piece
             b = either getAll (all (== Unoccupied)) cells.unwrap
-        when b $ #current .= (p, v, r)
+        when b $ #current .= ActivePiece{..}
         pure b
 
 sidebar :: Piece -> Component Piece (Either Bool Piece)
