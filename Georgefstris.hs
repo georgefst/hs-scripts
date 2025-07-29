@@ -216,28 +216,24 @@ app =
                 if gameOver
                     then #gameOver .= True
                     else do
-                        success <- tryMove $ V2 0 1
+                        success <- tryMove (+ V2 0 1)
                         when (not success) do
                             -- fix piece to pile and move on to the next
                             (#pile %=) . uncurry3 addPieceToGrid =<< use #current
                             (#current .=) =<< overAndOut' #random newPiece
                             #pile %= removeCompletedLines
-            KeyAction MoveLeft -> void $ tryMove $ V2 -1 0
-            KeyAction MoveRight -> void $ tryMove $ V2 1 0
-            KeyAction RotateLeft -> do
-                p <- use $ #current % _1
-                #current % _3 %= case p of
-                    O -> id
-                    I; S; Z -> bool NoRotation Rotation90 . (== NoRotation)
-                    L; J; T -> succDef minBound
-            KeyAction RotateRight -> do
-                p <- use $ #current % _1
-                #current % _3 %= case p of
-                    O -> id
-                    I; S; Z -> bool NoRotation Rotation90 . (== NoRotation)
-                    L; J; T -> predDef maxBound
-            KeyAction SoftDrop -> void $ tryMove $ V2 0 1
-            KeyAction HardDrop -> whileM $ tryMove $ V2 0 1
+            KeyAction MoveLeft -> void $ tryMove (- V2 1 0)
+            KeyAction MoveRight -> void $ tryMove (+ V2 1 0)
+            KeyAction RotateLeft -> void $ tryRotate \case
+                O -> id
+                I; S; Z -> bool NoRotation Rotation90 . (== NoRotation)
+                L; J; T -> succDef minBound
+            KeyAction RotateRight -> void $ tryRotate \case
+                O -> id
+                I; S; Z -> bool NoRotation Rotation90 . (== NoRotation)
+                L; J; T -> predDef maxBound
+            KeyAction SoftDrop -> void $ tryMove (+ V2 0 1)
+            KeyAction HardDrop -> whileM $ tryMove (+ V2 0 1)
         )
         ( \Model{..} ->
             div_
@@ -260,12 +256,16 @@ app =
             ]
         }
   where
-    tryMove v = do
+    tryMove f = do
+        (p, v, r) <- use #current
+        tryEdit (p, f v, r)
+    tryRotate f = do
+        (p, v, r) <- use #current
+        tryEdit (p, v, f p r)
+    tryEdit (p, v, r) = do
         g <- use #pile
-        (p, l, r) <- use #current
-        let l' = l + v
-            b = maybe False (all (== Unoccupied)) $ traverse (lookupGrid g . (+ l') . rotate r) (shape p)
-        when b $ #current .= (p, l', r)
+        let b = maybe False (all (== Unoccupied)) $ traverse (lookupGrid g . (+ v) . rotate r) (shape p)
+        when b $ #current .= (p, v, r)
         pure b
     newPiece r =
         let (p, r') = uniform @Piece @StdGen r
