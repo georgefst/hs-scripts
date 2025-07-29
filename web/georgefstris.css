@@ -18,13 +18,15 @@ body {
   height: 90%;
   margin: 3rem;
   border-style: solid;
-  > canvas {
-    image-rendering: pixelated;
-    width: 100%;
+  > div {
     height: 100%;
-  }
-  &.game-over {
-    filter: grayscale(100%) brightness(0.7);
+    > canvas {
+      image-rendering: pixelated;
+      height: 100%;
+    }
+    &.game-over {
+      filter: grayscale(100%) brightness(0.7);
+    }
   }
 }
 
@@ -32,4 +34,13 @@ body {
   height: 100%;
   flex-grow: 1;
   background-color: saddlebrown;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  > div {
+    > canvas {
+      height: 4rem;
+      image-rendering: pixelated;
+    }
+  }
 }

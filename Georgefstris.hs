@@ -1,5 +1,4 @@
 {- TODO major missing features (rough priority order):
-- next block(s) display
 - pause
 - retry after game over
 - score
@@ -27,6 +26,7 @@
 {-# LANGUAGE GHC2024 #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE LexicalNegation #-}
 {-# LANGUAGE NegativeLiterals #-}
 {-# LANGUAGE OrPatterns #-}
@@ -42,8 +42,11 @@ module Georgefstris (main) where
 
 import Control.Monad
 import Control.Monad.Extra
+import Data.Aeson (FromJSON, ToJSON)
+import Data.Aeson qualified as Aeson
 import Data.Bool
 import Data.Foldable
+import Data.Foldable1 qualified as NE
 import Data.List.NonEmpty (NonEmpty ((:|)))
 import Data.Massiv.Array (Array)
 import Data.Massiv.Array qualified as A
@@ -51,8 +54,9 @@ import Data.Maybe
 import Data.Monoid.Extra
 import Data.Time (NominalDiffTime)
 import Data.Tuple.Extra (uncurry3)
+import Data.Void (Void, absurd)
 import GHC.Generics (Generic)
-import Linear (V2 (V2))
+import Linear (R1 (_x), R2 (_y), V2 (V2))
 import Miso hiding (for_)
 import Miso.Canvas qualified as Canvas
 import Miso.String (MisoString, ms)
@@ -118,7 +122,7 @@ data KeyAction
     | HardDrop
 
 data Piece = O | I | S | Z | L | J | T
-    deriving (Eq, Ord, Show, Enum, Bounded)
+    deriving (Eq, Ord, Show, Enum, Bounded, Generic, ToJSON, FromJSON)
 instance Uniform Piece where uniformM = uniformEnumM
 
 -- inv: list has length 4, and its xs range from -1 to 2 (a single 2 for `I`), and ys from 0 to 1
@@ -132,6 +136,9 @@ shape =
         L -> [V2 -1 0, V2 -1 1, V2 1 0]
         J -> [V2 -1 0, V2 1 0, V2 1 1]
         T -> [V2 -1 0, V2 0 1, V2 1 0]
+
+newPiece :: Piece -> (Piece, V2 Int, Rotation)
+newPiece = (,V2 (opts.gridWidth `div` 2 - 1) 0,NoRotation)
 
 -- TODO separate module? nothing like this in `linear` or even `diagrams`
 -- actually, we could maybe just use `linear`'s matrices...
@@ -195,6 +202,7 @@ removeCompletedLines (Grid g) = Grid $ fromMaybe g do
 data Model = Model
     { pile :: Grid -- the cells fixed in place
     , current :: (Piece, V2 Int, Rotation)
+    , next :: Piece
     , random :: StdGen
     , gameOver :: Bool
     }
@@ -214,12 +222,10 @@ gridCanvas w h f = Canvas.canvas [width_ $ ms w, height_ $ ms h] (const $ pure (
         Canvas.fillStyle $ Canvas.ColorArg $ opts.colours p
         Canvas.fillRect (fromIntegral x, fromIntegral y, 1, 1)
 
-app :: Component Model Action
-app =
+grid :: Model -> Component Model Action
+grid initialModel =
     ( component
-        ( let (current, random) = newPiece $ mkStdGen opts.seed
-           in Model{pile = emptyGrid, current, random, gameOver = False}
-        )
+        initialModel
         ( \case
             NoOp s -> io_ $ traverse_ consoleLog s
             KeysPressed ks -> for_ ks $ io . pure . KeyAction
@@ -231,10 +237,12 @@ app =
                         success <- tryMove (+ V2 0 1)
                         when (not success) do
                             -- fix piece to pile and move on to the next
-                            Model{current} <- get
+                            Model{current, next} <- get
                             #pile %= uncurry3 addPieceToGrid current
-                            next <- overAndOut' #random newPiece
-                            #current .= next
+                            #current .= newPiece next
+                            next' <- overAndOut' #random uniform
+                            #next .= next'
+                            publish nextPieceTopic next'
                             #pile %= removeCompletedLines
             KeyAction MoveLeft -> void $ tryMove (- V2 1 0)
             KeyAction MoveRight -> void $ tryMove (+ V2 1 0)
@@ -251,15 +259,11 @@ app =
         )
         ( \Model{..} ->
             div_
-                []
-                [ div_
-                    ([id_ "grid"] <> mwhen gameOver [class_ "game-over"])
+                (mwhen gameOver [class_ "game-over"])
                     [ gridCanvas opts.gridWidth opts.gridHeight \f ->
                         deconstructGrid (uncurry3 addPieceToGrid current pile) \v -> \case
                             Unoccupied -> pure ()
                             Occupied p -> f p v
-                    ]
-                , div_ [id_ "sidebar"] []
                 ]
         )
     )
@@ -282,9 +286,53 @@ app =
         let b = maybe False (all (== Unoccupied)) $ traverse (lookupGrid g . (+ v) . rotate r) (shape p)
         when b $ #current .= (p, v, r)
         pure b
-    newPiece r =
-        let (p, r') = uniform @Piece @StdGen r
-         in ((p, V2 (opts.gridWidth `div` 2 - 1) 0, NoRotation), r')
+
+sidebar :: Piece -> Component Piece (Either Bool Piece)
+sidebar initialNextPiece =
+    ( component
+        initialNextPiece
+        ( either
+            ( \start -> when start $ subscribe nextPieceTopic \case
+                Aeson.Error _ -> Left False
+                Aeson.Success p -> Right p
+            )
+            put
+        )
+        ( \piece ->
+            div_
+                []
+                let ps = shape piece
+                    vMin = V2 (NE.minimum $ (^. lensVL _x) <$> ps) (NE.minimum $ (^. lensVL _y) <$> ps)
+                    vmax = V2 (NE.maximum $ (^. lensVL _x) <$> ps) (NE.maximum $ (^. lensVL _y) <$> ps)
+                    V2 w h = vmax - vMin + 1
+                 in [ gridCanvas w h \f -> for_ ((- vMin) <$> ps) $ f piece
+                    ]
+        )
+    )
+        { initialAction = Just $ Left True
+        }
+
+app :: Component () Void
+app =
+    component
+        ()
+        absurd
+        ( \() ->
+            div_
+                []
+                [ div_ [id_ "grid"] +> grid initialGridModel
+                , div_ [id_ "sidebar"] +> sidebar initialGridModel.next
+                ]
+        )
+  where
+    initialGridModel = Model{pile = emptyGrid, current, next, random, gameOver = False}
+      where
+        (p, random0) = uniform @Piece $ mkStdGen opts.seed
+        (next, random) = uniform @Piece random0
+        current = newPiece p
+
+nextPieceTopic :: Topic Piece
+nextPieceTopic = topic "next-piece"
 
 #ifdef wasi_HOST_OS
 foreign export javascript "hs" main :: IO ()
