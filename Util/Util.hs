@@ -1,4 +1,5 @@
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall #-}
@@ -29,6 +30,12 @@ modifyFile f file = T.writeFile file . f =<< T.readFile file
 
 ($?) :: Bool -> (a -> a) -> a -> a
 ($?) = flip $ bool id
+
+newtype Validation e r = Validation {unwrap :: Either e r} deriving newtype (Eq, Show, Functor)
+instance (Semigroup m) => Applicative (Validation m) where
+    pure = Validation . pure
+    Validation (Left x) <*> Validation (Left y) = Validation $ Left $ x <> y
+    Validation f <*> Validation r = Validation $ f <*> r
 
 outerProduct :: (a -> b -> c) -> [a] -> [b] -> [[c]]
 outerProduct f xs ys = xs <&> \x -> ys <&> \y -> f x y

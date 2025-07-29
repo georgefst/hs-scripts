@@ -46,6 +46,7 @@ import Data.Aeson (FromJSON, ToJSON)
 import Data.Aeson qualified as Aeson
 import Data.Bifunctor (first)
 import Data.Bool
+import Data.Either.Extra
 import Data.Foldable
 import Data.Foldable1 qualified as NE
 import Data.List.NonEmpty (NonEmpty ((:|)))
@@ -169,8 +170,8 @@ newtype Grid = Grid (Array A.B A.Ix2 Cell)
     deriving newtype (Eq, Show)
 emptyGrid :: Grid
 emptyGrid = Grid $ A.replicate A.Seq (A.Sz2 opts.gridWidth opts.gridHeight) Unoccupied
-lookupGrid :: Grid -> V2 Int -> Maybe Cell
-lookupGrid (Grid g) (V2 x y) = g A.!? A.Ix2 x y
+lookupGrid :: Grid -> V2 Int -> Either Bool Cell -- `Left True` means the location is above the top
+lookupGrid (Grid g) (V2 x y) = if y < 0 then Left True else maybeToEither False $ g A.!? A.Ix2 x y
 deconstructGrid :: (Monad m) => Grid -> (V2 Int -> Cell -> m b) -> m ()
 deconstructGrid (Grid g) = A.iforM_ g . \f (A.Ix2 x y) -> f (V2 x y)
 addPieceToGrid :: Piece -> V2 Int -> Rotation -> Grid -> Grid
@@ -282,7 +283,8 @@ grid initialModel =
         tryEdit (p, v, f p r)
     tryEdit (p, v, r) = do
         g <- use #pile
-        let b = maybe False (all (== Unoccupied)) . traverse (lookupGrid g . (+ v) . rotate r) $ shape p
+        let cells = traverse (Validation . first All . lookupGrid g . (+ v) . rotate r) $ shape p
+            b = either getAll (all (== Unoccupied)) cells.unwrap
         when b $ #current .= (p, v, r)
         pure b
 
