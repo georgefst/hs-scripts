@@ -282,7 +282,7 @@ grid initialModel =
         tryEdit (p, v, f p r)
     tryEdit (p, v, r) = do
         g <- use #pile
-        let b = maybe False (all (== Unoccupied)) $ traverse (lookupGrid g . (+ v) . rotate r) (shape p)
+        let b = maybe False (all (== Unoccupied)) . traverse (lookupGrid g . (+ v) . rotate r) $ shape p
         when b $ #current .= (p, v, r)
         pure b
 
