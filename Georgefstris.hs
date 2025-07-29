@@ -260,10 +260,10 @@ grid initialModel =
         ( \Model{..} ->
             div_
                 (mwhen gameOver [class_ "game-over"])
-                    [ gridCanvas opts.gridWidth opts.gridHeight \f ->
-                        deconstructGrid (uncurry3 addPieceToGrid current pile) \v -> \case
-                            Unoccupied -> pure ()
-                            Occupied p -> f p v
+                [ gridCanvas opts.gridWidth opts.gridHeight \f ->
+                    deconstructGrid (uncurry3 addPieceToGrid current pile) \v -> \case
+                        Unoccupied -> pure ()
+                        Occupied p -> f p v
                 ]
         )
     )
