@@ -202,6 +202,7 @@ data Model = Model
 
 data Action
     = NoOp (Maybe MisoString)
+    | KeysPressed [KeyAction]
     | Tick
     | KeyAction KeyAction
 
@@ -213,6 +214,7 @@ app =
         )
         ( \case
             NoOp s -> io_ $ traverse_ consoleLog s
+            KeysPressed ks -> for_ ks $ io . pure . KeyAction
             Tick -> do
                 gameOver <- uncurry (uncurry3 pieceIntersectsGrid) <$> use (fanout #current #pile)
                 if gameOver
@@ -265,7 +267,7 @@ app =
             [ \sink -> forever do
                 sink Tick
                 threadDelay' opts.rate
-            , keyboardSub $ maybe (NoOp Nothing) KeyAction . (opts.keymap <=< listToMaybe) . toList
+            , keyboardSub $ KeysPressed . mapMaybe opts.keymap . toList
             ]
         }
   where
