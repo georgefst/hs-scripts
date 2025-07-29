@@ -229,7 +229,7 @@ grid initialModel =
         ( \case
             NoOp s -> io_ $ traverse_ consoleLog s
             KeysPressed ks -> for_ ks $ io . pure . KeyAction
-            Tick -> do
+            Tick -> whenM (not <$> use #gameOver) do
                 gameOver <- uncurry (uncurry3 pieceIntersectsGrid) <$> use (fanout #current #pile)
                 if gameOver
                     then #gameOver .= True
