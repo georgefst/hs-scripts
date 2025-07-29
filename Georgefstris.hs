@@ -163,8 +163,8 @@ emptyGrid :: Grid
 emptyGrid = Grid $ A.replicate A.Seq (A.Sz2 opts.gridWidth opts.gridHeight) Unoccupied
 lookupGrid :: Grid -> V2 Int -> Maybe Cell
 lookupGrid (Grid g) (V2 x y) = g A.!? A.Ix2 x y
-deconstructGrid :: (Monad m) => Grid -> (A.Ix2 -> Cell -> m b) -> m ()
-deconstructGrid (Grid g) = A.iforM_ g
+deconstructGrid :: (Monad m) => Grid -> (V2 Int -> Cell -> m b) -> m ()
+deconstructGrid (Grid g) = A.iforM_ g . \f (A.Ix2 x y) -> f (V2 x y)
 addPieceToGrid :: Piece -> V2 Int -> Rotation -> Grid -> Grid
 addPieceToGrid p v r (Grid g) =
     -- TODO can we avoid a copy?
@@ -206,6 +206,14 @@ data Action
     | Tick
     | KeyAction KeyAction
 
+gridCanvas :: Int -> Int -> ((Piece -> V2 Int -> Canvas.Canvas ()) -> Canvas.Canvas ()) -> View action
+gridCanvas w h f = Canvas.canvas [width_ $ ms w, height_ $ ms h] (const $ pure ()) \() -> do
+    -- TODO keep some canvas state rather than always redrawing everything?
+    Canvas.clearRect (0, 0, fromIntegral w, fromIntegral h)
+    f \p (V2 x y) -> do
+        Canvas.fillStyle $ Canvas.ColorArg $ opts.colours p
+        Canvas.fillRect (fromIntegral x, fromIntegral y, 1, 1)
+
 app :: Component Model Action
 app =
     ( component
@@ -246,20 +254,10 @@ app =
                 []
                 [ div_
                     ([id_ "grid"] <> mwhen gameOver [class_ "game-over"])
-                    -- TODO keep some canvas state rather than always redrawing everything?
-                    [ Canvas.canvas
-                        [ width_ $ ms opts.gridWidth
-                        , height_ $ ms opts.gridHeight
-                        ]
-                        (const $ pure ())
-                        ( \() -> do
-                            Canvas.clearRect (0, 0, fromIntegral opts.gridWidth, fromIntegral opts.gridHeight)
-                            deconstructGrid (uncurry3 addPieceToGrid current pile) \(A.Ix2 x y) -> \case
-                                Unoccupied -> pure ()
-                                Occupied p -> do
-                                    Canvas.fillStyle $ Canvas.ColorArg $ opts.colours p
-                                    Canvas.fillRect (fromIntegral x, fromIntegral y, 1, 1)
-                        )
+                    [ gridCanvas opts.gridWidth opts.gridHeight \f ->
+                        deconstructGrid (uncurry3 addPieceToGrid current pile) \v -> \case
+                            Unoccupied -> pure ()
+                            Occupied p -> f p v
                     ]
                 , div_ [id_ "sidebar"] []
                 ]
