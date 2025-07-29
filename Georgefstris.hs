@@ -281,17 +281,13 @@ grid initialModel =
         , initialAction = Just Init
         }
   where
-    tryMove f = do
-        ActivePiece{..} <- use #current
-        tryEdit ActivePiece{piece, pos = f pos, rotation}
-    tryRotate f = do
-        ActivePiece{..} <- use #current
-        tryEdit ActivePiece{piece, pos, rotation = f piece rotation}
-    tryEdit ActivePiece{..} = do
+    tryMove f = tryEdit . (#pos %~ f) =<< use #current
+    tryRotate f = tryEdit . (\p -> p & #rotation %~ f p.piece) =<< use #current
+    tryEdit p = do
         g <- use #pile
-        let cells = traverse (Validation . first All . lookupGrid g . (+ pos) . rotate rotation) $ shape piece
+        let cells = traverse (Validation . first All . lookupGrid g . (+ p.pos) . rotate p.rotation) $ shape p.piece
             b = either getAll (all (== Unoccupied)) cells.unwrap
-        when b $ #current .= ActivePiece{..}
+        when b $ #current .= p
         pure b
 
 sidebar :: Piece -> Component Piece (Either Bool Piece)
