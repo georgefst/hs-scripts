@@ -44,7 +44,7 @@ import Control.Monad
 import Control.Monad.Extra
 import Data.Bool
 import Data.Foldable
-import Data.List.Extra
+import Data.List.NonEmpty (NonEmpty ((:|)))
 import Data.Massiv.Array (Array)
 import Data.Massiv.Array qualified as A
 import Data.Maybe
@@ -122,9 +122,9 @@ data Piece = O | I | S | Z | L | J | T
 instance Uniform Piece where uniformM = uniformEnumM
 
 -- inv: list has length 4, and its xs range from -1 to 2 (a single 2 for `I`), and ys from 0 to 1
-shape :: Piece -> List (V2 Int)
+shape :: Piece -> NonEmpty (V2 Int)
 shape =
-    (0 :) . \case
+    (0 :|) . \case
         O -> [V2 0 1, V2 1 0, V2 1 1]
         I -> [V2 -1 0, V2 1 0, V2 2 0]
         S -> [V2 -1 1, V2 0 1, V2 1 0]
