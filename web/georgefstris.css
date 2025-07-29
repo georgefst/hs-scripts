@@ -25,6 +25,9 @@ body {
   > .column {
     display: grid;
   }
+  &.game-over {
+    filter: grayscale(100%) brightness(0.7);
+  }
 }
 .cell-o {
   background-color: red;

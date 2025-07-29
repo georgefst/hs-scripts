@@ -1,6 +1,7 @@
 {- TODO major missing features (rough priority order):
 - next block(s) display
 - pause
+- retry after game over
 - smoother movement when holding left/right/down key
     - this might just be down to general render performance... use canvas?
     - `keyboardSub` is unfortunately a horrible API:
@@ -15,6 +16,7 @@
         - local storage, with warning about no further persistence?
 - levels
     - this is a bit awkward with Miso's API, since we need to know the current level in order to know how long to wait
+        - that's already a problem anyway, with wanting ticks to stop when game is over or paused
         - note that this approach is imperfect anyway - we'd want to record deltas for better precision
     - `newtype` over `Int`
     - `Opts.rate` should take `Level` as an input
@@ -53,7 +55,7 @@ import Data.List.Extra
 import Data.Massiv.Array (Array)
 import Data.Massiv.Array qualified as A
 import Data.Maybe
-import Data.Monoid.Extra (mwhen)
+import Data.Monoid.Extra
 import Data.Time (NominalDiffTime)
 import Data.Tuple.Extra (uncurry3)
 import GHC.Generics (Generic)
@@ -168,6 +170,12 @@ addPieceToGrid p v r (Grid g) =
             -- this assumes that the extra piece does not intersect occupied cells - if it does we overwrite
             (const $ pure $ Occupied p)
             (A.Ix2 x y)
+pieceIntersectsGrid :: Piece -> V2 Int -> Rotation -> Grid -> Bool
+pieceIntersectsGrid p v r (Grid g) =
+    getAny $
+        A.ifoldMono
+            (\(A.Ix2 x y) e -> Any $ any ((\v' -> e /= Unoccupied && V2 x y == v') . (+ v) . rotate r) (shape p))
+            g
 removeCompletedLines :: Grid -> Grid
 removeCompletedLines (Grid g) = Grid $ fromMaybe g do
     -- TODO any failure would be a programmer error, so we just use `fromMaybe` to return the original
@@ -184,6 +192,7 @@ data Model = Model
     { pile :: Grid -- the cells fixed in place
     , current :: (Piece, V2 Int, Rotation)
     , random :: StdGen
+    , gameOver :: Bool
     }
     deriving (Eq, Show, Generic)
 
@@ -196,11 +205,15 @@ app :: Component Model Action
 app =
     ( component
         ( let (current, random) = newPiece $ mkStdGen opts.seed
-           in Model{pile = emptyGrid, current, random}
+           in Model{pile = emptyGrid, current, random, gameOver = False}
         )
         ( \case
             NoOp s -> io_ $ traverse_ consoleLog s
             Tick -> do
+             gameOver <- uncurry (uncurry3 pieceIntersectsGrid) <$> use (fanout #current #pile)
+             if gameOver
+              then #gameOver .= True
+              else do
                 success <- tryMove $ V2 0 1
                 when (not success) do
                     -- fix piece to pile and move on to the next
@@ -217,7 +230,7 @@ app =
         ( \Model{..} ->
             div_
                 []
-                [ div_ [id_ "grid"] $
+                [ div_ ([id_ "grid"] <> mwhen gameOver [class_ "game-over"]) $
                     deconstructGrid (uncurry3 addPieceToGrid current pile) <&> \row ->
                         div_ [class_ "column"] $
                             row <&> \case
