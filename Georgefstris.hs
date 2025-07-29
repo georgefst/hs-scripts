@@ -2,15 +2,6 @@
 - next block(s) display
 - pause
 - retry after game over
-- smoother movement when holding left/right/down key
-    - this might just be down to general render performance... use canvas?
-    - `keyboardSub` is unfortunately a horrible API:
-        - doesn't give us any control over repeat speed (crucial here)
-        - no ability to filter for e.g. just up or down events
-        - no ability to fire off zero or multiple actions, e.g. one for each set member
-        - no link to docs for what particular key codes mean
-            - found some MDN docs suggesting they're deprecated
-                - https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
 - score
     - incl. tracking
         - local storage, with warning about no further persistence?
@@ -28,6 +19,7 @@
         - start from a later level
         - randomness, e.g. bag-based
         - more features from later versions - three-piece preview, hold, wall kicks
+        - configurable key repeat speed (`keyboardSub` isn't currently flexible enough but we could FFI)
 - record move history for review/analysis
 - sound
 - animations
@@ -52,7 +44,6 @@ import Control.Monad
 import Control.Monad.Extra
 import Data.Bool
 import Data.Foldable
-import Data.Functor
 import Data.List.Extra
 import Data.Massiv.Array (Array)
 import Data.Massiv.Array qualified as A
@@ -63,8 +54,10 @@ import Data.Tuple.Extra (uncurry3)
 import GHC.Generics (Generic)
 import Linear (V2 (V2))
 import Miso hiding (for_)
+import Miso.Canvas qualified as Canvas
 import Miso.String (MisoString, ms)
-import Miso.String qualified as MS
+import Miso.Style (Color)
+import Miso.Style qualified as MS
 import Optics
 import Optics.State.Operators ((%=), (.=))
 import Safe (predDef, succDef)
@@ -87,6 +80,7 @@ data Opts = Opts
     , gridHeight :: Int
     , seed :: Int
     , rate :: NominalDiffTime
+    , colours :: Piece -> Color
     , keymap :: Int -> Maybe KeyAction
     }
 
@@ -97,6 +91,14 @@ opts =
         , gridHeight = 18
         , seed = 42
         , rate = 0.5
+        , colours = \case
+            O -> MS.rgb 255 0 0
+            I -> MS.rgb 255 165 0
+            S -> MS.rgb 173 216 230
+            Z -> MS.rgb 0 128 0
+            L -> MS.rgb 0 0 255
+            J -> MS.rgb 128 0 128
+            T -> MS.rgb 255 255 0
         , keymap = \case
             37 -> Just MoveLeft -- left arrow
             39 -> Just MoveRight -- right arrow
@@ -161,8 +163,8 @@ emptyGrid :: Grid
 emptyGrid = Grid $ A.replicate A.Seq (A.Sz2 opts.gridWidth opts.gridHeight) Unoccupied
 lookupGrid :: Grid -> V2 Int -> Maybe Cell
 lookupGrid (Grid g) (V2 x y) = g A.!? A.Ix2 x y
-deconstructGrid :: Grid -> [[Cell]]
-deconstructGrid (Grid g) = A.toLists2 g
+deconstructGrid :: (Monad m) => Grid -> (A.Ix2 -> Cell -> m b) -> m ()
+deconstructGrid (Grid g) = A.iforM_ g
 addPieceToGrid :: Piece -> V2 Int -> Rotation -> Grid -> Grid
 addPieceToGrid p v r (Grid g) =
     -- TODO can we avoid a copy?
@@ -238,12 +240,23 @@ app =
         ( \Model{..} ->
             div_
                 []
-                [ div_ ([id_ "grid"] <> mwhen gameOver [class_ "game-over"]) $
-                    deconstructGrid (uncurry3 addPieceToGrid current pile) <&> \row ->
-                        div_ [class_ "column"] $
-                            row <&> \case
-                                Unoccupied -> div_ [class_ "cell-empty"] []
-                                Occupied b -> div_ [class_ $ "cell-" <> MS.toLower (ms $ show b)] []
+                [ div_
+                    ([id_ "grid"] <> mwhen gameOver [class_ "game-over"])
+                    -- TODO keep some canvas state rather than always redrawing everything?
+                    [ Canvas.canvas
+                        [ width_ $ ms opts.gridWidth
+                        , height_ $ ms opts.gridHeight
+                        ]
+                        (const $ pure ())
+                        ( \() -> do
+                            Canvas.clearRect (0, 0, fromIntegral opts.gridWidth, fromIntegral opts.gridHeight)
+                            deconstructGrid (uncurry3 addPieceToGrid current pile) \(A.Ix2 x y) -> \case
+                                Unoccupied -> pure ()
+                                Occupied p -> do
+                                    Canvas.fillStyle $ Canvas.ColorArg $ opts.colours p
+                                    Canvas.fillRect (fromIntegral x, fromIntegral y, 1, 1)
+                        )
+                    ]
                 , div_ [id_ "sidebar"] []
                 ]
         )
