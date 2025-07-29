@@ -54,7 +54,6 @@ import Data.Maybe
 import Data.Monoid.Extra
 import Data.Time (NominalDiffTime)
 import Data.Tuple.Extra (uncurry3)
-import Data.Void (Void, absurd)
 import GHC.Generics (Generic)
 import Linear (R1 (_x), R2 (_y), V2 (V2))
 import Miso hiding (for_)
@@ -120,6 +119,7 @@ data KeyAction
     | RotateRight
     | SoftDrop
     | HardDrop
+    deriving (Eq, Ord, Show, Enum, Bounded, Generic, ToJSON, FromJSON)
 
 data Piece = O | I | S | Z | L | J | T
     deriving (Eq, Ord, Show, Enum, Bounded, Generic, ToJSON, FromJSON)
@@ -210,7 +210,7 @@ data Model = Model
 
 data Action
     = NoOp (Maybe MisoString)
-    | KeysPressed [KeyAction]
+    | Init
     | Tick
     | KeyAction KeyAction
 
@@ -228,7 +228,9 @@ grid initialModel =
         initialModel
         ( \case
             NoOp s -> io_ $ traverse_ consoleLog s
-            KeysPressed ks -> for_ ks $ io . pure . KeyAction
+            Init -> subscribe keysPressedTopic \case
+                Aeson.Error _ -> NoOp Nothing
+                Aeson.Success k -> KeyAction k
             Tick -> whenM (not <$> use #gameOver) do
                 success <- tryMove (+ V2 0 1)
                 when (not success) do
@@ -269,8 +271,8 @@ grid initialModel =
             [ \sink -> forever do
                 sink Tick
                 threadDelay' opts.rate
-            , keyboardSub $ KeysPressed . mapMaybe opts.keymap . toList
             ]
+        , initialAction = Just Init
         }
   where
     tryMove f = do
@@ -310,11 +312,11 @@ sidebar initialNextPiece =
         { initialAction = Just $ Left True
         }
 
-app :: Component () Void
+app :: Component () [KeyAction]
 app =
-    component
+    ( component
         ()
-        absurd
+        (traverse_ $ publish keysPressedTopic)
         ( \() ->
             div_
                 []
@@ -322,6 +324,11 @@ app =
                 , div_ [id_ "sidebar"] +> sidebar initialGridModel.next
                 ]
         )
+    )
+        { subs =
+            [ keyboardSub $ mapMaybe opts.keymap . toList
+            ]
+        }
   where
     initialGridModel = Model{pile = emptyGrid, current, next, random, gameOver = False}
       where
@@ -331,6 +338,8 @@ app =
 
 nextPieceTopic :: Topic Piece
 nextPieceTopic = topic "next-piece"
+keysPressedTopic :: Topic KeyAction
+keysPressedTopic = topic "keys-pressed"
 
 #ifdef wasi_HOST_OS
 foreign export javascript "hs" main :: IO ()
