@@ -1,6 +1,7 @@
 :root {
   font-size: x-large;
   color: black;
+  background-color: #162745;
 }
 
 body {
@@ -34,7 +35,6 @@ body {
 #sidebar {
   height: 100%;
   flex-grow: 1;
-  background-color: #162745;
   display: flex;
   justify-content: center;
   align-items: center;
