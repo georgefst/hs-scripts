@@ -34,7 +34,7 @@ body {
 #sidebar {
   height: 100%;
   flex-grow: 1;
-  background-color: saddlebrown;
+  background-color: #162745;
   display: flex;
   justify-content: center;
   align-items: center;
