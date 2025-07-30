@@ -44,7 +44,7 @@ body {
     align-items: center;
     justify-content: space-evenly;
     > canvas {
-      height: 4rem;
+      height: calc(var(--canvas-height) * 2rem);
       image-rendering: pixelated;
     }
     > div {

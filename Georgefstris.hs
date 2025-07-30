@@ -238,8 +238,8 @@ data Action
     | SetLevel Level
     | KeyAction KeyAction
 
-gridCanvas :: Int -> Int -> ((Piece -> V2 Int -> Canvas.Canvas ()) -> Canvas.Canvas ()) -> View action
-gridCanvas w h f = Canvas.canvas [width_ $ ms w, height_ $ ms h] (const $ pure ()) \() -> do
+gridCanvas :: Int -> Int -> [Attribute action] -> ((Piece -> V2 Int -> Canvas.Canvas ()) -> Canvas.Canvas ()) -> View action
+gridCanvas w h attrs f = Canvas.canvas ([width_ $ ms w, height_ $ ms h] <> attrs) (const $ pure ()) \() -> do
     -- TODO keep some canvas state rather than always redrawing everything?
     Canvas.clearRect (0, 0, fromIntegral w, fromIntegral h)
     f \p (V2 x y) -> do
@@ -285,7 +285,7 @@ grid initialModel =
         ( \Model{..} ->
             div_
                 (mwhen gameOver [class_ "game-over"])
-                [ gridCanvas opts.gridWidth opts.gridHeight \f ->
+                [ gridCanvas opts.gridWidth opts.gridHeight [] \f ->
                     deconstructGrid (addPieceToGrid current pile) \v -> \case
                         Unoccupied -> pure ()
                         Occupied p -> f p v
@@ -336,7 +336,7 @@ sidebar initialModel =
                       vMin = V2 (NE.minimum $ (^. lensVL _x) <$> ps) (NE.minimum $ (^. lensVL _y) <$> ps)
                       vmax = V2 (NE.maximum $ (^. lensVL _x) <$> ps) (NE.maximum $ (^. lensVL _y) <$> ps)
                       V2 w h = vmax - vMin + 1
-                   in gridCanvas w h \f -> for_ ((- vMin) <$> ps) $ f piece
+                   in gridCanvas w h [cssVar "canvas-height" h] \f -> for_ ((- vMin) <$> ps) $ f piece
                 , div_
                     []
                     [ button_ [onClick $ Right $ Right False] [text "-"]
@@ -379,6 +379,10 @@ keysPressedTopic :: Topic KeyAction
 keysPressedTopic = topic "keys-pressed"
 setLevelTopic :: Topic Level
 setLevelTopic = topic "set-level"
+
+-- TODO upstream this? with escaping, obviously
+cssVar :: (ToMisoString a) => MisoString -> a -> Attribute action
+cssVar k v = MS.styleInline_ $ "--" <> k <> ": " <> ms v
 
 -- TODO this is a slightly better API for upstream, assuming it's not changed more radically
 subscribe' :: (FromJSON message) => Topic message -> (Either MisoString message -> action) -> Effect model action
