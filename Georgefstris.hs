@@ -337,13 +337,18 @@ sidebar initialModel =
         ( \(piece, level) ->
             div_
                 []
-                [ let ps = shape piece
-                      vMin = V2 (NE.minimum $ (^. lensVL _x) <$> ps) (NE.minimum $ (^. lensVL _y) <$> ps)
-                      vmax = V2 (NE.maximum $ (^. lensVL _x) <$> ps) (NE.maximum $ (^. lensVL _y) <$> ps)
-                      V2 w h = vmax - vMin + 1
-                   in gridCanvas w h [] \f -> for_ ((- vMin) <$> ps) $ f piece
+                [ div_
+                    [class_ "next"]
+                    [ let
+                        ps = shape piece
+                        vMin = V2 (NE.minimum $ (^. lensVL _x) <$> ps) (NE.minimum $ (^. lensVL _y) <$> ps)
+                        vmax = V2 (NE.maximum $ (^. lensVL _x) <$> ps) (NE.maximum $ (^. lensVL _y) <$> ps)
+                        V2 w h = vmax - vMin + 1
+                       in
+                        gridCanvas w h [] \f -> for_ ((- vMin) <$> ps) $ f piece
+                    ]
                 , div_
-                    []
+                    [class_ "level"]
                     [ button_ [onClick $ Right $ Right False] [text "-"]
                     , div_ [] [text $ ms level]
                     , button_ [onClick $ Right $ Right True] [text "+"]

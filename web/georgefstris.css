@@ -39,11 +39,17 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: space-evenly;
+    .next {
+      height: 4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     > canvas {
       height: calc(var(--canvas-height) * var(--pixel-size));
       image-rendering: pixelated;
     }
-    > div {
+    }
+    > .level {
       background-color: white;
       display: flex;
       align-items: center;
