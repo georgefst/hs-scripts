@@ -238,13 +238,21 @@ data Action
     | SetLevel Level
     | KeyAction KeyAction
 
-gridCanvas :: Int -> Int -> [Attribute action] -> ((Piece -> V2 Int -> Canvas.Canvas ()) -> Canvas.Canvas ()) -> View action
-gridCanvas w h attrs f = Canvas.canvas ([width_ $ ms w, height_ $ ms h, cssVar "canvas-height" h] <> attrs) (const $ pure ()) \() -> do
-    -- TODO keep some canvas state rather than always redrawing everything?
-    Canvas.clearRect (0, 0, fromIntegral w, fromIntegral h)
-    f \p (V2 x y) -> do
-        Canvas.fillStyle $ Canvas.ColorArg $ opts.colours p
-        Canvas.fillRect (fromIntegral x, fromIntegral y, 1, 1)
+gridCanvas ::
+    Int ->
+    Int ->
+    [Attribute action] ->
+    ((Piece -> V2 Int -> Canvas.Canvas ()) -> Canvas.Canvas ()) ->
+    View action
+gridCanvas w h attrs f = Canvas.canvas
+    ([width_ $ ms w, height_ $ ms h, cssVar "canvas-height" h] <> attrs)
+    (const $ pure ())
+    \() -> do
+        -- TODO keep some canvas state rather than always redrawing everything?
+        Canvas.clearRect (0, 0, fromIntegral w, fromIntegral h)
+        f \p (V2 x y) -> do
+            Canvas.fillStyle $ Canvas.ColorArg $ opts.colours p
+            Canvas.fillRect (fromIntegral x, fromIntegral y, 1, 1)
 
 grid :: Model -> Component Model Action
 grid initialModel =
