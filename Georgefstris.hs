@@ -256,18 +256,18 @@ grid initialModel =
                 subscribe' keysPressedTopic $ either (const $ NoOp Nothing) KeyAction
                 subscribe' setLevelTopic $ either (const $ NoOp Nothing) SetLevel
             Tick -> do
-              level <- use #level
-              relevantTick <- overAndOut' #ticks \t ->
-                  let t' = t + 1
-                      b = t' >= opts.rate level
-                   in (b, if b then 0 else t')
-              notOver <- not <$> use #gameOver
-              when (relevantTick && notOver) do
-                success <- tryMove (+ V2 0 1)
-                when (not success) do
-                    fixPiece
-                    gameOver <- uncurry pieceIntersectsGrid <$> use (fanout #current #pile)
-                    #gameOver .= gameOver
+                level <- use #level
+                relevantTick <- overAndOut' #ticks \t ->
+                    let t' = t + 1
+                        b = t' >= opts.rate level
+                     in (b, if b then 0 else t')
+                notOver <- not <$> use #gameOver
+                when (relevantTick && notOver) do
+                    success <- tryMove (+ V2 0 1)
+                    when (not success) do
+                        fixPiece
+                        gameOver <- uncurry pieceIntersectsGrid <$> use (fanout #current #pile)
+                        #gameOver .= gameOver
             SetLevel l -> #level .= l
             KeyAction MoveLeft -> void $ tryMove (- V2 1 0)
             KeyAction MoveRight -> void $ tryMove (+ V2 1 0)
