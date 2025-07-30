@@ -21,7 +21,6 @@ body {
   > canvas {
     background-color: white;
     image-rendering: pixelated;
-    width: calc(var(--canvas-width) * var(--pixel-size));
     height: calc(var(--canvas-height) * var(--pixel-size));
     &.game-over {
       filter: grayscale(75%) brightness(0.5);
@@ -41,7 +40,6 @@ body {
     align-items: center;
     justify-content: space-evenly;
     > canvas {
-      width: calc(var(--canvas-width) * var(--pixel-size));
       height: calc(var(--canvas-height) * var(--pixel-size));
       image-rendering: pixelated;
     }
