@@ -44,10 +44,10 @@ body {
       display: flex;
       align-items: center;
       justify-content: center;
-    > canvas {
-      height: calc(var(--canvas-height) * var(--pixel-size));
-      image-rendering: pixelated;
-    }
+      > canvas {
+        height: calc(var(--canvas-height) * var(--pixel-size));
+        image-rendering: pixelated;
+      }
     }
     > .level {
       background-color: white;
