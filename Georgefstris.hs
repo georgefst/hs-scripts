@@ -5,11 +5,11 @@
     - incl. tracking
         - local storage, with warning about no further persistence?
 - levels
-    - this is a bit awkward with Miso's API, since we need to know the current level in order to know how long to wait
-        - that's already a problem anyway, with wanting ticks to stop when game is over or paused
-        - note that this approach is imperfect anyway - we'd want to record deltas for better precision
-    - `newtype` over `Int`
-    - `Opts.rate` should take `Level` as an input
+    - we have them but they're only changeable manually
+    - the way this is currently implemented is awkward because of Miso's API
+        - we need to know the current level in order to know how long to wait
+            - so instead we tick a lot more than necessary in the early levels
+            - note that this approach is imperfect anyway - we'd want to record deltas for better precision
 - better options
     - avoid hardcoding
     - better defaults, incl. for stylesheet, e.g. piece colours
@@ -44,7 +44,7 @@ import Control.Monad
 import Control.Monad.Extra
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Aeson qualified as Aeson
-import Data.Bifunctor (first)
+import Data.Bifunctor (bimap, first, second)
 import Data.Bool
 import Data.Either.Extra
 import Data.Foldable
@@ -54,12 +54,13 @@ import Data.Massiv.Array (Array)
 import Data.Massiv.Array qualified as A
 import Data.Maybe
 import Data.Monoid.Extra
+import Data.Ord (clamp)
 import Data.Time (NominalDiffTime)
 import GHC.Generics (Generic)
 import Linear (R1 (_x), R2 (_y), V2 (V2))
 import Miso hiding (for_)
 import Miso.Canvas qualified as Canvas
-import Miso.String (MisoString, ms)
+import Miso.String (MisoString, ToMisoString, ms)
 import Miso.Style (Color)
 import Miso.Style qualified as MS
 import Optics
@@ -83,7 +84,10 @@ data Opts = Opts
     { gridWidth :: Int
     , gridHeight :: Int
     , seed :: Int
-    , rate :: NominalDiffTime
+    , startLevel :: Level
+    , topLevel :: Level
+    , tickLength :: NominalDiffTime
+    , rate :: Level -> Word
     , colours :: Piece -> Color
     , keymap :: Int -> Maybe KeyAction
     }
@@ -94,7 +98,10 @@ opts =
         { gridWidth = 10
         , gridHeight = 18
         , seed = 42
-        , rate = 0.5
+        , startLevel
+        , topLevel
+        , tickLength = 0.05
+        , rate = \l -> 11 - fromIntegral (clamp (startLevel, topLevel) l)
         , colours = \case
             O -> MS.rgb 255 0 0
             I -> MS.rgb 255 165 0
@@ -112,6 +119,12 @@ opts =
             32 -> Just HardDrop -- space bar
             _ -> Nothing
         }
+  where
+    startLevel = Level 1
+    topLevel = Level 10
+
+newtype Level = Level Word
+    deriving newtype (Eq, Ord, Show, Enum, Num, Real, Integral, ToJSON, FromJSON, ToMisoString)
 
 data KeyAction
     = MoveLeft
@@ -211,6 +224,8 @@ data Model = Model
     { pile :: Grid -- the cells fixed in place
     , current :: ActivePiece
     , next :: Piece
+    , ticks :: Word
+    , level :: Level
     , random :: StdGen
     , gameOver :: Bool
     }
@@ -220,6 +235,7 @@ data Action
     = NoOp (Maybe MisoString)
     | Init
     | Tick
+    | SetLevel Level
     | KeyAction KeyAction
 
 gridCanvas :: Int -> Int -> ((Piece -> V2 Int -> Canvas.Canvas ()) -> Canvas.Canvas ()) -> View action
@@ -236,13 +252,23 @@ grid initialModel =
         initialModel
         ( \case
             NoOp s -> io_ $ traverse_ consoleLog s
-            Init -> subscribe' keysPressedTopic $ either (const $ NoOp Nothing) KeyAction
-            Tick -> whenM (not <$> use #gameOver) do
+            Init -> do
+                subscribe' keysPressedTopic $ either (const $ NoOp Nothing) KeyAction
+                subscribe' setLevelTopic $ either (const $ NoOp Nothing) SetLevel
+            Tick -> do
+              level <- use #level
+              relevantTick <- overAndOut' #ticks \t ->
+                  let t' = t + 1
+                      b = t' >= opts.rate level
+                   in (b, if b then 0 else t')
+              notOver <- not <$> use #gameOver
+              when (relevantTick && notOver) do
                 success <- tryMove (+ V2 0 1)
                 when (not success) do
                     fixPiece
                     gameOver <- uncurry pieceIntersectsGrid <$> use (fanout #current #pile)
                     #gameOver .= gameOver
+            SetLevel l -> #level .= l
             KeyAction MoveLeft -> void $ tryMove (- V2 1 0)
             KeyAction MoveRight -> void $ tryMove (+ V2 1 0)
             KeyAction RotateLeft -> void $ tryRotate \case
@@ -269,7 +295,7 @@ grid initialModel =
         { subs =
             [ \sink -> forever do
                 sink Tick
-                threadDelay' opts.rate
+                threadDelay' opts.tickLength
             ]
         , initialAction = Just Init
         }
@@ -291,15 +317,19 @@ grid initialModel =
         when b $ #current .= p
         pure b
 
-sidebar :: Piece -> Component Piece (Either Bool Piece)
-sidebar initialNextPiece =
+sidebar :: (Piece, Level) -> Component (Piece, Level) (Either Bool (Either Piece Bool))
+sidebar initialModel =
     ( component
-        initialNextPiece
+        initialModel
         ( either
-            (\start -> when start $ subscribe' nextPieceTopic $ first $ const False)
-            put
+            (\start -> when start $ subscribe' nextPieceTopic $ bimap (const False) Left)
+            ( either (modify . first . const) \b ->
+                gets snd >>= \l ->
+                    let l' = bool (max opts.startLevel . pred) (min opts.topLevel . succ) b l
+                     in modify (second $ const l') >> publish setLevelTopic l'
+            )
         )
-        ( \piece ->
+        ( \(piece, level) ->
             div_
                 []
                 [ let ps = shape piece
@@ -307,6 +337,12 @@ sidebar initialNextPiece =
                       vmax = V2 (NE.maximum $ (^. lensVL _x) <$> ps) (NE.maximum $ (^. lensVL _y) <$> ps)
                       V2 w h = vmax - vMin + 1
                    in gridCanvas w h \f -> for_ ((- vMin) <$> ps) $ f piece
+                , div_
+                    []
+                    [ button_ [onClick $ Right $ Right False] [text "-"]
+                    , div_ [] [text $ ms level]
+                    , button_ [onClick $ Right $ Right True] [text "+"]
+                    ]
                 ]
         )
     )
@@ -322,7 +358,7 @@ app =
             div_
                 []
                 [ div_ [id_ "grid"] +> grid initialGridModel
-                , div_ [id_ "sidebar"] +> sidebar initialGridModel.next
+                , div_ [id_ "sidebar"] +> sidebar (initialGridModel.next, initialGridModel.level)
                 ]
         )
     )
@@ -331,7 +367,7 @@ app =
             ]
         }
   where
-    initialGridModel = Model{pile = emptyGrid, current, next, random, gameOver = False}
+    initialGridModel = Model{pile = emptyGrid, current, next, ticks = 0, level = opts.startLevel, random, gameOver = False}
       where
         (p, random0) = uniform @Piece $ mkStdGen opts.seed
         (next, random) = uniform @Piece random0
@@ -341,6 +377,8 @@ nextPieceTopic :: Topic Piece
 nextPieceTopic = topic "next-piece"
 keysPressedTopic :: Topic KeyAction
 keysPressedTopic = topic "keys-pressed"
+setLevelTopic :: Topic Level
+setLevelTopic = topic "set-level"
 
 -- TODO this is a slightly better API for upstream, assuming it's not changed more radically
 subscribe' :: (FromJSON message) => Topic message -> (Either MisoString message -> action) -> Effect model action

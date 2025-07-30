@@ -33,14 +33,30 @@ body {
 #sidebar {
   height: 100%;
   flex-grow: 1;
-  background-color: saddlebrown;
+  background-color: #f34282;
   display: flex;
   justify-content: center;
   align-items: center;
   > div {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
     > canvas {
       height: 4rem;
       image-rendering: pixelated;
+    }
+    > div {
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 9rem;
+      > button {
+        width: 3rem;
+        height: 3rem;
+      }
     }
   }
 }
