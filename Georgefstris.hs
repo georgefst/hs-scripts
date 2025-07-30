@@ -239,7 +239,7 @@ data Action
     | KeyAction KeyAction
 
 gridCanvas :: Int -> Int -> [Attribute action] -> ((Piece -> V2 Int -> Canvas.Canvas ()) -> Canvas.Canvas ()) -> View action
-gridCanvas w h attrs f = Canvas.canvas ([width_ $ ms w, height_ $ ms h] <> attrs) (const $ pure ()) \() -> do
+gridCanvas w h attrs f = Canvas.canvas ([width_ $ ms w, height_ $ ms h, cssVar "canvas-height" h] <> attrs) (const $ pure ()) \() -> do
     -- TODO keep some canvas state rather than always redrawing everything?
     Canvas.clearRect (0, 0, fromIntegral w, fromIntegral h)
     f \p (V2 x y) -> do
@@ -336,7 +336,7 @@ sidebar initialModel =
                       vMin = V2 (NE.minimum $ (^. lensVL _x) <$> ps) (NE.minimum $ (^. lensVL _y) <$> ps)
                       vmax = V2 (NE.maximum $ (^. lensVL _x) <$> ps) (NE.maximum $ (^. lensVL _y) <$> ps)
                       V2 w h = vmax - vMin + 1
-                   in gridCanvas w h [cssVar "canvas-height" h] \f -> for_ ((- vMin) <$> ps) $ f piece
+                   in gridCanvas w h [] \f -> for_ ((- vMin) <$> ps) $ f piece
                 , div_
                     []
                     [ button_ [onClick $ Right $ Right False] [text "-"]
