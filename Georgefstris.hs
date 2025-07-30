@@ -292,9 +292,9 @@ grid initialModel =
         )
         ( \Model{..} ->
             gridCanvas opts.gridWidth opts.gridHeight (mwhen gameOver [class_ "game-over"]) \f ->
-                    deconstructGrid (addPieceToGrid current pile) \v -> \case
-                        Unoccupied -> pure ()
-                        Occupied p -> f p v
+                deconstructGrid (addPieceToGrid current pile) \v -> \case
+                    Unoccupied -> pure ()
+                    Occupied p -> f p v
         )
     )
         { subs =
