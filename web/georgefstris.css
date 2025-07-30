@@ -20,6 +20,7 @@ body {
   border-style: solid;
   > div {
     height: 100%;
+    background-color: white;
     > canvas {
       image-rendering: pixelated;
       height: 100%;
