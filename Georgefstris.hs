@@ -245,7 +245,7 @@ gridCanvas ::
     ((Piece -> V2 Int -> Canvas.Canvas ()) -> Canvas.Canvas ()) ->
     View action
 gridCanvas w h attrs f = Canvas.canvas
-    ([width_ $ ms w, height_ $ ms h, cssVar "canvas-height" h] <> attrs)
+    ([width_ $ ms w, height_ $ ms h, cssVar "canvas-width" w, cssVar "canvas-height" h] <> attrs)
     (const $ pure ())
     \() -> do
         -- TODO keep some canvas state rather than always redrawing everything?
