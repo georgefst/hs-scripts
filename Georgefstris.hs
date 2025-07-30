@@ -291,13 +291,10 @@ grid initialModel =
             KeyAction HardDrop -> whileM (tryMove (+ V2 0 1)) >> fixPiece
         )
         ( \Model{..} ->
-            div_
-                (mwhen gameOver [class_ "game-over"])
-                [ gridCanvas opts.gridWidth opts.gridHeight [] \f ->
+            gridCanvas opts.gridWidth opts.gridHeight (mwhen gameOver [class_ "game-over"]) \f ->
                     deconstructGrid (addPieceToGrid current pile) \v -> \case
                         Unoccupied -> pure ()
                         Occupied p -> f p v
-                ]
         )
     )
         { subs =
