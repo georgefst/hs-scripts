@@ -41,7 +41,6 @@ import Optics.State.Operators ((%=), (.=))
 import Safe (predDef, succDef)
 import System.Random.Stateful (StdGen, Uniform, mkStdGen, uniform, uniformEnumM, uniformM)
 import Util.Util
-
 #ifdef wasi_HOST_OS
 foreign export javascript "hs" main :: IO ()
 mkStyles = pure []
