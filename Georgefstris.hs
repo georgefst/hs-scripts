@@ -43,17 +43,12 @@ import System.Random.Stateful (StdGen, Uniform, mkStdGen, uniform, uniformEnumM,
 import Util.Util
 
 #ifdef wasi_HOST_OS
-main :: IO ()
-main = do
-    let styles = []
-    run $ startComponent app{styles}
+foreign export javascript "hs" main :: IO ()
+mkStyles = pure []
 #else
-main :: IO ()
-main = do
-    styles <- pure @[] . Style . ms <$> readFile "web/georgefstris.css"
-    run $ startComponent app{styles}
+mkStyles = pure @[] . Style . ms <$> readFile "web/georgefstris.css"
 #endif
-
+main = mkStyles >>= \styles -> run $ startComponent app{styles}
 data Opts = Opts {gridWidth :: Int, gridHeight :: Int, seed :: Int, startLevel :: Level, topLevel :: Level, tickLength :: NominalDiffTime, rate :: Level -> Word, colours :: Piece -> Color, keymap :: Int -> Maybe KeyAction}
 opts = let startLevel = Level 1; topLevel = Level 10 in Opts{gridWidth = 10, gridHeight = 18, seed = 42, startLevel, topLevel, tickLength = 0.05, rate = \l -> 11 - fromIntegral (clamp (startLevel, topLevel) l), colours = \case O -> MS.rgb 255 0 0; I -> MS.rgb 255 165 0; S -> MS.rgb 173 216 230; Z -> MS.rgb 0 128 0; L -> MS.rgb 0 0 255; J -> MS.rgb 128 0 128; T -> MS.rgb 255 255 0, keymap = \case 37 -> Just MoveLeft; 39 -> Just MoveRight; 90 -> Just RotateLeft; 88 -> Just RotateRight; 40 -> Just SoftDrop; 32 -> Just HardDrop; _ -> Nothing}
 newtype Level = Level Word deriving newtype (Eq, Ord, Show, Enum, Num, Real, Integral, ToJSON, FromJSON, ToMisoString)
@@ -84,7 +79,3 @@ keysPressedTopic = topic @KeyAction "keys-pressed"
 setLevelTopic = topic @Level "set-level"
 cssVar k v = MS.styleInline_ $ "--" <> k <> ": " <> ms v
 subscribe' t f = subscribe t $ f . \case Aeson.Error e -> Left $ ms e; Aeson.Success r -> Right r
-
-#ifdef wasi_HOST_OS
-foreign export javascript "hs" main :: IO ()
-#endif

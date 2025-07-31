@@ -93,9 +93,10 @@ main = shakeArgs shakeOpts do
                         -- and come up with some new way to identify which files to build as modules
                         -- perhaps just put them in a separate folder?
                         -- we could then have a new template which starts with this line, and no CLI stuff
-                        let marker = "#ifdef wasi_HOST_OS\nforeign export javascript \"hs\" main :: IO ()\n#endif\n"
-                            markerSync = "#ifdef wasi_HOST_OS\nforeign export javascript \"hs sync\" main :: IO ()\n#endif\n"
-                         in liftIO $ readFile hs <&> \s -> marker `isSuffixOf` s || markerSync `isSuffixOf` s
+                        -- let marker = "#ifdef wasi_HOST_OS\nforeign export javascript \"hs\" main :: IO ()\n#endif\n"
+                        --     markerSync = "#ifdef wasi_HOST_OS\nforeign export javascript \"hs sync\" main :: IO ()\n#endif\n"
+                        --  in liftIO $ readFile hs <&> \s -> marker `isSuffixOf` s || markerSync `isSuffixOf` s
+                        pure True
             cmd_
                 (WithStderr False)
                 ghc
