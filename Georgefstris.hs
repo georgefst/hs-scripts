@@ -42,16 +42,17 @@ import Safe (predDef, succDef)
 import System.Random.Stateful (StdGen, Uniform, mkStdGen, uniform, uniformEnumM, uniformM)
 import Util.Util
 
-{- FOURMOLU_DISABLE -}
+#ifdef wasi_HOST_OS
 main :: IO ()
 main = do
-#ifdef wasi_HOST_OS
     let styles = []
-#else
-    styles <- pure @[] . Style . ms <$> readFile "web/georgefstris.css"
-#endif
     run $ startComponent app{styles}
-{- FOURMOLU_ENABLE -}
+#else
+main :: IO ()
+main = do
+    styles <- pure @[] . Style . ms <$> readFile "web/georgefstris.css"
+    run $ startComponent app{styles}
+#endif
 
 data Opts = Opts {gridWidth :: Int, gridHeight :: Int, seed :: Int, startLevel :: Level, topLevel :: Level, tickLength :: NominalDiffTime, rate :: Level -> Word, colours :: Piece -> Color, keymap :: Int -> Maybe KeyAction}
 opts = let startLevel = Level 1; topLevel = Level 10 in Opts{gridWidth = 10, gridHeight = 18, seed = 42, startLevel, topLevel, tickLength = 0.05, rate = \l -> 11 - fromIntegral (clamp (startLevel, topLevel) l), colours = \case O -> MS.rgb 255 0 0; I -> MS.rgb 255 165 0; S -> MS.rgb 173 216 230; Z -> MS.rgb 0 128 0; L -> MS.rgb 0 0 255; J -> MS.rgb 128 0 128; T -> MS.rgb 255 255 0, keymap = \case 37 -> Just MoveLeft; 39 -> Just MoveRight; 90 -> Just RotateLeft; 88 -> Just RotateRight; 40 -> Just SoftDrop; 32 -> Just HardDrop; _ -> Nothing}
