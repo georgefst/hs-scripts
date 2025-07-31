@@ -66,12 +66,6 @@ if impl(ghc >= 9.12)
         type: git
         location: https://github.com/alexfmpe/logging-effect
         tag: 0710673fbb0bcf2705646afd85019d6a836e2660
-    -- https://github.com/well-typed/optics/pull/512
-    source-repository-package
-        type: git
-        location: https://github.com/well-typed/optics
-        tag: b01df0848b082e30e8596daddccde713c9a6b4d1
-        subdir: optics optics-core optics-extra optics-th
     -- building HEAD (21/02/2025) - recent package takeover, long time since release, support for text 2.1.2 etc.
     source-repository-package
         type: git
