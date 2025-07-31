@@ -103,13 +103,13 @@ opts =
         , tickLength = 0.05
         , rate = \l -> 11 - fromIntegral (clamp (startLevel, topLevel) l)
         , colours = \case
-            O -> MS.rgb 255 0 0
-            I -> MS.rgb 255 165 0
-            S -> MS.rgb 173 216 230
-            Z -> MS.rgb 0 128 0
-            L -> MS.rgb 0 0 255
-            J -> MS.rgb 128 0 128
-            T -> MS.rgb 255 255 0
+            O -> MS.rgb 208 53 53
+            I -> MS.rgb 230 138 60
+            S -> MS.rgb 144 201 237
+            Z -> MS.rgb 78 158 110
+            L -> MS.rgb 63 124 224
+            J -> MS.rgb 156 99 182
+            T -> MS.rgb 240 210 67
         , keymap = \case
             37 -> Just MoveLeft -- left arrow
             39 -> Just MoveRight -- right arrow
