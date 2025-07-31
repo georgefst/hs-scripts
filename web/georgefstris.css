@@ -1,0 +1,64 @@
+:root {
+  font-size: x-large;
+  color: black;
+  background-color: #162745;
+  --pixel-size: 2rem;
+}
+
+body {
+  margin: 0;
+  font-family: Helvetica, Arial, sans-serif;
+  height: 100vh;
+  > div {
+    height: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+  }
+}
+
+#grid {
+  > canvas {
+    background-color: white;
+    image-rendering: pixelated;
+    height: calc(var(--canvas-height) * var(--pixel-size));
+    &.game-over {
+      filter: grayscale(75%) brightness(0.5);
+    }
+  }
+}
+
+#sidebar {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  > div {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+    .next {
+      height: 4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      > canvas {
+        height: calc(var(--canvas-height) * var(--pixel-size));
+        image-rendering: pixelated;
+      }
+    }
+    > .level {
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 9rem;
+      > button {
+        width: 3rem;
+        height: 3rem;
+      }
+    }
+  }
+}
