@@ -27,6 +27,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE LexicalNegation #-}
 {-# LANGUAGE NegativeLiterals #-}
 {-# LANGUAGE OrPatterns #-}
@@ -83,7 +84,7 @@ main = do
 data Opts = Opts
     { gridWidth :: Int
     , gridHeight :: Int
-    , seed :: StdGen
+    , random :: StdGen
     , startLevel :: Level
     , topLevel :: Level
     , tickLength :: NominalDiffTime
@@ -97,7 +98,7 @@ opts =
     Opts
         { gridWidth = 10
         , gridHeight = 18
-        , seed = mkStdGen 42
+        , random = mkStdGen 42
         , startLevel
         , topLevel
         , tickLength = 0.05
@@ -379,7 +380,7 @@ app =
   where
     initialGridModel = Model{pile = emptyGrid, current, next, ticks = 0, level = opts.startLevel, random, gameOver = False}
       where
-        (p, random0) = uniform @Piece opts.seed
+        (p, random0) = uniform @Piece opts.random
         (next, random) = uniform @Piece random0
         current = newPiece p
 
