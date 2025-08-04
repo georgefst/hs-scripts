@@ -103,7 +103,7 @@ opts =
         , startLevel
         , topLevel
         , tickLength = 0.05
-        , rate = \l -> 11 - fromIntegral (clamp (startLevel, topLevel) l)
+        , rate = \l -> fromIntegral $ 11 - clamp (startLevel, topLevel) l
         , colours = \case
             O -> MS.rgb 208 53 53
             I -> MS.rgb 230 138 60
