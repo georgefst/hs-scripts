@@ -67,7 +67,7 @@ import Miso.Style qualified as MS
 import Optics
 import Optics.State.Operators ((%=), (.=))
 import Safe (predDef, succDef)
-import System.Random.Stateful (StdGen, Uniform, mkStdGen, uniform, uniformEnumM, uniformM)
+import System.Random.Stateful (StdGen, Uniform, newStdGen, uniform, uniformEnumM, uniformM)
 import Util.Util
 
 {- FOURMOLU_DISABLE -}
@@ -78,13 +78,14 @@ main = do
 #else
     styles <- pure @[] . Style . ms <$> readFile "web/georgefstris.css"
 #endif
-    run $ startComponent app{styles}
+    random <- opts.random
+    run $ startComponent (app random){styles}
 {- FOURMOLU_ENABLE -}
 
 data Opts = Opts
     { gridWidth :: Int
     , gridHeight :: Int
-    , random :: StdGen
+    , random :: IO StdGen
     , startLevel :: Level
     , topLevel :: Level
     , tickLength :: NominalDiffTime
@@ -98,7 +99,7 @@ opts =
     Opts
         { gridWidth = 10
         , gridHeight = 18
-        , random = mkStdGen 42
+        , random = newStdGen
         , startLevel
         , topLevel
         , tickLength = 0.05
@@ -360,8 +361,8 @@ sidebar initialModel =
         { initialAction = Just $ Left True
         }
 
-app :: Component () [KeyAction]
-app =
+app :: StdGen -> Component () [KeyAction]
+app random0 =
     ( component
         ()
         (traverse_ $ publish keysPressedTopic)
@@ -380,8 +381,8 @@ app =
   where
     initialGridModel = Model{pile = emptyGrid, current, next, ticks = 0, level = opts.startLevel, random, gameOver = False}
       where
-        (p, random0) = uniform @Piece opts.random
-        (next, random) = uniform @Piece random0
+        (p, random1) = uniform @Piece random0
+        (next, random) = uniform @Piece random1
         current = newPiece p
 
 nextPieceTopic :: Topic Piece
