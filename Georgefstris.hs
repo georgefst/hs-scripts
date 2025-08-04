@@ -379,7 +379,7 @@ app random0 =
             ]
         }
   where
-    initialGridModel = Model{pile = emptyGrid, current, next, ticks = 0, level = opts.startLevel, random, gameOver = False}
+    initialGridModel = Model{pile = emptyGrid, ticks = 0, level = opts.startLevel, gameOver = False, ..}
       where
         ((p, next), random) = runStateGen random0 \m ->
             (,) <$> uniformM m <*> uniformM m
