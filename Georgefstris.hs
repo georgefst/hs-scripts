@@ -66,8 +66,9 @@ import Miso.Style (Color)
 import Miso.Style qualified as MS
 import Optics
 import Optics.State.Operators ((%=), (.=))
-import Safe (predDef, succDef, tailMay)
+import Safe (predDef, succDef)
 import System.Random.Stateful hiding (next, random)
+import Util.FixedLengthQueue qualified as FLQ
 import Util.Util
 
 {- FOURMOLU_DISABLE -}
@@ -227,7 +228,7 @@ removeCompletedLines (Grid g) = Grid $ fromMaybe g do
 data Model = Model
     { pile :: Grid -- the cells fixed in place
     , current :: ActivePiece
-    , next :: [Piece]
+    , next :: FLQ.Queue Piece
     , ticks :: Word
     , level :: Level
     , random :: StdGen
@@ -313,7 +314,7 @@ grid initialModel =
         Model{current, next} <- get
         #pile %= addPieceToGrid current
         next' <- overAndOut' #random uniform
-        fanout #current #next .= first newPiece (maybe (next', []) (second (<> [next'])) $ uncons next)
+        fanout #current #next .= first newPiece (FLQ.shift next' next)
         publish nextPieceTopic next'
         #pile %= removeCompletedLines
     tryMove f = tryEdit . (#pos %~ f) =<< use #current
@@ -325,13 +326,13 @@ grid initialModel =
         when b $ #current .= p
         pure b
 
-sidebar :: ([Piece], Level) -> Component ([Piece], Level) (Either Bool (Either Piece Bool))
+sidebar :: (FLQ.Queue Piece, Level) -> Component (FLQ.Queue Piece, Level) (Either Bool (Either Piece Bool))
 sidebar initialModel =
     ( component
         initialModel
         ( either
             (\start -> when start $ subscribe' nextPieceTopic $ bimap (const False) Left)
-            ( either (modify . first . \p -> maybe [] (<> [p]) . tailMay) \b ->
+            ( either (modify . first . FLQ.shift_) \b ->
                 gets snd >>= \l ->
                     let l' = bool (max opts.startLevel . pred) (min opts.topLevel . succ) b l
                      in modify (second $ const l') >> publish setLevelTopic l'
@@ -340,7 +341,7 @@ sidebar initialModel =
         ( \(pieces, level) ->
             div_
                 []
-                $ ( pieces <&> \piece ->
+                $ ( FLQ.toList pieces <&> \piece ->
                         div_
                             [class_ "next"]
                             [ let
@@ -385,7 +386,7 @@ app random0 =
     initialGridModel = Model{pile = emptyGrid, ticks = 0, level = opts.startLevel, gameOver = False, ..}
       where
         ((current, next), random) = runStateGen random0 \m ->
-            curry (first newPiece)
+            curry (bimap newPiece FLQ.fromList)
                 <$> uniformM m
                 <*> replicateM (fromIntegral opts.previewLength) (uniformM m)
 
