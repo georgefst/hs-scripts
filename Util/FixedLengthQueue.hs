@@ -1,6 +1,6 @@
--- TODO use a more efficient underlying data structure
--- TODO publish on Hackage
+-- TODO publish on Hackage (potentially based on `vector` rather than `massiv`)
 {-# LANGUAGE GHC2024 #-}
+{-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall #-}
 
@@ -12,20 +12,22 @@ module Util.FixedLengthQueue (
     toList,
 ) where
 
-import Data.Bifunctor (second)
-import Data.List (uncons)
+import Data.Massiv.Array qualified as A
 
-newtype Queue a = Queue [a]
-    deriving newtype (Eq, Show)
+data Queue a = Queue Int (A.Array A.B A.Ix1 a)
+    deriving (Eq, Show)
 
 shift :: a -> Queue a -> (a, Queue a)
-shift x (Queue q) = second Queue $ maybe (x, []) (second (<> [x])) $ uncons q
+shift x (Queue i q) = (x', Queue i' q')
+  where
+    (x', q') = A.withMArrayST q \qm -> A.modifyM qm (const $ pure x) i
+    i' = let i'' = succ i in if A.unSz (A.size q) == i'' then 0 else i''
 
 shift_ :: a -> Queue a -> Queue a
 shift_ x = snd . shift x
 
 fromList :: [a] -> Queue a
-fromList = Queue
+fromList xs = Queue 0 (A.fromList A.Seq xs)
 
 toList :: Queue a -> [a]
-toList (Queue q) = q
+toList (Queue i arr) = uncurry (flip (<>)) $ splitAt i $ A.toList arr
