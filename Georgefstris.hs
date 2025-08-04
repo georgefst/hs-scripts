@@ -67,7 +67,7 @@ import Miso.Style qualified as MS
 import Optics
 import Optics.State.Operators ((%=), (.=))
 import Safe (predDef, succDef)
-import System.Random.Stateful (StdGen, Uniform, newStdGen, uniform, uniformEnumM, uniformM)
+import System.Random.Stateful (StdGen, Uniform, newStdGen, runStateGen, uniform, uniformEnumM, uniformM)
 import Util.Util
 
 {- FOURMOLU_DISABLE -}
@@ -381,8 +381,7 @@ app random0 =
   where
     initialGridModel = Model{pile = emptyGrid, current, next, ticks = 0, level = opts.startLevel, random, gameOver = False}
       where
-        (p, random1) = uniform @Piece random0
-        (next, random) = uniform @Piece random1
+        ((p, next), random) = runStateGen random0 \m -> (,) <$> uniformM @Piece m <*> uniformM @Piece m
         current = newPiece p
 
 nextPieceTopic :: Topic Piece
