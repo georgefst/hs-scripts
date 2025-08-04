@@ -14,7 +14,7 @@ module Util.FixedLengthQueue (
 
 import Data.Massiv.Array qualified as A
 
-data Queue a = Queue Int (A.Array A.B A.Ix1 a)
+data Queue a = Queue {head :: Int, contents :: A.Array A.B A.Ix1 a}
     deriving (Eq, Show)
 
 shift :: a -> Queue a -> (a, Queue a)
