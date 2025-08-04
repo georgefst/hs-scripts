@@ -83,7 +83,7 @@ main = do
 data Opts = Opts
     { gridWidth :: Int
     , gridHeight :: Int
-    , seed :: Int
+    , seed :: StdGen
     , startLevel :: Level
     , topLevel :: Level
     , tickLength :: NominalDiffTime
@@ -97,7 +97,7 @@ opts =
     Opts
         { gridWidth = 10
         , gridHeight = 18
-        , seed = 42
+        , seed = mkStdGen 42
         , startLevel
         , topLevel
         , tickLength = 0.05
@@ -379,7 +379,7 @@ app =
   where
     initialGridModel = Model{pile = emptyGrid, current, next, ticks = 0, level = opts.startLevel, random, gameOver = False}
       where
-        (p, random0) = uniform @Piece $ mkStdGen opts.seed
+        (p, random0) = uniform @Piece opts.seed
         (next, random) = uniform @Piece random0
         current = newPiece p
 
