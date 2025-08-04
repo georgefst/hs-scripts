@@ -67,7 +67,7 @@ import Miso.Style qualified as MS
 import Optics
 import Optics.State.Operators ((%=), (.=))
 import Safe (predDef, succDef)
-import System.Random.Stateful (StdGen, Uniform, newStdGen, runStateGen, uniform, uniformEnumM, uniformM)
+import System.Random.Stateful hiding (next, random)
 import Util.Util
 
 {- FOURMOLU_DISABLE -}
