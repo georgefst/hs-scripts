@@ -384,9 +384,8 @@ app random0 =
   where
     initialGridModel = Model{pile = emptyGrid, ticks = 0, level = opts.startLevel, gameOver = False, ..}
       where
-        ((p, next), random) = runStateGen random0 \m ->
-            (,) <$> uniformM m <*> replicateM (fromIntegral opts.previewLength) (uniformM m)
-        current = newPiece p
+        ((current, next), random) = runStateGen random0 \m ->
+            curry (first newPiece) <$> uniformM m <*> replicateM (fromIntegral opts.previewLength) (uniformM m)
 
 nextPieceTopic :: Topic Piece
 nextPieceTopic = topic "next-piece"
