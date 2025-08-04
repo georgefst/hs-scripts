@@ -17,7 +17,7 @@
         - stylesheet
         - start from a later level
         - randomness, e.g. bag-based
-        - more features from later versions - three-piece preview, hold, wall kicks
+        - more features from later versions - hold, wall kicks
         - configurable key repeat speed (`keyboardSub` isn't currently flexible enough but we could FFI)
 - record move history for review/analysis
 - sound
@@ -66,7 +66,7 @@ import Miso.Style (Color)
 import Miso.Style qualified as MS
 import Optics
 import Optics.State.Operators ((%=), (.=))
-import Safe (predDef, succDef)
+import Safe (predDef, succDef, tailMay)
 import System.Random.Stateful hiding (next, random)
 import Util.Util
 
@@ -85,6 +85,7 @@ main = do
 data Opts = Opts
     { gridWidth :: Int
     , gridHeight :: Int
+    , previewLength :: Word
     , random :: IO StdGen
     , startLevel :: Level
     , topLevel :: Level
@@ -99,6 +100,7 @@ opts =
     Opts
         { gridWidth = 10
         , gridHeight = 18
+        , previewLength = 1
         , random = newStdGen
         , startLevel
         , topLevel
@@ -225,7 +227,7 @@ removeCompletedLines (Grid g) = Grid $ fromMaybe g do
 data Model = Model
     { pile :: Grid -- the cells fixed in place
     , current :: ActivePiece
-    , next :: Piece
+    , next :: [Piece]
     , ticks :: Word
     , level :: Level
     , random :: StdGen
@@ -310,9 +312,8 @@ grid initialModel =
     fixPiece = do
         Model{current, next} <- get
         #pile %= addPieceToGrid current
-        #current .= newPiece next
         next' <- overAndOut' #random uniform
-        #next .= next'
+        fanout #current #next .= first newPiece (maybe (next', []) (second (<> [next'])) $ uncons next)
         publish nextPieceTopic next'
         #pile %= removeCompletedLines
     tryMove f = tryEdit . (#pos %~ f) =<< use #current
@@ -324,22 +325,22 @@ grid initialModel =
         when b $ #current .= p
         pure b
 
-sidebar :: (Piece, Level) -> Component (Piece, Level) (Either Bool (Either Piece Bool))
+sidebar :: ([Piece], Level) -> Component ([Piece], Level) (Either Bool (Either Piece Bool))
 sidebar initialModel =
     ( component
         initialModel
         ( either
             (\start -> when start $ subscribe' nextPieceTopic $ bimap (const False) Left)
-            ( either (modify . first . const) \b ->
+            ( either (modify . first . \p -> maybe [] (<> [p]) . tailMay) \b ->
                 gets snd >>= \l ->
                     let l' = bool (max opts.startLevel . pred) (min opts.topLevel . succ) b l
                      in modify (second $ const l') >> publish setLevelTopic l'
             )
         )
-        ( \(piece, level) ->
+        ( \(pieces, level) ->
             div_
                 []
-                [ div_
+                $ ( pieces <&> \piece -> div_
                     [class_ "next"]
                     [ let
                         ps = shape piece
@@ -349,7 +350,7 @@ sidebar initialModel =
                        in
                         gridCanvas w h [] \f -> for_ ((- vMin) <$> ps) $ f piece
                     ]
-                , div_
+                ) <> [ div_
                     [class_ "level"]
                     [ button_ [onClick $ Right $ Right False] [text "-"]
                     , div_ [] [text $ ms level]
@@ -382,7 +383,7 @@ app random0 =
     initialGridModel = Model{pile = emptyGrid, ticks = 0, level = opts.startLevel, gameOver = False, ..}
       where
         ((p, next), random) = runStateGen random0 \m ->
-            (,) <$> uniformM m <*> uniformM m
+            (,) <$> uniformM m <*> replicateM (fromIntegral opts.previewLength) (uniformM m)
         current = newPiece p
 
 nextPieceTopic :: Topic Piece
