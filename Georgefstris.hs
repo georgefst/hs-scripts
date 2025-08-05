@@ -16,7 +16,7 @@
     - more options (careful about how well they work together, e.g. different grid sizes may not work well with our CSS)
         - stylesheet
         - start from a later level
-        - more features from later versions - hold, wall kicks
+        - more features from later versions - hold, wall kicks, ghost piece
         - configurable key repeat speed (`keyboardSub` isn't currently flexible enough but we could FFI)
 - record move history for review/analysis
 - sound
