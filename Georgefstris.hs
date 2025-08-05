@@ -106,7 +106,7 @@ opts =
         , gridHeight = 18
         , previewLength = 1
         , random = newStdGen
-        , randomiser = fmap pure . uniformM
+        , randomiser = pure <$> uniformM StateGenM
         , startLevel
         , topLevel
         , tickLength = 0.05
@@ -395,17 +395,17 @@ app random0 =
                 <*> replicateM (fromIntegral opts.previewLength) (liftRandomiser opts.randomiser)
 
 -- a monad for operations which produce finite lists of pieces
-type RandomPieces = ReaderT (StateGenM StdGen) (StateT [Piece] (State StdGen))
+type RandomPieces = StateT [Piece] (State StdGen)
 runRandomPieces :: ([Piece], StdGen) -> RandomPieces a -> (a, ([Piece], StdGen))
-runRandomPieces (l, g) f = (\((a, b), c) -> (a, (b, c))) $ runStateGen g $ flip runStateT l . runReaderT f
-type Randomiser = StateGenM StdGen -> State StdGen (NonEmpty Piece)
+runRandomPieces (l, g) f = (\((a, b), c) -> (a, (b, c))) $ runStateGen g $ flip runStateT l . \StateGenM -> f
+type Randomiser = State StdGen (NonEmpty Piece)
 liftRandomiser :: Randomiser -> RandomPieces Piece
-liftRandomiser r = ReaderT \g -> do
+liftRandomiser r = do
     (x, xs) <-
         gets uncons
             >>= maybe
                 -- generate a new chunk of random pieces
-                (neUncons <$> lift (r g))
+                (neUncons <$> lift r)
                 -- we already have pieces computed - use those
                 pure
     put xs
