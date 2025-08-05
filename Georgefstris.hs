@@ -406,7 +406,7 @@ liftRandomiser r = do
             >>= maybe
                 -- generate a new chunk of random pieces
                 (neUncons <$> lift r)
-                -- we already have pieces computed - use those
+                -- we already have pieces computed - take from those
                 pure
     put xs
     pure x
