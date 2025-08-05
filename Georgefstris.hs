@@ -281,10 +281,11 @@ grid initialModel =
                 subscribe' setLevelTopic $ either (const $ NoOp Nothing) SetLevel
             Tick -> do
                 level <- use #level
-                relevantTick <- #ticks %%= \t ->
-                    let t' = t + 1
-                        b = t' >= opts.rate level
-                     in (b, if b then 0 else t')
+                relevantTick <-
+                    #ticks %%= \t ->
+                        let t' = t + 1
+                            b = t' >= opts.rate level
+                         in (b, if b then 0 else t')
                 notOver <- not <$> use #gameOver
                 when (relevantTick && notOver) do
                     success <- tryMove (+ V2 0 1)
