@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -funbox-strict-fields #-}
 
 module Util.Shuffle (
@@ -6,11 +7,11 @@ module Util.Shuffle (
     shuffleM,
 ) where
 
-import Control.Monad (liftM, liftM2)
+import Control.Monad (liftM2)
 import Control.Monad.State (MonadState)
 import Data.Function (fix)
 import System.Random (RandomGen, randomR)
-import System.Random.Stateful (Random (randomR), RandomGen, StateGenM (StateGenM), StdGen, UniformRange (uniformRM))
+import System.Random.Stateful (StateGenM (StateGenM), StdGen, UniformRange (uniformRM))
 
 -- A complete binary tree, of leaves and internal nodes.
 -- Internal node: Node card l r
