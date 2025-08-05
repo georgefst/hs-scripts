@@ -10,7 +10,8 @@ module Util.Shuffle
 import Data.Function (fix)
 import System.Random (RandomGen, randomR)
 import Control.Monad (liftM,liftM2)
-import Control.Monad.Random (MonadRandom, getRandomR)
+import Control.Monad.State (MonadState)
+import System.Random.Stateful (Random (randomR), RandomGen, StateGenM (StateGenM), StdGen, UniformRange (uniformRM))
 
 
 -- A complete binary tree, of leaves and internal nodes.
@@ -92,11 +93,11 @@ shuffle' elements len = shuffle elements . rseq len
                   (j, gen') = randomR (0, i) gen
 
 -- |shuffle' wrapped in a random monad
-shuffleM :: (MonadRandom m) => [a] -> m [a]
+shuffleM :: (MonadState StdGen m) => [a] -> m [a]
 shuffleM elements
     | null elements = return []
     | otherwise     = liftM (shuffle elements) (rseqM (length elements - 1))
   where
-    rseqM :: (MonadRandom m) => Int -> m [Int]
+    rseqM :: (MonadState StdGen m) => Int -> m [Int]
     rseqM 0 = return []
-    rseqM i = liftM2 (:) (getRandomR (0, i)) (rseqM (i - 1))
+    rseqM i = liftM2 (:) (uniformRM (0, i) StateGenM) (rseqM (i - 1))
