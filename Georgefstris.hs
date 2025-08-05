@@ -51,8 +51,8 @@ import Data.Bool
 import Data.Either.Extra
 import Data.Foldable
 import Data.Foldable1 qualified as NE
-import Data.List
-import Data.List.NonEmpty (NonEmpty ((:|)))
+import Data.List.Extra
+import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty)
 import Data.Massiv.Array (Array)
 import Data.Massiv.Array qualified as A
 import Data.Maybe
@@ -71,6 +71,7 @@ import Optics.State.Operators ((%=), (.=))
 import Safe (predDef, succDef)
 import System.Random.Stateful hiding (next, random)
 import Util.FixedLengthQueue qualified as FLQ
+import Util.Shuffle
 import Util.Util
 
 {- FOURMOLU_DISABLE -}
@@ -106,7 +107,7 @@ opts =
         , gridHeight = 18
         , previewLength = 1
         , random = newStdGen
-        , randomiser = pure <$> uniformM StateGenM
+        , randomiser = fromMaybe (error "empty piece enum shuffle") . nonEmpty <$> shuffleM enumerate
         , startLevel
         , topLevel
         , tickLength = 0.05
