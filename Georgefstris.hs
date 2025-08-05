@@ -114,8 +114,8 @@ opts =
         , randomiser = flip shuffleM StateGenM . (:| enumerate) =<< uniformM StateGenM
         , startLevel
         , topLevel
-        , initialKeyDelay = 0.17
-        , repeatKeyDelay = 0.05
+        , initialKeyDelay = 0.12
+        , repeatKeyDelay = 0.03
         , tickLength = 0.05
         , rate = \l -> fromIntegral $ topLevel + 1 - clamp (startLevel, topLevel) l
         , colours = \case
