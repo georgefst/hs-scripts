@@ -107,9 +107,7 @@ opts =
         , gridHeight = 18
         , previewLength = 1
         , random = newStdGen
-        , randomiser = do
-            extra <- uniformM StateGenM
-            shuffleM (extra :| enumerate)
+        , randomiser = shuffleM . (:| enumerate) =<< uniformM StateGenM
         , startLevel
         , topLevel
         , tickLength = 0.05
