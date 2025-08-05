@@ -13,6 +13,7 @@ import Data.Bifunctor (bimap, second)
 import Data.Bitraversable (bitraverse)
 import Data.Bool (bool)
 import Data.Functor ((<&>))
+import Data.List.NonEmpty qualified as NE
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 import Data.Time (NominalDiffTime, nominalDiffTimeToSeconds)
@@ -30,6 +31,9 @@ modifyFile f file = T.writeFile file . f =<< T.readFile file
 
 ($?) :: Bool -> (a -> a) -> a -> a
 ($?) = flip $ bool id
+
+neUncons :: NE.NonEmpty a -> (a, [a])
+neUncons (x NE.:| xs) = (x, xs)
 
 newtype Validation e r = Validation {unwrap :: Either e r} deriving newtype (Eq, Show, Functor)
 instance (Semigroup m) => Applicative (Validation m) where

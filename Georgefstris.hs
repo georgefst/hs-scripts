@@ -50,6 +50,7 @@ import Data.Bool
 import Data.Either.Extra
 import Data.Foldable
 import Data.Foldable1 qualified as NE
+import Data.List
 import Data.List.NonEmpty (NonEmpty ((:|)))
 import Data.Massiv.Array (Array)
 import Data.Massiv.Array qualified as A
@@ -64,7 +65,7 @@ import Miso.Canvas qualified as Canvas
 import Miso.String (MisoString, ToMisoString, ms)
 import Miso.Style (Color)
 import Miso.Style qualified as MS
-import Optics
+import Optics hiding (uncons)
 import Optics.State.Operators ((%=), (.=))
 import Safe (predDef, succDef)
 import System.Random.Stateful hiding (next, random)
@@ -399,17 +400,15 @@ runRandomPieces (l, g) f = (\((a, b), c) -> (a, (b, c))) $ runStateGen g $ flip 
 type Randomiser = StateGenM StdGen -> State StdGen (NonEmpty Piece)
 liftRandomiser :: Randomiser -> StateGenM StdGen -> RandomPieces Piece
 liftRandomiser r g = do
-    l <- get
-    case l of
-        -- we already have pieces computed - use those
-        x : xs -> do
-            put xs
-            pure x
-        -- generate a new chunk of random pieces
-        [] -> do
-            x :| xs <- lift $ r g
-            put xs
-            pure x
+    (x, xs) <-
+        gets uncons
+            >>= maybe
+                -- generate a new chunk of random pieces
+                (neUncons <$> lift (r g))
+                -- we already have pieces computed - use those
+                pure
+    put xs
+    pure x
 
 nextPieceTopic :: Topic Piece
 nextPieceTopic = topic "next-piece"
