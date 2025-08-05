@@ -23,14 +23,14 @@ data Tree a
 
 -- Convert a sequence (e1...en) to a complete binary tree
 buildTree :: [a] -> Tree a
-buildTree = (fix growLevel) . (map Leaf)
+buildTree = fix growLevel . map Leaf
   where
     growLevel _ [node] = node
     growLevel self l = self $ inner l
 
     inner [] = []
     inner [e] = [e]
-    inner (e1 : e2 : es) = e1 `seq` e2 `seq` (join e1 e2) : inner es
+    inner (e1 : e2 : es) = e1 `seq` e2 `seq` join e1 e2 : inner es
 
     join l@(Leaf _) r@(Leaf _) = Node 2 l r
     join l@(Node ct _ _) r@(Leaf _) = Node (ct + 1) l r
@@ -48,7 +48,7 @@ shuffle elements = shuffleTree (buildTree elements)
     shuffleTree (Leaf e) [] = [e]
     shuffleTree tree (r : rs) =
         let (b, rest) = extractTree r tree
-         in b : (shuffleTree rest rs)
+         in b : shuffleTree rest rs
     shuffleTree _ _ = error "[shuffle] called with lists of different lengths"
 
     -- Extracts the n-th element from the tree and returns
@@ -83,7 +83,7 @@ shuffle' elements len = shuffle elements . rseq len
     -- independent sample from a uniform random distribution
     -- [0..n-i]
     rseq :: (RandomGen gen) => Int -> gen -> [Int]
-    rseq n = fst . unzip . rseq' (n - 1)
+    rseq n = map fst . rseq' (n - 1)
       where
         rseq' :: (RandomGen gen) => Int -> gen -> [(Int, gen)]
         rseq' 0 _ = []
@@ -95,7 +95,7 @@ shuffle' elements len = shuffle elements . rseq len
 shuffleM :: (MonadState StdGen m) => [a] -> m [a]
 shuffleM elements
     | null elements = return []
-    | otherwise = liftM (shuffle elements) (rseqM (length elements - 1))
+    | otherwise = fmap (shuffle elements) (rseqM (length elements - 1))
   where
     rseqM :: (MonadState StdGen m) => Int -> m [Int]
     rseqM 0 = return []
