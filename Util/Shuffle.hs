@@ -1,3 +1,6 @@
+-- TODO publish on Hackage? look in to taking over `random-shuffle` first
+-- also, it's worth checking whether this (Oleg's perfect shuffle) is actually faster than conventional algorithms
+-- even if that means converting to an array
 {-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -funbox-strict-fields #-}
