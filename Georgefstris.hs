@@ -42,6 +42,7 @@ module Georgefstris (main) where
 
 import Control.Monad
 import Control.Monad.Extra
+import Control.Monad.Reader
 import Control.Monad.State.Strict
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Aeson qualified as Aeson
@@ -388,18 +389,18 @@ app random0 =
   where
     initialGridModel = Model{pile = emptyGrid, ticks = 0, level = opts.startLevel, gameOver = False, ..}
       where
-        ((current, next), random) = runRandomPieces ([], random0) \m -> do
+        ((current, next), random) = runRandomPieces ([], random0) do
             curry (bimap newPiece FLQ.fromList)
-                <$> liftRandomiser opts.randomiser m
-                <*> replicateM (fromIntegral opts.previewLength) (liftRandomiser opts.randomiser m)
+                <$> liftRandomiser opts.randomiser
+                <*> replicateM (fromIntegral opts.previewLength) (liftRandomiser opts.randomiser)
 
 -- a monad for operations which produce finite lists of pieces
-type RandomPieces = StateT [Piece] (State StdGen)
-runRandomPieces :: ([Piece], StdGen) -> (StateGenM StdGen -> RandomPieces a) -> (a, ([Piece], StdGen))
-runRandomPieces (l, g) f = (\((a, b), c) -> (a, (b, c))) $ runStateGen g $ flip runStateT l . f
+type RandomPieces = ReaderT (StateGenM StdGen) (StateT [Piece] (State StdGen))
+runRandomPieces :: ([Piece], StdGen) -> RandomPieces a -> (a, ([Piece], StdGen))
+runRandomPieces (l, g) f = (\((a, b), c) -> (a, (b, c))) $ runStateGen g $ flip runStateT l . runReaderT f
 type Randomiser = StateGenM StdGen -> State StdGen (NonEmpty Piece)
-liftRandomiser :: Randomiser -> StateGenM StdGen -> RandomPieces Piece
-liftRandomiser r g = do
+liftRandomiser :: Randomiser -> RandomPieces Piece
+liftRandomiser r = ReaderT \g -> do
     (x, xs) <-
         gets uncons
             >>= maybe
