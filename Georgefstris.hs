@@ -97,8 +97,7 @@ data Opts = Opts
     , randomiser :: State StdGen (NonEmpty Piece)
     , startLevel :: Level
     , topLevel :: Level
-    , initialKeyDelay :: NominalDiffTime
-    , repeatKeyDelay :: NominalDiffTime
+    , keyDelays :: KeyAction -> Maybe (NominalDiffTime, NominalDiffTime)
     , tickLength :: NominalDiffTime
     , rate :: Level -> Word
     , colours :: Piece -> Color
@@ -115,8 +114,9 @@ opts =
         , randomiser = flip shuffleM StateGenM . (:| enumerate) =<< uniformM StateGenM
         , startLevel
         , topLevel
-        , initialKeyDelay = 0.12
-        , repeatKeyDelay = 0.03
+        , keyDelays = \case
+            HardDrop -> Nothing
+            _ -> Just (0.12, 0.03)
         , tickLength = 0.05
         , rate = \l -> fromIntegral $ topLevel + 1 - clamp (startLevel, topLevel) l
         , colours = \case
@@ -391,8 +391,8 @@ app random0 =
                 stillPressed <- if new then pure True else gets $ (== Just i) . Map.lookup k . fst
                 when stillPressed do
                     publish keysPressedTopic k
-                    when (k /= HardDrop) $ io $ do
-                        liftIO $ threadDelay' if new then opts.initialKeyDelay else opts.repeatKeyDelay
+                    for_ (opts.keyDelays k) \(initialKeyDelay, repeatKeyDelay) -> io $ do
+                        liftIO $ threadDelay' if new then initialKeyDelay else repeatKeyDelay
                         pure $ Left (k, False, i)
             )
             \(Set.fromList . mapMaybe opts.keymap -> ks') -> do
