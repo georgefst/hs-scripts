@@ -69,7 +69,7 @@ import Miso.String (MisoString, ToMisoString, ms)
 import Miso.Style (Color)
 import Miso.Style qualified as MS
 import Optics hiding (uncons)
-import Optics.State.Operators ((%=), (.=))
+import Optics.State.Operators ((%%=), (%=), (.=))
 import Safe (predDef, succDef)
 import System.Random.Stateful hiding (next, random)
 import Util.FixedLengthQueue qualified as FLQ
@@ -281,7 +281,7 @@ grid initialModel =
                 subscribe' setLevelTopic $ either (const $ NoOp Nothing) SetLevel
             Tick -> do
                 level <- use #level
-                relevantTick <- overAndOut' #ticks \t ->
+                relevantTick <- #ticks %%= \t ->
                     let t' = t + 1
                         b = t' >= opts.rate level
                      in (b, if b then 0 else t')
@@ -324,7 +324,7 @@ grid initialModel =
     fixPiece = do
         Model{current, next} <- get
         #pile %= addPieceToGrid current
-        next' <- overAndOut' #random $ flip runRandomPieces $ liftRandomiser opts.randomiser
+        next' <- #random %%= flip runRandomPieces (liftRandomiser opts.randomiser)
         fanout #current #next .= first newPiece (FLQ.shift next' next)
         publish nextPieceTopic next'
         #pile %= removeCompletedLines
