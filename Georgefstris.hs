@@ -107,7 +107,9 @@ opts =
         , gridHeight = 18
         , previewLength = 1
         , random = newStdGen
-        , randomiser = fromMaybe (error "empty piece enum shuffle") . nonEmpty <$> shuffleM enumerate
+        , randomiser = do
+            extra <- uniformM StateGenM
+            fromMaybe (error "empty piece enum shuffle") . nonEmpty <$> shuffleM (extra : enumerate)
         , startLevel
         , topLevel
         , tickLength = 0.05
