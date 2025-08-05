@@ -53,17 +53,18 @@ import Data.Foldable
 import Data.Foldable1 qualified as NE
 import Data.List.Extra
 import Data.List.NonEmpty (NonEmpty ((:|)))
+import Data.Map (Map)
+import Data.Map qualified as Map
 import Data.Massiv.Array (Array)
 import Data.Massiv.Array qualified as A
 import Data.Maybe
 import Data.Monoid.Extra
 import Data.Ord (clamp)
-import Data.Set (Set)
 import Data.Set qualified as Set
 import Data.Time (NominalDiffTime)
 import GHC.Generics (Generic)
 import Linear (R1 (_x), R2 (_y), V2 (V2))
-import Miso hiding (for_)
+import Miso hiding (for, for_)
 import Miso.Canvas qualified as Canvas
 import Miso.String (MisoString, ToMisoString, ms)
 import Miso.Style (Color)
@@ -381,22 +382,30 @@ sidebar initialModel =
 -- we could just define custom types, but this serves as a reminder to improve things upstream
 -- there's stuff that shouldn't really need to be in the model, but Miso's APIs are not yet sufficiently flexible
 -- a good rule of thumb might be that the model being ignored in the view is a red flag
-app :: StdGen -> Component (Set KeyAction) (Either (KeyAction, Bool) [Int])
+app :: StdGen -> Component (Map KeyAction Integer, Integer) (Either (KeyAction, Bool, Integer) [Int])
 app random0 =
     ( component
-        mempty
+        (mempty, 0)
         ( either
-            ( \(k, new) -> do
-                stillPressed <- if new then pure True else gets (k `elem`)
+            ( \(k, new, i) -> do
+                stillPressed <- if new then pure True else gets $ (== Just i) . Map.lookup k . fst
                 when stillPressed do
                     publish keysPressedTopic k
                     io do
                         liftIO $ threadDelay' if new then opts.initialKeyDelay else opts.repeatKeyDelay
-                        pure $ Left (k, False)
+                        pure $ Left (k, False, i)
             )
             \(Set.fromList . mapMaybe opts.keymap -> ks') -> do
-                ks <- simple <<.= ks'
-                for_ (Set.difference ks' ks) $ issue . Left . (,True)
+                ks <- use _1
+                freshlyPressed <-
+                    Map.fromList <$> flip mapMaybeM (Set.toList ks') \k ->
+                        if Map.member k ks
+                            then pure Nothing
+                            else Just . (k,) <$> (_2 <<%= succ)
+                -- TODO the union is disjoint, and the keys of the result will be precisely the elements of `ks'`...
+                -- we could probably somehow take advantage of this to simplify the code
+                _1 .= Map.union freshlyPressed (Map.filterWithKey (const . (`elem` ks')) ks)
+                void $ flip Map.traverseWithKey freshlyPressed $ flip \i -> issue . Left . (,True,i)
         )
         ( \_ ->
             div_
