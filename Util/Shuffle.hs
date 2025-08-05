@@ -40,9 +40,9 @@ buildTree = fix growLevel . fmap Leaf
     join l@(Node ctl _ _) r@(Node ctr _ _) = Node (ctl + ctr) l r
 
 {- | Given a sequence (e1,...en) to shuffle, and a sequence
- (r1,...r[n-1]) of numbers such that r[i] is an independent sample
- from a uniform random distribution [0..n-i], compute the
- corresponding permutation of the input sequence.
+(r1,...r[n-1]) of numbers such that r[i] is an independent sample
+from a uniform random distribution [0..n-i], compute the
+corresponding permutation of the input sequence.
 -}
 shuffle :: NonEmpty a -> [Int] -> NonEmpty a
 shuffle elements = shuffleTree (buildTree elements)
@@ -75,8 +75,8 @@ shuffle elements = shuffleTree (buildTree elements)
     extractTree _ _ = error "[extractTree] impossible"
 
 {- | Given a sequence (e1,...en) to shuffle, its length, and a random
- generator, compute the corresponding permutation of the input
- sequence.
+generator, compute the corresponding permutation of the input
+sequence.
 -}
 shuffle' :: (RandomGen gen) => NonEmpty a -> Int -> gen -> NonEmpty a
 shuffle' elements len = shuffle elements . rseq len
