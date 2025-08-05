@@ -313,7 +313,7 @@ grid initialModel =
     fixPiece = do
         Model{current, next} <- get
         #pile %= addPieceToGrid current
-        next' <- overAndOut' #random uniform
+        next' <- overAndOut' #random $ flip runStateGen uniformM
         fanout #current #next .= first newPiece (FLQ.shift next' next)
         publish nextPieceTopic next'
         #pile %= removeCompletedLines
