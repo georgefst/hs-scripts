@@ -16,7 +16,6 @@
     - more options (careful about how well they work together, e.g. different grid sizes may not work well with our CSS)
         - stylesheet
         - start from a later level
-        - randomness, e.g. bag-based
         - more features from later versions - hold, wall kicks
         - configurable key repeat speed (`keyboardSub` isn't currently flexible enough but we could FFI)
 - record move history for review/analysis
@@ -43,6 +42,7 @@ module Georgefstris (main) where
 
 import Control.Monad
 import Control.Monad.Extra
+import Control.Monad.State.Strict
 import Data.Aeson (FromJSON, ToJSON)
 import Data.Aeson qualified as Aeson
 import Data.Bifunctor (bimap, first, second)
@@ -88,6 +88,7 @@ data Opts = Opts
     , gridHeight :: Int
     , previewLength :: Word
     , random :: IO StdGen
+    , randomiser :: Randomiser
     , startLevel :: Level
     , topLevel :: Level
     , tickLength :: NominalDiffTime
@@ -103,6 +104,7 @@ opts =
         , gridHeight = 18
         , previewLength = 1
         , random = newStdGen
+        , randomiser = fmap pure . uniformM
         , startLevel
         , topLevel
         , tickLength = 0.05
@@ -231,7 +233,7 @@ data Model = Model
     , next :: FLQ.Queue Piece
     , ticks :: Word
     , level :: Level
-    , random :: StdGen
+    , random :: ([Piece], StdGen)
     , gameOver :: Bool
     }
     deriving (Eq, Show, Generic)
@@ -313,7 +315,7 @@ grid initialModel =
     fixPiece = do
         Model{current, next} <- get
         #pile %= addPieceToGrid current
-        next' <- overAndOut' #random $ flip runStateGen uniformM
+        next' <- overAndOut' #random $ flip runRandomPieces $ liftRandomiser opts.randomiser
         fanout #current #next .= first newPiece (FLQ.shift next' next)
         publish nextPieceTopic next'
         #pile %= removeCompletedLines
@@ -385,10 +387,29 @@ app random0 =
   where
     initialGridModel = Model{pile = emptyGrid, ticks = 0, level = opts.startLevel, gameOver = False, ..}
       where
-        ((current, next), random) = runStateGen random0 \m ->
+        ((current, next), random) = runRandomPieces ([], random0) \m -> do
             curry (bimap newPiece FLQ.fromList)
-                <$> uniformM m
-                <*> replicateM (fromIntegral opts.previewLength) (uniformM m)
+                <$> liftRandomiser opts.randomiser m
+                <*> replicateM (fromIntegral opts.previewLength) (liftRandomiser opts.randomiser m)
+
+-- a monad for operations which produce finite lists of pieces
+type RandomPieces = StateT [Piece] (State StdGen)
+runRandomPieces :: ([Piece], StdGen) -> (StateGenM StdGen -> RandomPieces a) -> (a, ([Piece], StdGen))
+runRandomPieces (l, g) f = (\((a, b), c) -> (a, (b, c))) $ runStateGen g $ flip runStateT l . f
+type Randomiser = StateGenM StdGen -> State StdGen (NonEmpty Piece)
+liftRandomiser :: Randomiser -> StateGenM StdGen -> RandomPieces Piece
+liftRandomiser r g = do
+    l <- get
+    case l of
+        -- we already have pieces computed - use those
+        x : xs -> do
+            put xs
+            pure x
+        -- generate a new chunk of random pieces
+        [] -> do
+            x :| xs <- lift $ r g
+            put xs
+            pure x
 
 nextPieceTopic :: Topic Piece
 nextPieceTopic = topic "next-piece"
