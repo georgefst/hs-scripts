@@ -69,7 +69,7 @@ import Miso.String (MisoString, ToMisoString, ms)
 import Miso.Style (Color)
 import Miso.Style qualified as MS
 import Optics hiding (uncons)
-import Optics.State.Operators ((%%=), (%=), (.=), (<<.=))
+import Optics.State.Operators
 import Safe (predDef, succDef)
 import System.Random.Stateful hiding (next, random)
 import Util.FixedLengthQueue qualified as FLQ
