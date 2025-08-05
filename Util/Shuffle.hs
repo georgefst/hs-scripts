@@ -9,7 +9,9 @@ module Util.Shuffle (
 
 import Control.Monad (liftM2)
 import Control.Monad.State (MonadState)
+import Data.Foldable (toList)
 import Data.Function (fix)
+import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty)
 import System.Random (RandomGen, randomR)
 import System.Random.Stateful (StateGenM (StateGenM), StdGen, UniformRange (uniformRM))
 
@@ -23,15 +25,14 @@ data Tree a
     deriving (Show)
 
 -- Convert a sequence (e1...en) to a complete binary tree
-buildTree :: [a] -> Tree a
-buildTree = fix growLevel . map Leaf
+buildTree :: NonEmpty a -> Tree a
+buildTree = fix growLevel . fmap Leaf
   where
-    growLevel _ [node] = node
+    growLevel _ (node :| []) = node
     growLevel self l = self $ inner l
 
-    inner [] = []
-    inner [e] = [e]
-    inner (e1 : e2 : es) = e1 `seq` e2 `seq` join e1 e2 : inner es
+    inner (e :| []) = pure e
+    inner (e1 :| e2 : es) = e1 `seq` e2 `seq` join e1 e2 :| maybe [] (toList . inner) (nonEmpty es)
 
     join l@(Leaf _) r@(Leaf _) = Node 2 l r
     join l@(Node ct _ _) r@(Leaf _) = Node (ct + 1) l r
@@ -43,13 +44,13 @@ buildTree = fix growLevel . map Leaf
  from a uniform random distribution [0..n-i], compute the
  corresponding permutation of the input sequence.
 -}
-shuffle :: [a] -> [Int] -> [a]
+shuffle :: NonEmpty a -> [Int] -> NonEmpty a
 shuffle elements = shuffleTree (buildTree elements)
   where
-    shuffleTree (Leaf e) [] = [e]
+    shuffleTree (Leaf e) [] = pure e
     shuffleTree tree (r : rs) =
         let (b, rest) = extractTree r tree
-         in b : shuffleTree rest rs
+         in pure b <> shuffleTree rest rs
     shuffleTree _ _ = error "[shuffle] called with lists of different lengths"
 
     -- Extracts the n-th element from the tree and returns
@@ -77,7 +78,7 @@ shuffle elements = shuffleTree (buildTree elements)
  generator, compute the corresponding permutation of the input
  sequence.
 -}
-shuffle' :: (RandomGen gen) => [a] -> Int -> gen -> [a]
+shuffle' :: (RandomGen gen) => NonEmpty a -> Int -> gen -> NonEmpty a
 shuffle' elements len = shuffle elements . rseq len
   where
     -- The sequence (r1,...r[n-1]) of numbers such that r[i] is an
@@ -93,10 +94,8 @@ shuffle' elements len = shuffle elements . rseq len
             (j, gen') = randomR (0, i) gen
 
 -- | shuffle' wrapped in a random monad
-shuffleM :: (MonadState StdGen m) => [a] -> m [a]
-shuffleM elements
-    | null elements = return []
-    | otherwise = fmap (shuffle elements) (rseqM (length elements - 1))
+shuffleM :: (MonadState StdGen m) => NonEmpty a -> m (NonEmpty a)
+shuffleM elements = fmap (shuffle elements) (rseqM (length elements - 1))
   where
     rseqM :: (MonadState StdGen m) => Int -> m [Int]
     rseqM 0 = return []

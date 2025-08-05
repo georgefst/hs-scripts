@@ -52,7 +52,7 @@ import Data.Either.Extra
 import Data.Foldable
 import Data.Foldable1 qualified as NE
 import Data.List.Extra
-import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty)
+import Data.List.NonEmpty (NonEmpty ((:|)))
 import Data.Massiv.Array (Array)
 import Data.Massiv.Array qualified as A
 import Data.Maybe
@@ -109,7 +109,7 @@ opts =
         , random = newStdGen
         , randomiser = do
             extra <- uniformM StateGenM
-            fromMaybe (error "empty piece enum shuffle") . nonEmpty <$> shuffleM (extra : enumerate)
+            shuffleM (extra :| enumerate)
         , startLevel
         , topLevel
         , tickLength = 0.05
