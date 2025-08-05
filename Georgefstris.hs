@@ -90,7 +90,7 @@ data Opts = Opts
     , gridHeight :: Int
     , previewLength :: Word
     , random :: IO StdGen
-    , randomiser :: Randomiser
+    , randomiser :: State StdGen (NonEmpty Piece)
     , startLevel :: Level
     , topLevel :: Level
     , tickLength :: NominalDiffTime
@@ -398,8 +398,7 @@ app random0 =
 type RandomPieces = StateT [Piece] (State StdGen)
 runRandomPieces :: ([Piece], StdGen) -> RandomPieces a -> (a, ([Piece], StdGen))
 runRandomPieces (l, g) f = (\((a, b), c) -> (a, (b, c))) $ runStateGen g $ flip runStateT l . \StateGenM -> f
-type Randomiser = State StdGen (NonEmpty Piece)
-liftRandomiser :: Randomiser -> RandomPieces Piece
+liftRandomiser :: State StdGen (NonEmpty Piece) -> RandomPieces Piece
 liftRandomiser r = do
     (x, xs) <-
         gets uncons
