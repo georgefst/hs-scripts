@@ -391,7 +391,7 @@ app random0 =
                 stillPressed <- if new then pure True else gets $ (== Just i) . Map.lookup k . fst
                 when stillPressed do
                     publish keysPressedTopic k
-                    io do
+                    when (k /= HardDrop) $ io $ do
                         liftIO $ threadDelay' if new then opts.initialKeyDelay else opts.repeatKeyDelay
                         pure $ Left (k, False, i)
             )
