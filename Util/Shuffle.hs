@@ -7,7 +7,6 @@ module Util.Shuffle (
     shuffleM,
 ) where
 
-import Data.Bifunctor (first)
 import Data.Foldable (toList)
 import Data.Function (fix)
 import Data.List.NonEmpty (NonEmpty ((:|)), nonEmpty)
@@ -84,7 +83,7 @@ rseq n g = go (n - 1)
 
 -- | Compute a random permutation of the input sequence.
 shuffle :: (RandomGen g) => NonEmpty a -> g -> (NonEmpty a, g)
-shuffle xs = first (shuffleInner xs) . flip runStateGen (rseq (length xs))
+shuffle = flip runStateGen . shuffleM
 
 -- | Monadic version of `shuffle`.
 shuffleM :: (StatefulGen g m) => NonEmpty a -> g -> m (NonEmpty a)
