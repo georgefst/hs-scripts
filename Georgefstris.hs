@@ -376,6 +376,10 @@ sidebar initialModel =
         { initialAction = Just $ Left True
         }
 
+-- TODO we use slightly unwieldy model and action types here (and in sidebar)
+-- we could just define custom types, but this serves as a reminder to improve things upstream
+-- there's stuff that shouldn't really need to be in the model, but Miso's APIs are not yet sufficiently flexible
+-- a good rule of thumb might be that the model being ignored in the view is a red flag
 app :: StdGen -> Component (Set KeyAction) (Either (KeyAction, Bool) [Int])
 app random0 =
     ( component
