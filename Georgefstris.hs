@@ -17,7 +17,6 @@
         - stylesheet
         - start from a later level
         - more features from later versions - hold, wall kicks, ghost piece
-        - configurable key repeat speed (`keyboardSub` isn't currently flexible enough but we could FFI)
 - record move history for review/analysis
 - sound
 - animations
@@ -34,6 +33,7 @@
 {-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE NoFieldSelectors #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
@@ -58,6 +58,8 @@ import Data.Massiv.Array qualified as A
 import Data.Maybe
 import Data.Monoid.Extra
 import Data.Ord (clamp)
+import Data.Set (Set)
+import Data.Set qualified as Set
 import Data.Time (NominalDiffTime)
 import GHC.Generics (Generic)
 import Linear (R1 (_x), R2 (_y), V2 (V2))
@@ -94,6 +96,8 @@ data Opts = Opts
     , randomiser :: State StdGen (NonEmpty Piece)
     , startLevel :: Level
     , topLevel :: Level
+    , initialKeyDelay :: NominalDiffTime
+    , repeatKeyDelay :: NominalDiffTime
     , tickLength :: NominalDiffTime
     , rate :: Level -> Word
     , colours :: Piece -> Color
@@ -110,6 +114,8 @@ opts =
         , randomiser = flip shuffleM StateGenM . (:| enumerate) =<< uniformM StateGenM
         , startLevel
         , topLevel
+        , initialKeyDelay = 1 / 10
+        , repeatKeyDelay = 1 / 30
         , tickLength = 0.05
         , rate = \l -> fromIntegral $ topLevel + 1 - clamp (startLevel, topLevel) l
         , colours = \case
@@ -370,12 +376,24 @@ sidebar initialModel =
         { initialAction = Just $ Left True
         }
 
-app :: StdGen -> Component () [KeyAction]
+app :: StdGen -> Component (Set KeyAction) (Either (KeyAction, Bool) [Int])
 app random0 =
     ( component
-        ()
-        (traverse_ $ publish keysPressedTopic)
-        ( \() ->
+        mempty
+        ( either
+            ( \(k, new) -> do
+                stillPressed <- if new then pure True else gets (k `elem`)
+                when stillPressed do
+                    publish keysPressedTopic k
+                    io do
+                        liftIO $ threadDelay' if new then opts.initialKeyDelay else opts.repeatKeyDelay
+                        pure $ Left (k, False)
+            )
+            \(Set.fromList . mapMaybe opts.keymap -> ks') -> do
+                ks <- replaceState ks'
+                for_ (Set.difference ks' ks) $ issue . Left . (,True)
+        )
+        ( \_ ->
             div_
                 []
                 [ div_ [id_ "grid"] +> grid initialGridModel
@@ -384,7 +402,7 @@ app random0 =
         )
     )
         { subs =
-            [ keyboardSub $ mapMaybe opts.keymap . toList
+            [ keyboardSub $ Right . toList
             ]
         }
   where

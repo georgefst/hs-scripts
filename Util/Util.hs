@@ -8,7 +8,7 @@ module Util.Util where
 
 import Control.Concurrent (threadDelay)
 import Control.Monad.IO.Class (MonadIO, liftIO)
-import Control.Monad.State (MonadState, gets, put)
+import Control.Monad.State (MonadState, gets, put, state)
 import Data.Bifunctor (bimap, second)
 import Data.Bitraversable (bitraverse)
 import Data.Bool (bool)
@@ -34,6 +34,9 @@ modifyFile f file = T.writeFile file . f =<< T.readFile file
 
 neUncons :: NE.NonEmpty a -> (a, [a])
 neUncons (x NE.:| xs) = (x, xs)
+
+replaceState :: (MonadState a m) => a -> m a
+replaceState x = state $ id &&& const x
 
 newtype Validation e r = Validation {unwrap :: Either e r} deriving newtype (Eq, Show, Functor)
 instance (Semigroup m) => Applicative (Validation m) where
