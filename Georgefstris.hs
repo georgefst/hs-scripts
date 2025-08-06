@@ -62,7 +62,6 @@ import Data.Monoid.Extra
 import Data.Ord (clamp)
 import Data.Set qualified as Set
 import Data.Time (NominalDiffTime)
-import Data.Tuple.Extra (fst3)
 import GHC.Generics (Generic)
 import Linear (R1 (_x), R2 (_y), V2 (V2))
 import Miso hiding (for, for_, (-->), (<--))
@@ -382,17 +381,15 @@ sidebar initialModel =
             ]
         }
 
--- TODO we use slightly unwieldy model and action types here
--- we could just define custom types, but this serves as a reminder to improve things upstream
--- there's stuff that shouldn't really need to be in the model, but Miso's APIs are not yet sufficiently flexible
--- a good rule of thumb might be that the model being ignored in the view is a red flag
-app :: StdGen -> Component parent (Map KeyAction Integer, Integer, FLQ.Queue Piece) (Either (KeyAction, Bool, Integer) [Int])
-app random0 =
+-- TODO even though this component effectively has no view, it seems to be the best way to encapsulate our key stuff
+-- we should aim to improve the API of `keyboardSub` and maybe even `Sub` itself in order to make this unnecessary
+dummyKeyHandler :: Component parent (Map KeyAction Integer, Integer) (Either (KeyAction, Bool, Integer) [Int])
+dummyKeyHandler =
     ( component
-        (mempty, 0, initialGridModel.next)
+        (mempty, 0)
         ( either
             ( \(k, new, i) -> do
-                stillPressed <- if new then pure True else gets $ (== Just i) . Map.lookup k . fst3
+                stillPressed <- if new then pure True else gets $ (== Just i) . Map.lookup k . fst
                 when stillPressed do
                     publish keysPressedTopic k
                     for_ (opts.keyDelays k) \(initialKeyDelay, repeatKeyDelay) -> io $ do
@@ -411,18 +408,24 @@ app random0 =
                 _1 .= Map.union freshlyPressed (Map.filterWithKey (const . (`elem` ks')) ks)
                 void $ flip Map.traverseWithKey freshlyPressed $ flip \i -> issue . Left . (,True,i)
         )
+        (\_ -> div_ [] [])
+    )
+        { subs = [keyboardSub $ Right . toList]
+        }
+
+app :: StdGen -> Component parent (FLQ.Queue Piece) ()
+app random0 =
+    component
+        initialGridModel.next
+        (\() -> pure ())
         ( \_ ->
             div_
                 []
                 [ div_ [id_ "grid"] +> grid initialGridModel
                 , div_ [id_ "sidebar"] +> sidebar (initialGridModel.next, initialGridModel.level)
+                , div_ [id_ "dummy-key-handler"] +> dummyKeyHandler
                 ]
         )
-    )
-        { subs =
-            [ keyboardSub $ Right . toList
-            ]
-        }
   where
     initialGridModel = Model{pile = emptyGrid, ticks = 0, level = opts.startLevel, gameOver = False, ..}
       where
