@@ -50,6 +50,7 @@ import Data.Bool
 import Data.Either.Extra
 import Data.Foldable
 import Data.Foldable1 qualified as NE
+import Data.Generics.Product
 import Data.List.Extra
 import Data.List.NonEmpty (NonEmpty ((:|)))
 import Data.Map (Map)
@@ -273,7 +274,7 @@ gridCanvas w h attrs f = Canvas.canvas
             Canvas.fillStyle $ Canvas.ColorArg $ opts.colours p
             Canvas.fillRect (fromIntegral x, fromIntegral y, 1, 1)
 
-grid :: Model -> Component (Map KeyAction Integer, Integer, FLQ.Queue Piece) Model Action
+grid :: (HasType (FLQ.Queue Piece) parent) => Model -> Component parent Model Action
 grid initialModel =
     ( component
         initialModel
@@ -324,7 +325,7 @@ grid initialModel =
             ]
         , initialAction = Just Init
         , bindings =
-            [ _3 <-- #next
+            [ typed <-- #next
             ]
         }
   where
@@ -343,7 +344,7 @@ grid initialModel =
         when b $ #current .= p
         pure b
 
-sidebar :: (FLQ.Queue Piece, Level) -> Component (Map KeyAction Integer, Integer, FLQ.Queue Piece) (FLQ.Queue Piece, Level) Bool
+sidebar :: (HasType (FLQ.Queue Piece) parent) => (FLQ.Queue Piece, Level) -> Component parent (FLQ.Queue Piece, Level) Bool
 sidebar initialModel =
     ( component
         initialModel
@@ -377,7 +378,7 @@ sidebar initialModel =
         )
     )
         { bindings =
-            [ _3 --> _1
+            [ typed --> _1
             ]
         }
 

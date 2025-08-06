@@ -282,6 +282,7 @@ main = shakeArgs shakeOpts do
             ("freer-simple")
             ("fsnotify" & munless wasm)
             ("generic-data")
+            ("generic-optics")
             ("generics-sop" & munless noTH)
             ("ghc-experimental")
             ("graphviz")
