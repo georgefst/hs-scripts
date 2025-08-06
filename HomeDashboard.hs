@@ -46,7 +46,6 @@ import GHC.Records (HasField (getField))
 import GHC.TypeLits (AppendSymbol, KnownSymbol, symbolVal)
 import Language.Javascript.JSaddle (liftJSM)
 import Miso hiding (for, for_)
-import Miso.String (MisoString, fromMisoString, ms)
 import Miso.Style (styleInline_)
 import Optics
 import Spotify.Types.Auth
@@ -69,7 +68,7 @@ main = do
     run $ startComponent app{styles}
 {- FOURMOLU_ENABLE -}
 
-app :: Component () ()
+app :: Component parent () ()
 app =
     component
         ()
@@ -84,7 +83,7 @@ app =
                 ]
         )
 
-clock :: Component LocalTime LocalTime
+clock :: Component parent LocalTime LocalTime
 clock =
     ( component
         -- TODO hmm, would be nice to be able to do IO for initial state...
@@ -114,7 +113,7 @@ clock =
             ]
         }
 
-weather :: Component (Maybe Weather) Weather
+weather :: Component parent (Maybe Weather) Weather
 weather =
     ( component
         Nothing
@@ -185,7 +184,7 @@ weather =
     mix c1 c2 (f :: Double) = "color-mix(in hsl, " <> c1 <> ", " <> c2 <> " " <> ms (showDouble 2 $ f * 100) <> "%)"
     absoluteZero = -273.15
 
-transport :: Component (Map StationLineId StationData) (StationLineId, StationData)
+transport :: Component parent (Map StationLineId StationData) (StationLineId, StationData)
 transport =
     ( component
         mempty
@@ -300,7 +299,7 @@ data TrainData = TrainData
     }
     deriving (Eq, Show)
 
-music :: Component (Maybe PlaybackState) (Maybe PlaybackState)
+music :: Component parent (Maybe PlaybackState) (Maybe PlaybackState)
 music =
     ( component
         Nothing

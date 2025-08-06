@@ -45,7 +45,6 @@ import Control.Monad.Extra
 import Control.Monad.Reader
 import Control.Monad.State.Strict
 import Data.Aeson (FromJSON, ToJSON)
-import Data.Aeson qualified as Aeson
 import Data.Bifunctor (bimap, first, second)
 import Data.Bool
 import Data.Either.Extra
@@ -66,7 +65,7 @@ import GHC.Generics (Generic)
 import Linear (R1 (_x), R2 (_y), V2 (V2))
 import Miso hiding (for, for_)
 import Miso.Canvas qualified as Canvas
-import Miso.String (MisoString, ToMisoString, ms)
+import Miso.String (ToMisoString)
 import Miso.Style (Color)
 import Miso.Style qualified as MS
 import Optics hiding (uncons)
@@ -260,7 +259,7 @@ gridCanvas ::
     Int ->
     [Attribute action] ->
     ((Piece -> V2 Int -> Canvas.Canvas ()) -> Canvas.Canvas ()) ->
-    View action
+    View parent action
 gridCanvas w h attrs f = Canvas.canvas
     ([width_ $ ms w, height_ $ ms h, cssVar "canvas-width" w, cssVar "canvas-height" h] <> attrs)
     (const $ pure ())
@@ -271,15 +270,15 @@ gridCanvas w h attrs f = Canvas.canvas
             Canvas.fillStyle $ Canvas.ColorArg $ opts.colours p
             Canvas.fillRect (fromIntegral x, fromIntegral y, 1, 1)
 
-grid :: Model -> Component Model Action
+grid :: Model -> Component parent Model Action
 grid initialModel =
     ( component
         initialModel
         ( \case
             NoOp s -> io_ $ traverse_ consoleLog s
             Init -> do
-                subscribe' keysPressedTopic $ either (const $ NoOp Nothing) KeyAction
-                subscribe' setLevelTopic $ either (const $ NoOp Nothing) SetLevel
+                subscribe keysPressedTopic KeyAction (const $ NoOp Nothing)
+                subscribe setLevelTopic SetLevel (const $ NoOp Nothing)
             Tick -> do
                 level <- use #level
                 relevantTick <-
@@ -339,12 +338,12 @@ grid initialModel =
         when b $ #current .= p
         pure b
 
-sidebar :: (FLQ.Queue Piece, Level) -> Component (FLQ.Queue Piece, Level) (Either Bool (Either Piece Bool))
+sidebar :: (FLQ.Queue Piece, Level) -> Component parent (FLQ.Queue Piece, Level) (Either Bool (Either Piece Bool))
 sidebar initialModel =
     ( component
         initialModel
         ( either
-            (\start -> when start $ subscribe' nextPieceTopic $ bimap (const False) Left)
+            (\start -> when start $ subscribe nextPieceTopic (Right . Left) (Left . const False))
             ( either (modify . first . FLQ.shift_) \b ->
                 gets snd >>= \l ->
                     let l' = bool (max opts.startLevel . pred) (min opts.topLevel . succ) b l
@@ -382,7 +381,7 @@ sidebar initialModel =
 -- we could just define custom types, but this serves as a reminder to improve things upstream
 -- there's stuff that shouldn't really need to be in the model, but Miso's APIs are not yet sufficiently flexible
 -- a good rule of thumb might be that the model being ignored in the view is a red flag
-app :: StdGen -> Component (Map KeyAction Integer, Integer) (Either (KeyAction, Bool, Integer) [Int])
+app :: StdGen -> Component parent (Map KeyAction Integer, Integer) (Either (KeyAction, Bool, Integer) [Int])
 app random0 =
     ( component
         (mempty, 0)
@@ -453,14 +452,6 @@ setLevelTopic = topic "set-level"
 -- TODO upstream this? with escaping, obviously
 cssVar :: (ToMisoString a) => MisoString -> a -> Attribute action
 cssVar k v = MS.styleInline_ $ "--" <> k <> ": " <> ms v
-
--- TODO this is a slightly better API for upstream, assuming it's not changed more radically
-subscribe' :: (FromJSON message) => Topic message -> (Either MisoString message -> action) -> Effect model action
-subscribe' t f =
-    subscribe t $
-        f . \case
-            Aeson.Error e -> Left $ ms e
-            Aeson.Success r -> Right r
 
 #ifdef wasi_HOST_OS
 foreign export javascript "hs" main :: IO ()

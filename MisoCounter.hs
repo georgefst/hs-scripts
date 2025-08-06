@@ -7,7 +7,6 @@
 module MisoCounter (main) where
 
 import Miso
-import Miso.String
 
 main :: IO ()
 main = do
@@ -18,7 +17,7 @@ main = do
 #endif
     run $ startComponent app{styles}
 
-app :: Component Word ()
+app :: Component parent Word ()
 app =
     component
         0
