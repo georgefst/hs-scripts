@@ -61,10 +61,13 @@ import Data.Monoid.Extra
 import Data.Ord (clamp)
 import Data.Set qualified as Set
 import Data.Time (NominalDiffTime)
+import Data.Tuple.Extra (fst3)
 import GHC.Generics (Generic)
 import Linear (R1 (_x), R2 (_y), V2 (V2))
-import Miso hiding (for, for_)
+import Miso hiding (for, for_, (-->), (<--))
+import Miso qualified
 import Miso.Canvas qualified as Canvas
+import Miso.Lens qualified as ML
 import Miso.String (ToMisoString)
 import Miso.Style (Color)
 import Miso.Style qualified as MS
@@ -270,7 +273,7 @@ gridCanvas w h attrs f = Canvas.canvas
             Canvas.fillStyle $ Canvas.ColorArg $ opts.colours p
             Canvas.fillRect (fromIntegral x, fromIntegral y, 1, 1)
 
-grid :: Model -> Component parent Model Action
+grid :: Model -> Component (Map KeyAction Integer, Integer, FLQ.Queue Piece) Model Action
 grid initialModel =
     ( component
         initialModel
@@ -320,6 +323,9 @@ grid initialModel =
                 threadDelay' opts.tickLength
             ]
         , initialAction = Just Init
+        , bindings =
+            [ _3 <-- #next
+            ]
         }
   where
     fixPiece = do
@@ -327,7 +333,6 @@ grid initialModel =
         #pile %= addPieceToGrid current
         next' <- #random %%= flip runRandomPieces (liftRandomiser opts.randomiser)
         fanout #current #next .= first newPiece (FLQ.shift next' next)
-        publish nextPieceTopic next'
         #pile %= removeCompletedLines
     tryMove f = tryEdit . (#pos %~ f) =<< use #current
     tryRotate f = tryEdit . (\p -> p & #rotation %~ f p.piece) =<< use #current
@@ -338,17 +343,14 @@ grid initialModel =
         when b $ #current .= p
         pure b
 
-sidebar :: (FLQ.Queue Piece, Level) -> Component parent (FLQ.Queue Piece, Level) (Either Bool (Either Piece Bool))
+sidebar :: (FLQ.Queue Piece, Level) -> Component (Map KeyAction Integer, Integer, FLQ.Queue Piece) (FLQ.Queue Piece, Level) Bool
 sidebar initialModel =
     ( component
         initialModel
-        ( either
-            (\start -> when start $ subscribe nextPieceTopic (Right . Left) (Left . const False))
-            ( either (modify . first . FLQ.shift_) \b ->
+        ( \b ->
                 gets snd >>= \l ->
                     let l' = bool (max opts.startLevel . pred) (min opts.topLevel . succ) b l
                      in modify (second $ const l') >> publish setLevelTopic l'
-            )
         )
         ( \(pieces, level) ->
             div_
@@ -367,27 +369,29 @@ sidebar initialModel =
                   )
                     <> [ div_
                             [class_ "level"]
-                            [ button_ [onClick $ Right $ Right False] [text "-"]
+                            [ button_ [onClick False] [text "-"]
                             , div_ [] [text $ ms level]
-                            , button_ [onClick $ Right $ Right True] [text "+"]
+                            , button_ [onClick True] [text "+"]
                             ]
                        ]
         )
     )
-        { initialAction = Just $ Left True
+        { bindings =
+            [ _3 --> _1
+            ]
         }
 
--- TODO we use slightly unwieldy model and action types here (and in sidebar)
+-- TODO we use slightly unwieldy model and action types here
 -- we could just define custom types, but this serves as a reminder to improve things upstream
 -- there's stuff that shouldn't really need to be in the model, but Miso's APIs are not yet sufficiently flexible
 -- a good rule of thumb might be that the model being ignored in the view is a red flag
-app :: StdGen -> Component parent (Map KeyAction Integer, Integer) (Either (KeyAction, Bool, Integer) [Int])
+app :: StdGen -> Component parent (Map KeyAction Integer, Integer, FLQ.Queue Piece) (Either (KeyAction, Bool, Integer) [Int])
 app random0 =
     ( component
-        (mempty, 0)
+        (mempty, 0, initialGridModel.next)
         ( either
             ( \(k, new, i) -> do
-                stillPressed <- if new then pure True else gets $ (== Just i) . Map.lookup k . fst
+                stillPressed <- if new then pure True else gets $ (== Just i) . Map.lookup k . fst3
                 when stillPressed do
                     publish keysPressedTopic k
                     for_ (opts.keyDelays k) \(initialKeyDelay, repeatKeyDelay) -> io $ do
@@ -442,8 +446,6 @@ liftRandomiser r = do
     put xs
     pure x
 
-nextPieceTopic :: Topic Piece
-nextPieceTopic = topic "next-piece"
 keysPressedTopic :: Topic KeyAction
 keysPressedTopic = topic "keys-pressed"
 setLevelTopic :: Topic Level
@@ -452,6 +454,21 @@ setLevelTopic = topic "set-level"
 -- TODO upstream this? with escaping, obviously
 cssVar :: (ToMisoString a) => MisoString -> a -> Attribute action
 cssVar k v = MS.styleInline_ $ "--" <> k <> ": " <> ms v
+
+-- TODO see where we are once upstream no longer requires full lenses
+-- we'll probably want to make a `miso-optics` library out of this anyway
+(-->) :: (Is k1 A_Getter, Is k2 A_Setter) => Optic' k1 is1 parent a -> Optic' k2 is2 model a -> Binding parent model
+l1 --> l2 = misoGetter l1 Miso.--> misoSetter l2
+(<--) :: (Is k1 A_Setter, Is k2 A_Getter) => Optic' k1 is1 parent a -> Optic' k2 is2 model a -> Binding parent model
+l1 <-- l2 = misoSetter l1 Miso.<-- misoGetter l2
+misoGetter :: (Is k A_Getter) => Optic' k is record field -> ML.Lens record field
+misoGetter o = ML.lens (^. o) (error "unused - Miso requires a setter where it shouldn't")
+misoSetter :: (Is k A_Setter) => Optic' k is record field -> ML.Lens record field
+misoSetter o = ML.lens (error "unused - Miso requires a getter where it shouldn't") (flip (o .~))
+-- (<-->) :: (Is k1 A_Lens, Is k2 A_Lens) => Optic' k1 is1 parent a -> Optic' k2 is2 model a -> Binding parent model
+-- l1 <--> l2 = misoLens l1 Miso.<--> misoLens l2
+-- misoLens :: (Is k A_Lens) => Optic' k is record field -> ML.Lens record field
+-- misoLens o = ML.lens (^. castOptic @A_Lens o) (flip (castOptic @A_Lens o .~))
 
 #ifdef wasi_HOST_OS
 foreign export javascript "hs" main :: IO ()
