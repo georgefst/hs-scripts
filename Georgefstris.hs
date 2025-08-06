@@ -348,9 +348,9 @@ sidebar initialModel =
     ( component
         initialModel
         ( \b ->
-                gets snd >>= \l ->
-                    let l' = bool (max opts.startLevel . pred) (min opts.topLevel . succ) b l
-                     in modify (second $ const l') >> publish setLevelTopic l'
+            gets snd >>= \l ->
+                let l' = bool (max opts.startLevel . pred) (min opts.topLevel . succ) b l
+                 in modify (second $ const l') >> publish setLevelTopic l'
         )
         ( \(pieces, level) ->
             div_
