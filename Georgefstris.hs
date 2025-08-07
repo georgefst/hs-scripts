@@ -64,10 +64,8 @@ import Data.Set qualified as Set
 import Data.Time (NominalDiffTime)
 import GHC.Generics (Generic)
 import Linear (R1 (_x), R2 (_y), V2 (V2))
-import Miso hiding (for, for_, (-->), (<--))
-import Miso qualified
+import Miso hiding (for, for_)
 import Miso.Canvas qualified as Canvas
-import Miso.Lens qualified as ML
 import Miso.String (ToMisoString)
 import Miso.Style (Color)
 import Miso.Style qualified as MS
@@ -320,8 +318,8 @@ grid initialModel =
             ]
         , initialAction = Just Init
         , bindings =
-            [ typed <-- #next
-            , typed --> #level
+            [ (typed .~) <-- (^. #next)
+            , (^. typed) --> (#level .~)
             ]
         }
   where
@@ -372,8 +370,8 @@ sidebar initialModel =
         )
     )
         { bindings =
-            [ typed --> _1
-            , typed <-- _2
+            [ (^. typed) --> (_1 .~)
+            , (typed .~) <-- (^. _2)
             ]
         }
 
@@ -452,16 +450,6 @@ keysPressedTopic = topic "keys-pressed"
 -- TODO upstream this? with escaping, obviously
 cssVar :: (ToMisoString a) => MisoString -> a -> Attribute action
 cssVar k v = MS.styleInline_ $ "--" <> k <> ": " <> ms v
-
--- TODO publish as a `miso-optics` library
-(-->) :: (Is k1 A_Getter, Is k2 A_Setter) => Optic' k1 is1 parent a -> Optic' k2 is2 model a -> Binding parent model
-l1 --> l2 = misoGetter l1 Miso.--> misoSetter l2
-(<--) :: (Is k1 A_Setter, Is k2 A_Getter) => Optic' k1 is1 parent a -> Optic' k2 is2 model a -> Binding parent model
-l1 <-- l2 = misoSetter l1 Miso.<-- misoGetter l2
-misoGetter :: (Is k A_Getter) => Optic' k is record field -> ML.Getter record field
-misoGetter = flip (^.)
-misoSetter :: (Is k A_Setter) => Optic' k is record field -> ML.Setter record field
-misoSetter = (.~)
 
 #ifdef wasi_HOST_OS
 foreign export javascript "hs" main :: IO ()
