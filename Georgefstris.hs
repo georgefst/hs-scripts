@@ -254,7 +254,6 @@ data Action
     = NoOp (Maybe MisoString)
     | Init
     | Tick
-    | SetLevel Level
     | KeyAction KeyAction
 
 gridCanvas ::
@@ -273,7 +272,7 @@ gridCanvas w h attrs f = Canvas.canvas
             Canvas.fillStyle $ Canvas.ColorArg $ opts.colours p
             Canvas.fillRect (fromIntegral x, fromIntegral y, 1, 1)
 
-grid :: (HasType (FLQ.Queue Piece) parent) => Model -> Component parent Model Action
+grid :: (HasType (FLQ.Queue Piece) parent, HasType Level parent) => Model -> Component parent Model Action
 grid initialModel =
     ( component
         initialModel
@@ -281,7 +280,6 @@ grid initialModel =
             NoOp s -> io_ $ traverse_ consoleLog s
             Init -> do
                 subscribe keysPressedTopic KeyAction (const $ NoOp Nothing)
-                subscribe setLevelTopic SetLevel (const $ NoOp Nothing)
             Tick -> do
                 level <- use #level
                 relevantTick <-
@@ -296,7 +294,6 @@ grid initialModel =
                         fixPiece
                         gameOver <- uncurry pieceIntersectsGrid <$> use (fanout #current #pile)
                         #gameOver .= gameOver
-            SetLevel l -> #level .= l
             KeyAction MoveLeft -> void $ tryMove (- V2 1 0)
             KeyAction MoveRight -> void $ tryMove (+ V2 1 0)
             KeyAction RotateLeft -> void $ tryRotate \case
@@ -325,6 +322,7 @@ grid initialModel =
         , initialAction = Just Init
         , bindings =
             [ typed <-- #next
+            , typed --> #level
             ]
         }
   where
@@ -343,14 +341,14 @@ grid initialModel =
         when b $ #current .= p
         pure b
 
-sidebar :: (HasType (FLQ.Queue Piece) parent) => (FLQ.Queue Piece, Level) -> Component parent (FLQ.Queue Piece, Level) Bool
+sidebar :: (HasType (FLQ.Queue Piece) parent, HasType Level parent) => (FLQ.Queue Piece, Level) -> Component parent (FLQ.Queue Piece, Level) Bool
 sidebar initialModel =
     ( component
         initialModel
         ( \b ->
             gets snd >>= \l ->
                 let l' = bool (max opts.startLevel . pred) (min opts.topLevel . succ) b l
-                 in modify (second $ const l') >> publish setLevelTopic l'
+                 in modify (second $ const l')
         )
         ( \(pieces, level) ->
             div_
@@ -378,6 +376,7 @@ sidebar initialModel =
     )
         { bindings =
             [ typed --> _1
+            , typed <-- _2
             ]
         }
 
@@ -413,10 +412,10 @@ dummyKeyHandler =
         { subs = [keyboardSub $ Right . toList]
         }
 
-app :: StdGen -> Component parent (FLQ.Queue Piece) ()
+app :: StdGen -> Component parent (FLQ.Queue Piece, Level) ()
 app random0 =
     component
-        initialGridModel.next
+        (initialGridModel.next, initialGridModel.level)
         (\() -> pure ())
         ( \_ ->
             div_
@@ -452,8 +451,6 @@ liftRandomiser r = do
 
 keysPressedTopic :: Topic KeyAction
 keysPressedTopic = topic "keys-pressed"
-setLevelTopic :: Topic Level
-setLevelTopic = topic "set-level"
 
 -- TODO upstream this? with escaping, obviously
 cssVar :: (ToMisoString a) => MisoString -> a -> Attribute action
