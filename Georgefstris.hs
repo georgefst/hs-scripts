@@ -64,7 +64,7 @@ import Data.Set qualified as Set
 import Data.Time (NominalDiffTime)
 import GHC.Generics (Generic)
 import Linear (R1 (_x), R2 (_y), V2 (V2))
-import Miso hiding (for, for_, (-->), (<--), (<-->))
+import Miso hiding (for, for_)
 import Miso.Canvas qualified as Canvas
 import Miso.String (ToMisoString)
 import Miso.Style (Color)
@@ -319,8 +319,8 @@ grid initialModel =
             ]
         , initialAction = Just Init
         , bindings =
-            [ typed <-- #next
-            , typed --> #level
+            [ typed <--- #next
+            , typed ---> #level
             ]
         }
   where
@@ -371,8 +371,8 @@ sidebar initialModel =
         )
     )
         { bindings =
-            [ typed --> _1
-            , typed <-- _2
+            [ typed ---> _1
+            , typed <--- _2
             ]
         }
 
