@@ -65,7 +65,6 @@ import Data.Time (NominalDiffTime)
 import GHC.Generics (Generic)
 import Linear (R1 (_x), R2 (_y), V2 (V2))
 import Miso hiding (for, for_, (-->), (<--), (<-->))
-import Miso qualified
 import Miso.Canvas qualified as Canvas
 import Miso.String (ToMisoString)
 import Miso.Style (Color)
@@ -75,6 +74,7 @@ import Optics.State.Operators
 import Safe (predDef, succDef)
 import System.Random.Stateful hiding (next, random)
 import Util.FixedLengthQueue qualified as FLQ
+import Util.MisoOptics
 import Util.Shuffle
 import Util.Util
 
@@ -451,14 +451,6 @@ keysPressedTopic = topic "keys-pressed"
 -- TODO upstream this? with escaping, obviously
 cssVar :: (ToMisoString a) => MisoString -> a -> Attribute action
 cssVar k v = MS.styleInline_ $ "--" <> k <> ": " <> ms v
-
--- TODO publish as a `miso-optics` library
--- (<-->) :: (Is k1 A_Lens, Is k2 A_Lens) => Optic' k1 is1 parent a -> Optic' k2 is2 model a -> Binding parent model
--- l1 <--> l2 = Miso.Lens.fromVL (toLensVL l1) Miso.<--> Miso.Lens.fromVL (toLensVL l2)
-(-->) :: (Is k1 A_Getter, Is k2 A_Setter) => Optic' k1 is1 parent a -> Optic' k2 is2 model a -> Binding parent model
-l1 --> l2 = (^. l1) Miso.--> (l2 .~)
-(<--) :: (Is k1 A_Setter, Is k2 A_Getter) => Optic' k1 is1 parent a -> Optic' k2 is2 model a -> Binding parent model
-l1 <-- l2 = (l1 .~) Miso.<-- (^. l2)
 
 #ifdef wasi_HOST_OS
 foreign export javascript "hs" main :: IO ()
