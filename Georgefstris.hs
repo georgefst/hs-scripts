@@ -278,7 +278,7 @@ grid initialModel =
         initialModel
         ( \case
             NoOp s -> io_ $ traverse_ consoleLog s
-            Init -> do
+            Init ->
                 subscribe keysPressedTopic KeyAction (const $ NoOp Nothing)
             Tick -> do
                 level <- use #level
