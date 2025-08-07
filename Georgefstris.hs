@@ -453,20 +453,15 @@ keysPressedTopic = topic "keys-pressed"
 cssVar :: (ToMisoString a) => MisoString -> a -> Attribute action
 cssVar k v = MS.styleInline_ $ "--" <> k <> ": " <> ms v
 
--- TODO see where we are once upstream no longer requires full lenses
--- we'll probably want to make a `miso-optics` library out of this anyway
+-- TODO publish as a `miso-optics` library
 (-->) :: (Is k1 A_Getter, Is k2 A_Setter) => Optic' k1 is1 parent a -> Optic' k2 is2 model a -> Binding parent model
 l1 --> l2 = misoGetter l1 Miso.--> misoSetter l2
 (<--) :: (Is k1 A_Setter, Is k2 A_Getter) => Optic' k1 is1 parent a -> Optic' k2 is2 model a -> Binding parent model
 l1 <-- l2 = misoSetter l1 Miso.<-- misoGetter l2
-misoGetter :: (Is k A_Getter) => Optic' k is record field -> ML.Lens record field
-misoGetter o = ML.lens (^. o) (error "unused - Miso requires a setter where it shouldn't")
-misoSetter :: (Is k A_Setter) => Optic' k is record field -> ML.Lens record field
-misoSetter o = ML.lens (error "unused - Miso requires a getter where it shouldn't") (flip (o .~))
--- (<-->) :: (Is k1 A_Lens, Is k2 A_Lens) => Optic' k1 is1 parent a -> Optic' k2 is2 model a -> Binding parent model
--- l1 <--> l2 = misoLens l1 Miso.<--> misoLens l2
--- misoLens :: (Is k A_Lens) => Optic' k is record field -> ML.Lens record field
--- misoLens o = ML.lens (^. castOptic @A_Lens o) (flip (castOptic @A_Lens o .~))
+misoGetter :: (Is k A_Getter) => Optic' k is record field -> ML.Getter record field
+misoGetter = flip (^.)
+misoSetter :: (Is k A_Setter) => Optic' k is record field -> ML.Setter record field
+misoSetter = (.~)
 
 #ifdef wasi_HOST_OS
 foreign export javascript "hs" main :: IO ()
