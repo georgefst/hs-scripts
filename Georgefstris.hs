@@ -138,7 +138,7 @@ opts =
             _ -> Nothing
         }
   where
-    startLevel = Level 1
+    startLevel = Level 9
     topLevel = Level 10
 
 newtype Level = Level Word
@@ -196,6 +196,7 @@ rotate = flip \(V2 x y) -> \case
 
 data Cell
     = Occupied Piece
+    | Ghost Piece
     | Unoccupied
     deriving (Eq, Ord, Show)
 
@@ -211,14 +212,14 @@ lookupGrid :: Grid -> V2 Int -> Either Bool Cell -- `Left True` means the locati
 lookupGrid (Grid g) (V2 x y) = if y < 0 then Left True else maybeToEither False $ g A.!? A.Ix2 x y
 deconstructGrid :: (Monad m) => Grid -> (V2 Int -> Cell -> m b) -> m ()
 deconstructGrid (Grid g) = A.iforM_ g . \f (A.Ix2 x y) -> f (V2 x y)
-addPieceToGrid :: ActivePiece -> Grid -> Grid
-addPieceToGrid ActivePiece{..} (Grid g) =
+addPieceToGrid :: Bool -> ActivePiece -> Grid -> Grid
+addPieceToGrid ghost ActivePiece{..} (Grid g) =
     -- TODO can we avoid a copy?
     Grid $ A.withMArrayST_ g \gm -> for_ ((+ pos) . rotate rotation <$> shape piece) \(V2 x y) ->
         A.modify_
             gm
             -- this assumes that the extra piece does not intersect occupied cells - if it does we overwrite
-            (const $ pure $ Occupied piece)
+            (const $ pure $ (if ghost then Ghost else Occupied) piece)
             (A.Ix2 x y)
 pieceIntersectsGrid :: ActivePiece -> Grid -> Bool
 pieceIntersectsGrid ActivePiece{..} (Grid g) =
@@ -259,7 +260,7 @@ gridCanvas ::
     Int ->
     Int ->
     [Attribute action] ->
-    ((Piece -> V2 Int -> Canvas.Canvas ()) -> Canvas.Canvas ()) ->
+    ((Piece -> Bool -> V2 Int -> Canvas.Canvas ()) -> Canvas.Canvas ()) ->
     View parent action
 gridCanvas w h attrs f = Canvas.canvas
     ([width_ $ ms w, height_ $ ms h, cssVar "canvas-width" w, cssVar "canvas-height" h] <> attrs)
@@ -267,8 +268,8 @@ gridCanvas w h attrs f = Canvas.canvas
     \() -> do
         -- TODO keep some canvas state rather than always redrawing everything?
         Canvas.clearRect (0, 0, fromIntegral w, fromIntegral h)
-        f \p (V2 x y) -> do
-            Canvas.fillStyle $ Canvas.ColorArg $ opts.colours p
+        f \p ghost (V2 x y) -> do
+            Canvas.fillStyle $ Canvas.ColorArg if ghost then MS.lightgrey else opts.colours p
             Canvas.fillRect (fromIntegral x, fromIntegral y, 1, 1)
 
 grid :: (HasType (FLQ.Queue Piece) parent, HasType Level parent) => Model -> Component parent Model Action
@@ -306,10 +307,12 @@ grid initialModel =
             KeyAction HardDrop -> whileM (tryMove (+ V2 0 1)) >> fixPiece
         )
         ( \Model{..} ->
-            gridCanvas opts.gridWidth opts.gridHeight (mwhen gameOver [class_ "game-over"]) \f ->
-                deconstructGrid (addPieceToGrid current pile) \v -> \case
-                    Unoccupied -> pure ()
-                    Occupied p -> f p v
+            let ghost = while (pieceFits pile) (#pos %~ (+ V2 0 1)) current
+             in gridCanvas opts.gridWidth opts.gridHeight (mwhen gameOver [class_ "game-over"]) \f ->
+                    deconstructGrid (addPieceToGrid False current $ addPieceToGrid True ghost pile) \v -> \case
+                        Unoccupied -> pure ()
+                        Occupied p -> f p False v
+                        Ghost p -> f p True v
         )
     )
         { subs =
@@ -326,18 +329,23 @@ grid initialModel =
   where
     fixPiece = do
         Model{current, next} <- get
-        #pile %= addPieceToGrid current
+        #pile %= addPieceToGrid False current
         next' <- #random %%= flip runRandomPieces (liftRandomiser opts.randomiser)
         fanout #current #next .= first newPiece (FLQ.shift next' next)
         #pile %= removeCompletedLines
     tryMove f = tryEdit . (#pos %~ f) =<< use #current
     tryRotate f = tryEdit . (\p -> p & #rotation %~ f p.piece) =<< use #current
     tryEdit p = do
-        g <- use #pile
-        let cells = traverse (Validation . first All . lookupGrid g . (+ p.pos) . rotate p.rotation) $ shape p.piece
-            b = either getAll (all (== Unoccupied)) cells.unwrap
+        b <- flip pieceFits p <$> use #pile
         when b $ #current .= p
         pure b
+    pieceFits g p =
+        -- let cells = traverse (Validation . first All . lookupGrid g . (+ p.pos) . rotate p.rotation) $ shape p.piece
+        --  in either getAll (all (== Unoccupied)) cells.unwrap
+        either getAll (all (== Unoccupied))
+            . (.unwrap)
+            . traverse (Validation . first All . lookupGrid g . (+ p.pos) . rotate p.rotation)
+            $ shape p.piece
 
 sidebar :: (HasType (FLQ.Queue Piece) parent, HasType Level parent) => (FLQ.Queue Piece, Level) -> Component parent (FLQ.Queue Piece, Level) Bool
 sidebar initialModel =
@@ -358,7 +366,7 @@ sidebar initialModel =
                                 vmax = V2 (NE.maximum $ (^. lensVL _x) <$> ps) (NE.maximum $ (^. lensVL _y) <$> ps)
                                 V2 w h = vmax - vMin + 1
                                in
-                                gridCanvas w h [] \f -> for_ ((- vMin) <$> ps) $ f piece
+                                gridCanvas w h [] \f -> for_ ((- vMin) <$> ps) $ f piece False
                             ]
                   )
                     <> [ div_

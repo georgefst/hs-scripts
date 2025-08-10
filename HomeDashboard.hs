@@ -1,3 +1,4 @@
+-- TODO this file is slow with HLS at times - split in to modules by component?
 {-# LANGUAGE GHC2024 #-}
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE BlockArguments #-}
@@ -332,6 +333,13 @@ music =
                                 secrets.spotifyClientId
                                 secrets.spotifyClientSecret
                     -- we delay to ensure we don't completely spam, even if something goes horribly wrong
+                    -- TODO even though we want to delay in all cases, putting the delay here feels wrong
+                    -- it makes this less of a general utility function
+                    -- plus we really don't want to pause when succeeding at startup, hence `wait` arg
+                    -- it does make using `untilJustM` easy though...
+                    -- but maybe we just shouldn't call that? a failure here at startup would indicate a serious issue,
+                    -- unlikely to be recoverable without code (or config) changes
+                    -- same goes really for `Nothing -> pure ()` case below, which shouldn't happen
                     when wait $ liftIO $ threadDelay 3_000_000
                     either
                         (\e -> consoleLog ("failed to refresh token: " <> ms (show e)) >> pure Nothing)
@@ -345,11 +353,22 @@ music =
                             Left e -> do
                                 liftJSM . consoleLog $
                                     "failed to get playback state (will try to refresh token): " <> ms (show e)
+                                -- TODO hmm, would be good to only run refresh token attempt on 401s
+                                -- actually, read `expiresIn` field of response and use that instead of error handling...
                                 lift (refresh True) >>= \case
                                     Nothing -> pure () -- just try again (this shouldn't generally happen)
                                     Just tr -> put tr.accessToken
                             Right r -> do
-                                lift $ sink r
+                                -- TODO if this is `Nothing`, maybe just retain the last state?
+                                -- it looks a bit rubbish for this to be blank
+                                -- and all it means is I haven't been on Spotify for a while
+                                -- this way of course, we only have `Nothing` if we see nothing at startup,
+                                -- in which case it's tempting to not even start the component, and wait for something
+                                -- then the state type here can be `non-Maybe`d
+                                -- so this becomes a lot like the clock example
+                                -- maybe now that passing state from parent is easier, we should consider initialising state in the parent
+                                when (isJust r) $ lift $ sink r
+                                -- lift $ sink r
                                 -- TODO how often? Spotify intentionally don't say what the API limit is
                                 -- and we can't just subscribe to be notified: https://github.com/spotify/web-api/issues/492
                                 -- one is supposed to check for 429s and read the `Retry-After` header to know how long to back off
