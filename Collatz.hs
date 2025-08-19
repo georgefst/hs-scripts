@@ -55,5 +55,6 @@ main = do
                     )
                     p1
                     p2
+                    & lc blueDark
             )
             gr
