@@ -69,7 +69,7 @@ main = shakeArgs shakeOpts do
                                 ["Scoreboard.hs", "MagicMouse.hs"]
                             <> mwhen
                                 target.cross
-                                ["Timesheet.hs", "Charts.hs", "PiGpioDiagram.hs"]
+                                ["Timesheet.hs", "Charts.hs", "Collatz.hs", "PiGpioDiagram.hs"]
                             <> mwhen
                                 target.wasm
                                 ["HttpEcho.hs"]
@@ -268,6 +268,7 @@ main = shakeArgs shakeOpts do
             ("diagrams-contrib" & munless noTH)
             ("diagrams-core")
             ("diagrams-lib" & munless noTH)
+            ("diagrams-graphviz" & munless noDiagrams)
             ("diagrams-postscript" & munless noDiagrams)
             ("diagrams-rasterific" & munless noDiagrams)
             ("diagrams-svg" & munless noDiagrams)
