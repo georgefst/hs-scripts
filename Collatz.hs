@@ -32,9 +32,9 @@ main = do
             go i = do
                 m <- get
                 unless (Map.member i m) do
-                    let next = collatzStep i
-                    put $ Map.insert i next m
-                    go next
+                    let j = collatzStep i
+                    put $ Map.insert i j m
+                    go j
     gr <- layoutGraph Fdp $ mkGraph nodes (uncurry (,,()) <$> edges)
     mainWith @(Diagram B)
         . bgFrame 1 blueMedium
