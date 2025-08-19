@@ -50,7 +50,7 @@ main = do
             ( \_ p1 _ p2 () p ->
                 arrowBetween'
                     ( def
-                        & (gaps .~ 19)
+                        & (gaps .~ local 18)
                         & maybe id ((arrowShaft .~) . unLoc) (listToMaybe $ pathTrails p)
                     )
                     p1
