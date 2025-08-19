@@ -15,6 +15,8 @@ import Data.Colour (Colour)
 import Data.Colour.SRGB (sRGB24read)
 import Data.Functor ((<&>))
 import Data.List.NonEmpty qualified as NE
+import Data.Map (Map)
+import Data.Map qualified as Map
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 import Data.Time (NominalDiffTime, nominalDiffTimeToSeconds)
@@ -32,6 +34,9 @@ modifyFile f file = T.writeFile file . f =<< T.readFile file
 
 ($?) :: Bool -> (a -> a) -> a -> a
 ($?) = flip $ bool id
+
+mapInsertUnlessMember :: (Ord k) => k -> a -> Map k a -> Maybe (Map k a)
+mapInsertUnlessMember k v = Map.alterF (maybe (Just $ Just v) (const Nothing)) k
 
 neUncons :: NE.NonEmpty a -> (a, [a])
 neUncons (x NE.:| xs) = (x, xs)

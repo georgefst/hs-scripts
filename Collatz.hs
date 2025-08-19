@@ -5,7 +5,6 @@
 
 module Collatz (main) where
 
-import Control.Monad
 import Control.Monad.State
 import Data.Foldable
 import Data.GraphViz (GraphvizCommand (..))
@@ -29,12 +28,7 @@ main :: IO ()
 main = do
     let (nodes, edges) = (map fst &&& id) . Map.toList $ flip execState Map.empty $ for_ startNumbers go
           where
-            go i = do
-                m <- get
-                unless (Map.member i m) do
-                    let j = collatzStep i
-                    put $ Map.insert i j m
-                    go j
+            go i = let j = collatzStep i in maybe (pure ()) ((>> go j) . put) . mapInsertUnlessMember i j =<< get
     gr <- layoutGraph Fdp $ mkGraph nodes (uncurry (,,()) <$> edges)
     mainWith @(Diagram B)
         . bgFrame 1 blueMedium
