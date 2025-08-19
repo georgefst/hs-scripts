@@ -22,14 +22,15 @@ collatzStep n = case n `divMod` 2 of
     _ -> 3 * n + 1
 
 startNumbers :: [Integer]
-startNumbers = [1 .. 21]
+startNumbers = [3, 9, 15, 21, 33, 39, 43, 45]
 
 main :: IO ()
 main = do
-    let (nodes, edges) = (map fst &&& id) . Map.toList $ flip execState Map.empty $ for_ startNumbers go
+    let (nodes, edges0) = (map fst &&& id) . Map.toList $ flip execState Map.empty $ for_ startNumbers go
           where
-            go i = let j = collatzStep i in maybe (pure ()) ((>> go j) . put) . mapInsertUnlessMember i j =<< get
-    gr <- layoutGraph Fdp $ mkGraph nodes (uncurry (,,()) <$> edges)
+            go i = let j = until odd collatzStep $ collatzStep i in maybe (pure ()) ((>> go j) . put) . mapInsertUnlessMember i j =<< get
+        edges = filter (/= (1, 1)) edges0
+    gr <- layoutGraph Dot $ mkGraph nodes (uncurry (,,()) <$> edges)
     mainWith @(Diagram B)
         . bgFrame 1 blueMedium
         . pad 1.05
