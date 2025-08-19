@@ -22,7 +22,7 @@ collatzStep n = case n `divMod` 2 of
     _ -> 3 * n + 1
 
 startNumbers :: [Integer]
-startNumbers = [1 .. 20]
+startNumbers = [1 .. 21]
 
 main :: IO ()
 main = do
