@@ -11,6 +11,8 @@ import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.State (MonadState, state)
 import Data.Bifunctor (bimap)
 import Data.Bool (bool)
+import Data.Colour (Colour)
+import Data.Colour.SRGB (sRGB24read)
 import Data.Functor ((<&>))
 import Data.List.NonEmpty qualified as NE
 import Data.Text (Text)
@@ -51,3 +53,10 @@ threadDelay' = liftIO . threadDelay . round . (* 1_000_000) . nominalDiffTimeToS
 
 fanout :: Lens' s a -> Lens' s b -> Lens' s (a, b)
 fanout l1 l2 = lens ((^. l1) &&& (^. l2)) (flip $ uncurry (.) . bimap (l1 .~) (l2 .~))
+
+blueLight :: (Ord a, Floating a) => Colour a
+blueLight = sRGB24read "#95afdd"
+blueMedium :: (Ord a, Floating a) => Colour a
+blueMedium = sRGB24read "#3863af"
+blueDark :: (Ord a, Floating a) => Colour a
+blueDark = sRGB24read "#162745"
