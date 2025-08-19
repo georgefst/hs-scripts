@@ -37,7 +37,7 @@ main = do
                     go next
     gr <- layoutGraph Fdp $ mkGraph nodes (uncurry (,,()) <$> edges)
     mainWith @(Diagram B)
-        . bg blueMedium
+        . bgFrame 1 blueMedium
         . pad 1.05
         . center
         . font "Helvetica"
