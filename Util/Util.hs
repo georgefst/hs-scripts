@@ -29,6 +29,9 @@ import Optics (Lens', lens, (.~), (^.))
 (<<&>>) :: (Functor f1, Functor f2) => f1 (f2 a) -> (a -> b) -> f1 (f2 b)
 (<<&>>) = flip (<<$>>)
 
+takeUntil :: (a -> Bool) -> [a] -> [a]
+takeUntil p = foldr (\x xs -> x : if p x then [] else xs) []
+
 modifyFile :: (Text -> Text) -> FilePath -> IO ()
 modifyFile f file = T.writeFile file . f =<< T.readFile file
 
