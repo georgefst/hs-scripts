@@ -275,7 +275,9 @@ gridCanvas w h attrs f = Canvas.canvas
             Canvas.fillStyle $ Canvas.ColorArg if ghost then MS.lightgrey else opts.colours p
             Canvas.fillRect (fromIntegral x, fromIntegral y, 1, 1)
 
-grid :: (HasType (FLQ.Queue Piece) parent, HasType Level parent) => Model -> Component parent Model Action
+grid ::
+    (HasType (FLQ.Queue Piece) parent, HasType Level parent) =>
+    Model -> Component parent Model Action
 grid initialModel =
     ( component
         initialModel
@@ -354,7 +356,9 @@ grid initialModel =
             . traverse (Validation . first All . lookupGrid g . (+ p.pos) . rotate p.rotation)
             $ shape p.piece
 
-sidebar :: (HasType (FLQ.Queue Piece) parent, HasType Level parent) => (FLQ.Queue Piece, Level) -> Component parent (FLQ.Queue Piece, Level) Bool
+sidebar ::
+    (HasType (FLQ.Queue Piece) parent, HasType Level parent) =>
+    (FLQ.Queue Piece, Level) -> Component parent (FLQ.Queue Piece, Level) Bool
 sidebar initialModel =
     ( component
         initialModel
