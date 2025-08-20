@@ -309,11 +309,14 @@ grid initialModel =
             KeyAction SoftDrop -> void $ tryMove (+ V2 0 1)
             KeyAction HardDrop -> whileM (tryMove (+ V2 0 1)) >> fixPiece
         )
-        ( \model@Model{..} ->
+        ( \Model{..} ->
             gridCanvas opts.gridWidth opts.gridHeight (mwhen gameOver [class_ "game-over"]) \f ->
                 deconstructGrid
-                    ( addPieceToGrid False current $
-                        applyWhen opts.ghost (addPieceToGrid True (ghost model)) pile
+                    ( addPieceToGrid False current
+                        . applyWhen
+                            opts.ghost
+                            (addPieceToGrid True (while (pieceFits pile) (#pos %~ (+ V2 0 1)) current))
+                        $ pile
                     )
                     \v -> \case
                         Unoccupied -> pure ()
@@ -350,7 +353,6 @@ grid initialModel =
             . (.unwrap)
             . traverse (Validation . first All . lookupGrid g . (+ p.pos) . rotate p.rotation)
             $ shape p.piece
-    ghost Model{..} = while (pieceFits pile) (#pos %~ (+ V2 0 1)) current
 
 sidebar :: (HasType (FLQ.Queue Piece) parent, HasType Level parent) => (FLQ.Queue Piece, Level) -> Component parent (FLQ.Queue Piece, Level) Bool
 sidebar initialModel =
