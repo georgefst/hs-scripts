@@ -339,8 +339,10 @@ grid initialModel =
         when b $ #current .= p
         pure b
     pieceFits g p =
-        let cells = traverse (Validation . first All . lookupGrid g . (+ p.pos) . rotate p.rotation) $ shape p.piece
-         in either getAll (all (== Unoccupied)) cells.unwrap
+        either getAll (all (== Unoccupied))
+            . (.unwrap)
+            . traverse (Validation . first All . lookupGrid g . (+ p.pos) . rotate p.rotation)
+            $ shape p.piece
     ghost Model{..} = while (pieceFits pile) (#pos %~ (+ V2 0 1)) current
 
 sidebar :: (HasType (FLQ.Queue Piece) parent, HasType Level parent) => (FLQ.Queue Piece, Level) -> Component parent (FLQ.Queue Piece, Level) Bool
