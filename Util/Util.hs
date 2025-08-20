@@ -29,6 +29,12 @@ import Optics (Lens', lens, (.~), (^.))
 (<<&>>) :: (Functor f1, Functor f2) => f1 (f2 a) -> (a -> b) -> f1 (f2 b)
 (<<&>>) = flip (<<$>>)
 
+-- | Analogous to `until`. Note that `\p -> until (not . p)` goes on one step too long.
+while :: (a -> Bool) -> (a -> a) -> a -> a
+while p f = go
+  where
+    go x = let y = f x in if p y then go y else x
+
 takeUntil :: (a -> Bool) -> [a] -> [a]
 takeUntil p = foldr (\x xs -> x : if p x then [] else xs) []
 
