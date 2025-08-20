@@ -311,10 +311,14 @@ grid initialModel =
         )
         ( \model@Model{..} ->
             gridCanvas opts.gridWidth opts.gridHeight (mwhen gameOver [class_ "game-over"]) \f ->
-                deconstructGrid (addPieceToGrid False current $ applyWhen opts.ghost (addPieceToGrid True (ghost model)) pile) \v -> \case
-                    Unoccupied -> pure ()
-                    Occupied p -> f p False v
-                    Ghost p -> f p True v
+                deconstructGrid
+                    ( addPieceToGrid False current $
+                        applyWhen opts.ghost (addPieceToGrid True (ghost model)) pile
+                    )
+                    \v -> \case
+                        Unoccupied -> pure ()
+                        Occupied p -> f p False v
+                        Ghost p -> f p True v
         )
     )
         { subs =
