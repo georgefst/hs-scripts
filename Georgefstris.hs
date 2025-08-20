@@ -50,6 +50,7 @@ import Data.Bool
 import Data.Either.Extra
 import Data.Foldable
 import Data.Foldable1 qualified as NE
+import Data.Function
 import Data.Generics.Product
 import Data.List.Extra
 import Data.List.NonEmpty (NonEmpty ((:|)))
@@ -94,6 +95,7 @@ data Opts = Opts
     { gridWidth :: Int
     , gridHeight :: Int
     , previewLength :: Word
+    , ghost :: Bool
     , random :: IO StdGen
     , randomiser :: State StdGen (NonEmpty Piece)
     , startLevel :: Level
@@ -111,6 +113,7 @@ opts =
         { gridWidth = 10
         , gridHeight = 18
         , previewLength = 1
+        , ghost = True
         , random = newStdGen
         , randomiser = flip shuffleM StateGenM . (:| enumerate) =<< uniformM StateGenM
         , startLevel
@@ -308,7 +311,7 @@ grid initialModel =
         )
         ( \model@Model{..} ->
             gridCanvas opts.gridWidth opts.gridHeight (mwhen gameOver [class_ "game-over"]) \f ->
-                deconstructGrid (addPieceToGrid False current $ addPieceToGrid True (ghost model) pile) \v -> \case
+                deconstructGrid (addPieceToGrid False current $ applyWhen opts.ghost (addPieceToGrid True (ghost model)) pile) \v -> \case
                     Unoccupied -> pure ()
                     Occupied p -> f p False v
                     Ghost p -> f p True v
