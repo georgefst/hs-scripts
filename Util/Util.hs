@@ -1,6 +1,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall #-}
 
@@ -22,6 +23,7 @@ import Data.Map qualified as Map
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 import Data.Time (NominalDiffTime, nominalDiffTimeToSeconds)
+import Data.Tree (Tree (Node))
 import Data.Tuple.Extra (third3, uncurry3, (&&&))
 import Optics (Lens', lens, (.~), (^.))
 
@@ -39,6 +41,18 @@ while p f = go
 
 takeUntil :: (a -> Bool) -> [a] -> [a]
 takeUntil p = foldr (\x xs -> x : if p x then [] else xs) []
+
+takeTree :: Word -> Tree a -> Tree a
+takeTree = \case
+    n | n <= 0 -> error "takeTree requires positive argument"
+    1 -> \(Node x _) -> Node x []
+    n -> \(Node x ts) -> Node x $ map (takeTree $ n - 1) ts
+
+-- TODO remove once we're on `containers-0.8`, in favour of `Data.Tree.edges`
+treeEdges :: Tree a -> [(a, a)]
+treeEdges (Node x0 ts0) =
+    let go p = foldr (\(Node x ts) z -> (p, x) : go x z ts)
+     in go x0 [] ts0
 
 modifyFile :: (Text -> Text) -> FilePath -> IO ()
 modifyFile f file = T.writeFile file . f =<< T.readFile file

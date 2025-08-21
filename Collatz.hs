@@ -11,9 +11,10 @@ import Data.Function
 import Data.GraphViz (GraphvizCommand (..))
 import Data.Map qualified as Map
 import Data.Maybe
+import Data.Tree qualified as Tree
 import Data.Tuple.Extra
 import Diagrams.Backend.SVG.CmdLine
-import Diagrams.Prelude hiding (p2)
+import Diagrams.Prelude hiding (both, p2)
 import Diagrams.TwoD.GraphViz
 import Util.Util
 
@@ -22,24 +23,39 @@ collatzStep n = case n `divMod` 2 of
     (d, 0) -> d
     _ -> 3 * n + 1
 
-startNumbers :: [Integer]
-startNumbers = [1 .. 21]
+collatzStepReverse :: Integer -> [Integer]
+collatzStepReverse n =
+    (n * 2) : case (n - 1) `divMod` 3 of
+        (d, 0) | odd d && d /= 1 -> [d]
+        _ -> []
+
+topDownStartNumbers :: [Integer]
+topDownStartNumbers = [1 .. 21]
+
+bottomUpLayers :: Word
+bottomUpLayers = 12
 
 main :: IO ()
 main = do
-    gr <- layoutGraph Fdp
+    grTopDown <- layoutGraph Fdp
         . uncurry mkGraph
         . (map fst &&& map (uncurry (,,())))
         . Map.toList
         . flip execState Map.empty
-        . for_ startNumbers
+        . for_ topDownStartNumbers
         $ fix \go i -> let j = collatzStep i in maybe (pure ()) ((>> go j) . put) . mapInsertUnlessMember i j =<< get
+    grBottomUp <-
+        layoutGraph Dot
+            . uncurry mkGraph
+            . (toList &&& map (uncurry (,,()) . swap) . treeEdges)
+            . takeTree bottomUpLayers
+            $ Tree.unfoldTree (id &&& collatzStepReverse) 1
     mainWith @(Diagram B)
         . bgFrame 1 blueDark
         . pad 1.05
-        . center
         . font "Helvetica"
-        $ drawGraph
+        . uncurry (|||)
+        $ both ( center . drawGraph
             ( \n ->
                 place $
                     (text (show n) & fontSizeL 16 & fc white)
@@ -58,4 +74,5 @@ main = do
                     & lc blueLight
                     & lw (local 3)
             )
-            gr
+            )
+            (grTopDown, grBottomUp)
