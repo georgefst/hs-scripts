@@ -26,10 +26,10 @@ startNumbers = [1 .. 21]
 
 main :: IO ()
 main = do
-    let (nodes, edges) = (map fst &&& id) . Map.toList $ flip execState Map.empty $ for_ startNumbers go
+    let (nodes, edges) = (map fst &&& map (uncurry (,,()))) . Map.toList $ flip execState Map.empty $ for_ startNumbers go
           where
             go i = let j = collatzStep i in maybe (pure ()) ((>> go j) . put) . mapInsertUnlessMember i j =<< get
-    gr <- layoutGraph Fdp $ mkGraph nodes (uncurry (,,()) <$> edges)
+    gr <- layoutGraph Fdp $ mkGraph nodes edges
     mainWith @(Diagram B)
         . bgFrame 1 blueDark
         . pad 1.05
