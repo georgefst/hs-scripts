@@ -12,7 +12,9 @@ import Control.Monad.State (MonadState, state)
 import Data.Bifunctor (bimap)
 import Data.Bool (bool)
 import Data.Colour (Colour)
-import Data.Colour.SRGB (sRGB24read)
+import Data.Colour.RGBSpace (uncurryRGB)
+import Data.Colour.RGBSpace.HSL (hsl, hslView)
+import Data.Colour.SRGB (sRGB, sRGB24read, toSRGB)
 import Data.Functor ((<&>))
 import Data.List.NonEmpty qualified as NE
 import Data.Map (Map)
@@ -20,7 +22,7 @@ import Data.Map qualified as Map
 import Data.Text (Text)
 import Data.Text.IO qualified as T
 import Data.Time (NominalDiffTime, nominalDiffTimeToSeconds)
-import Data.Tuple.Extra ((&&&))
+import Data.Tuple.Extra (third3, uncurry3, (&&&))
 import Optics (Lens', lens, (.~), (^.))
 
 (<<$>>) :: (Functor f1, Functor f2) => (a -> b) -> f1 (f2 a) -> f1 (f2 b)
@@ -68,9 +70,10 @@ threadDelay' = liftIO . threadDelay . round . (* 1_000_000) . nominalDiffTimeToS
 fanout :: Lens' s a -> Lens' s b -> Lens' s (a, b)
 fanout l1 l2 = lens ((^. l1) &&& (^. l2)) (flip $ uncurry (.) . bimap (l1 .~) (l2 .~))
 
-blueLight :: (Ord a, Floating a) => Colour a
-blueLight = sRGB24read "#95afdd"
-blueMedium :: (Ord a, Floating a) => Colour a
-blueMedium = sRGB24read "#3863af"
-blueDark :: (Ord a, Floating a) => Colour a
+lighten :: Double -> Colour Double -> Colour Double
+lighten x = uncurryRGB sRGB . uncurry3 hsl . third3 (\l -> l + (1 - l) * x) . hslView . toSRGB
+
+blueDark, blueMedium, blueLight :: Colour Double
 blueDark = sRGB24read "#162745"
+blueMedium = lighten (1 / 3) blueDark
+blueLight = lighten (2 / 3) blueDark
