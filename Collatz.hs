@@ -55,24 +55,26 @@ main = do
         . pad 1.05
         . font "Helvetica"
         . uncurry (|||)
-        $ both ( center . drawGraph
-            ( \n ->
-                place $
-                    (text (show n) & fontSizeL 16 & fc white)
-                        <> (circle 18 & fc blueMedium & lw 0)
-            )
-            ( \_ p1 _ p2 () p ->
-                arrowBetween'
-                    ( def
-                        & (gaps .~ local 18)
-                        & (headLength .~ local 17)
-                        & maybe id ((arrowShaft .~) . unLoc) (listToMaybe $ pathTrails p)
-                        & (headStyle %~ fc white)
+        $ both
+            ( center
+                . drawGraph
+                    ( \n ->
+                        place $
+                            (text (show n) & fontSizeL 16 & fc white)
+                                <> (circle 18 & fc blueMedium & lw 0)
                     )
-                    p1
-                    p2
-                    & lc blueLight
-                    & lw (local 3)
-            )
+                    ( \_ p1 _ p2 () p ->
+                        arrowBetween'
+                            ( def
+                                & (gaps .~ local 18)
+                                & (headLength .~ local 17)
+                                & maybe id ((arrowShaft .~) . unLoc) (listToMaybe $ pathTrails p)
+                                & (headStyle %~ fc white)
+                            )
+                            p1
+                            p2
+                            & lc blueLight
+                            & lw (local 3)
+                    )
             )
             (grTopDown, grBottomUp)
