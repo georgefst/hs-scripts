@@ -38,7 +38,7 @@ body {
     display: grid;
     grid-auto-rows: 1fr;
     align-items: center;
-    .next {
+    > .next {
       display: flex;
       align-items: center;
       justify-content: center;
