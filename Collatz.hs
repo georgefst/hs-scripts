@@ -72,11 +72,11 @@ main = do
             $ Tree.unfoldTree (id &&& collatzStepReverse) 1
     mainWith @(Diagram B)
         . bgFrame 1 (fromAlphaColour XKCD.orangeYellow)
-        . pad 1.05
         . font "Helvetica"
         . uncurry (|||)
         $ both
-            ( center
+            ( pad 1.05
+                . center
                 . drawGraph
                     ( \(n, l) ->
                         place $
