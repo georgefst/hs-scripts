@@ -10,7 +10,7 @@ module Util.Util where
 import Control.Concurrent (threadDelay)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.State (MonadState, state)
-import Data.Bifunctor (bimap)
+import Data.Bifunctor (bimap, second)
 import Data.Bool (bool)
 import Data.Colour (Colour)
 import Data.Colour.RGBSpace (uncurryRGB)
@@ -41,6 +41,9 @@ while p f = go
 
 takeUntil :: (a -> Bool) -> [a] -> [a]
 takeUntil p = foldr (\x xs -> x : if p x then [] else xs) []
+
+iterateUntilJust :: (a -> Maybe b) -> (a -> a) -> a -> (b, NE.NonEmpty a)
+iterateUntilJust p f x = maybe (second (NE.cons x) $ iterateUntilJust p f (f x)) (,NE.singleton x) $ p x
 
 takeTree :: Word -> Tree a -> Tree a
 takeTree = \case

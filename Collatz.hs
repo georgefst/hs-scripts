@@ -6,14 +6,19 @@
 module Collatz (main) where
 
 import Control.Monad.State
+import Control.Monad.Zip (mzip)
 import Data.Foldable
 import Data.Function
+import Data.Graph.Inductive qualified as G
 import Data.GraphViz (GraphvizCommand (..))
+import Data.List (genericLength)
+import Data.List.NonEmpty qualified as NE
 import Data.Map qualified as Map
 import Data.Maybe
 import Data.Tree qualified as Tree
 import Data.Tuple.Extra
 import Diagrams.Backend.SVG.CmdLine
+import Diagrams.Color.XKCD qualified as XKCD
 import Diagrams.Prelude hiding (both, p2)
 import Diagrams.TwoD.GraphViz
 import Util.Util
@@ -35,35 +40,48 @@ topDownStartNumbers = [1 .. 21]
 bottomUpLayers :: Word
 bottomUpLayers = 12
 
+layerColour :: Word -> Colour Double
+layerColour s = lighten ((1 - (fromIntegral s / fromIntegral (bottomUpLayers - 1))) * 0.6) blueDark
+
 main :: IO ()
 main = do
     grTopDown <- layoutGraph Fdp
-        . uncurry mkGraph
-        . (map fst &&& map (uncurry (,,())))
+        . uncurry G.mkGraph
+        . ( map (\(n, (_, s)) -> (fromInteger n, (n, s)))
+                &&& map (\(n, (t, _)) -> (fromInteger n, fromInteger t, ()))
+          )
         . Map.toList
-        . flip execState Map.empty
-        . for_ topDownStartNumbers
-        $ fix \go i -> let j = collatzStep i in maybe (pure ()) ((>> go j) . put) . mapInsertUnlessMember i j =<< get
+        . flip execState (Map.singleton 1 (collatzStep 1, 0))
+        $ for_ topDownStartNumbers \i -> do
+            e <- get
+            let (layer, chain) = iterateUntilJust (fmap snd . flip Map.lookup e) collatzStep i
+            traverse_ (modify . uncurry Map.insert)
+                . zip (NE.init chain)
+                . zip (NE.tail chain)
+                $ map ((layer + genericLength (NE.toList chain)) -) [1 ..]
     grBottomUp <-
         layoutGraph Dot
-            . uncurry mkGraph
-            . (toList &&& map (uncurry (,,()) . swap) . treeEdges)
+            . uncurry G.mkGraph
+            . ( (map (\(n, l) -> (fromInteger n, (n, l))) . toList)
+                    &&& (map (\((n2, _), (n1, _)) -> (fromInteger n1, fromInteger n2, ())) . treeEdges)
+              )
+            . flip mzip (Tree.unfoldTree (id &&& repeat . succ) 0)
             . takeTree bottomUpLayers
             $ Tree.unfoldTree (id &&& collatzStepReverse) 1
     mainWith @(Diagram B)
-        . bgFrame 1 blueDark
+        . bgFrame 1 (fromAlphaColour XKCD.orangeYellow)
         . pad 1.05
         . font "Helvetica"
         . uncurry (|||)
         $ both
             ( center
                 . drawGraph
-                    ( \n ->
+                    ( \(n, l) ->
                         place $
                             (text (show n) & fontSizeL 16 & fc white)
-                                <> (circle 18 & fc blueMedium & lw 0)
+                                <> (circle 18 & fc (layerColour l) & lw 0)
                     )
-                    ( \_ p1 _ p2 () p ->
+                    ( \(_, l1) p1 (_, _) p2 () p ->
                         arrowBetween'
                             ( def
                                 & (gaps .~ local 18)
@@ -73,7 +91,7 @@ main = do
                             )
                             p1
                             p2
-                            & lc blueLight
+                            & lc (layerColour l1)
                             & lw (local 3)
                     )
             )

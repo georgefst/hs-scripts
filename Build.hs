@@ -279,6 +279,7 @@ main = shakeArgs shakeOpts do
             ("extra")
             ("file-io")
             ("filepath")
+            ("fgl")
             ("force-layout" & munless noTH)
             ("freer-simple")
             ("fsnotify" & munless wasm)
