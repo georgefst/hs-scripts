@@ -52,5 +52,6 @@ main = do
                     p1
                     p2
                     & lc blueLight
+                    & lw (local 3)
             )
             gr
