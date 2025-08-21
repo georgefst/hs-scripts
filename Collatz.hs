@@ -26,15 +26,23 @@ collatzStep :: Integer -> Integer
 collatzStep n = case n `divMod` 2 of
     (d, 0) -> d
     _ -> 3 * n + 1
+collatzStepOdd :: Integer -> Integer
+collatzStepOdd = until odd collatzStep . collatzStep
 
 collatzStepReverse :: Integer -> [Integer]
 collatzStepReverse n =
     (n * 2) : case (n - 1) `divMod` 3 of
         (d, 0) | odd d && d /= 1 -> [d]
         _ -> []
+collatzStepReverseOdd :: Integer -> [Integer]
+collatzStepReverseOdd n =
+    -- TODO the reverse is currently necessary to stop infinitely many powers of 2 at the start
+    -- but I'm not convinced we couldn't be lazy enough to avoid explicit cutoff
+    reverse (collatzStepReverse n) & concatMap \i ->
+        if odd i then [i] else if i > 256 then [] else collatzStepReverseOdd i
 
 topDownStartNumbers :: [Integer]
-topDownStartNumbers = [1 .. 21]
+topDownStartNumbers = [3, 9, 15, 21, 33, 39, 43, 45]
 
 bottomUpLayers :: Word
 bottomUpLayers = 12
@@ -45,10 +53,10 @@ layerColour maxLayer s = lighten ((1 - (fromIntegral s / fromIntegral maxLayer))
 main :: IO ()
 main = do
     let topDownMap = Map.toList
-            . flip execState (Map.singleton 1 (collatzStep 1, 0))
+            . flip execState (Map.singleton 1 (collatzStepOdd 1, 0))
             $ for_ topDownStartNumbers \i -> do
                 e <- get
-                let (layer, chain) = iterateUntilJust (fmap snd . flip Map.lookup e) collatzStep i
+                let (layer, chain) = iterateUntilJust (fmap snd . flip Map.lookup e) collatzStepOdd i
                 traverse_ (modify . uncurry Map.insert)
                     . zip (NE.init chain)
                     . zip (NE.tail chain)
@@ -58,7 +66,7 @@ main = do
         layoutGraph Fdp
             . uncurry G.mkGraph
             . ( map (\(n, (_, s)) -> (fromInteger n, (n, s)))
-                    &&& map (\(n, (t, _)) -> (fromInteger n, fromInteger t, ()))
+                    &&& (map (\(n, (t, _)) -> (fromInteger n, fromInteger t, ())) . filter ((/= 1) . fst))
               )
             $ topDownMap
     grBottomUp <-
@@ -69,7 +77,7 @@ main = do
               )
             . flip mzip (Tree.unfoldTree (id &&& repeat . succ) 0)
             . takeTree bottomUpLayers
-            $ Tree.unfoldTree (id &&& collatzStepReverse) 1
+            $ Tree.unfoldTree (id &&& collatzStepReverseOdd) 1
     mainWith @(Diagram B)
         . bgFrame 1 (fromAlphaColour XKCD.orangeYellow)
         . font "Helvetica"
