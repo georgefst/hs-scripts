@@ -7,6 +7,7 @@ module Collatz (main) where
 
 import Control.Monad.State
 import Data.Foldable
+import Data.Function
 import Data.GraphViz (GraphvizCommand (..))
 import Data.Map qualified as Map
 import Data.Maybe
@@ -26,10 +27,13 @@ startNumbers = [1 .. 21]
 
 main :: IO ()
 main = do
-    let (nodes, edges) = (map fst &&& map (uncurry (,,()))) . Map.toList $ flip execState Map.empty $ for_ startNumbers go
-          where
-            go i = let j = collatzStep i in maybe (pure ()) ((>> go j) . put) . mapInsertUnlessMember i j =<< get
-    gr <- layoutGraph Fdp $ mkGraph nodes edges
+    gr <- layoutGraph Fdp
+        . uncurry mkGraph
+        . (map fst &&& map (uncurry (,,())))
+        . Map.toList
+        . flip execState Map.empty
+        . for_ startNumbers
+        $ fix \go i -> let j = collatzStep i in maybe (pure ()) ((>> go j) . put) . mapInsertUnlessMember i j =<< get
     mainWith @(Diagram B)
         . bgFrame 1 blueDark
         . pad 1.05
