@@ -48,7 +48,7 @@ body {
         image-rendering: pixelated;
       }
     }
-    > .line-count, > .piece-count {
+    > .line-count {
       color: white;
     }
     > .level {

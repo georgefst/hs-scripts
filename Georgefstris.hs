@@ -251,7 +251,6 @@ data Model = Model
     , level :: Level
     , random :: ([Piece], StdGen)
     , gameOver :: Bool
-    , pieceCount :: Word
     , lineCount :: Word
     }
     deriving (Eq, Show, Generic)
@@ -279,7 +278,7 @@ gridCanvas w h attrs f = Canvas.canvas
             Canvas.fillRect (fromIntegral x, fromIntegral y, 1, 1)
 
 grid ::
-    (HasType (FLQ.Queue Piece) parent, HasType Level parent, HasType (Word, Word) parent) =>
+    (HasType (FLQ.Queue Piece) parent, HasType Level parent, HasType Word parent) =>
     Model -> Component parent Model Action
 grid initialModel =
     ( component
@@ -338,7 +337,7 @@ grid initialModel =
         , bindings =
             [ typed <--- #next
             , typed ---> #level
-            , typed <--- fanout #pieceCount #lineCount
+            , typed <--- #lineCount
             ]
         }
   where
@@ -349,7 +348,6 @@ grid initialModel =
         fanout #current #next .= first newPiece (FLQ.shift next' next)
         removed <- #pile %%= removeCompletedLines
         #lineCount += removed
-        #pieceCount += 1
     tryMove f = tryEdit . (#pos %~ f) =<< use #current
     tryRotate f = tryEdit . (\p -> p & #rotation %~ f p.piece) =<< use #current
     tryEdit p = do
@@ -363,15 +361,15 @@ grid initialModel =
             $ shape p.piece
 
 sidebar ::
-    (HasType (FLQ.Queue Piece) parent, HasType Level parent, HasType (Word, Word) parent) =>
-    (FLQ.Queue Piece, Level, (Word, Word)) -> Component parent (FLQ.Queue Piece, Level, (Word, Word)) Bool
+    (HasType (FLQ.Queue Piece) parent, HasType Level parent, HasType Word parent) =>
+    (FLQ.Queue Piece, Level, Word) -> Component parent (FLQ.Queue Piece, Level, Word) Bool
 sidebar initialModel =
     ( component
         initialModel
         ( \b ->
             modify . second3 . const . bool (max opts.startLevel . pred) (min opts.topLevel . succ) b =<< gets snd3
         )
-        ( \(pieces, level, (pieceCount, lineCount)) ->
+        ( \(pieces, level, lineCount) ->
             div_
                 []
                 $ ( FLQ.toList pieces <&> \piece ->
@@ -387,7 +385,6 @@ sidebar initialModel =
                             ]
                   )
                     <> [ div_ [class_ "line-count"] [div_ [] [text $ ms lineCount]]
-                       , div_ [class_ "piece-count"] [div_ [] [text $ ms pieceCount]]
                        , div_
                             [class_ "level"]
                             [ button_ [onClick False] [text "-"]
@@ -436,21 +433,21 @@ dummyKeyHandler =
         { subs = [keyboardSub $ Right . toList]
         }
 
-app :: StdGen -> Component parent (FLQ.Queue Piece, Level, (Word, Word)) ()
+app :: StdGen -> Component parent (FLQ.Queue Piece, Level, Word) ()
 app random0 =
     component
-        (initialGridModel.next, initialGridModel.level, counts)
+        (initialGridModel.next, initialGridModel.level, lineCount)
         (\() -> pure ())
         ( \_ ->
             div_
                 []
                 [ div_ [id_ "grid"] +> grid initialGridModel
-                , div_ [id_ "sidebar"] +> sidebar (initialGridModel.next, initialGridModel.level, counts)
+                , div_ [id_ "sidebar"] +> sidebar (initialGridModel.next, initialGridModel.level, lineCount)
                 , div_ [id_ "dummy-key-handler"] +> dummyKeyHandler
                 ]
         )
   where
-    counts@(pieceCount, lineCount) = (0, 0)
+    lineCount = 0
     initialGridModel = Model{pile = emptyGrid, ticks = 0, level = opts.startLevel, gameOver = False, ..}
       where
         ((current, next), random) = runRandomPieces ([], random0) do
