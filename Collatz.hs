@@ -31,15 +31,15 @@ main = do
             go i = let j = collatzStep i in maybe (pure ()) ((>> go j) . put) . mapInsertUnlessMember i j =<< get
     gr <- layoutGraph Fdp $ mkGraph nodes (uncurry (,,()) <$> edges)
     mainWith @(Diagram B)
-        . bgFrame 1 blueMedium
+        . bgFrame 1 blueDark
         . pad 1.05
         . center
         . font "Helvetica"
         $ drawGraph
             ( \n ->
                 place $
-                    (text (show n) & fontSizeL 16 & fc blueLight)
-                        <> (circle 18 & fc blueDark & lw 0)
+                    (text (show n) & fontSizeL 16 & fc white)
+                        <> (circle 18 & fc blueMedium & lw 0)
             )
             ( \_ p1 _ p2 () p ->
                 arrowBetween'
@@ -47,9 +47,10 @@ main = do
                         & (gaps .~ local 18)
                         & (headLength .~ local 17)
                         & maybe id ((arrowShaft .~) . unLoc) (listToMaybe $ pathTrails p)
+                        & (headStyle %~ fc white)
                     )
                     p1
                     p2
-                    & lc blueDark
+                    & lc blueLight
             )
             gr
