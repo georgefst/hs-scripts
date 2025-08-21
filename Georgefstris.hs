@@ -35,7 +35,6 @@
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE NoFieldSelectors #-}
-{-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
 
 module Georgefstris (main) where
@@ -60,9 +59,11 @@ import Data.Massiv.Array (Array)
 import Data.Massiv.Array qualified as A
 import Data.Maybe
 import Data.Monoid.Extra
+import Data.Optics.Operators
 import Data.Ord (clamp)
 import Data.Set qualified as Set
 import Data.Time (NominalDiffTime)
+import Data.Tuple.Extra (second3, snd3)
 import GHC.Generics (Generic)
 import Linear (R1 (_x), R2 (_y), V2 (V2))
 import Miso hiding (for, for_)
@@ -230,13 +231,13 @@ pieceIntersectsGrid ActivePiece{..} (Grid g) =
         A.ifoldMono
             (\(A.Ix2 x y) e -> Any $ any ((\v' -> e /= Unoccupied && V2 x y == v') . (+ pos) . rotate rotation) (shape piece))
             g
-removeCompletedLines :: Grid -> Grid
-removeCompletedLines (Grid g) = Grid $ fromMaybe g do
+removeCompletedLines :: Grid -> (Word, Grid)
+removeCompletedLines (Grid g) = second Grid $ fromMaybe (0, g) do
     -- TODO any failure would be a programmer error, so we just use `fromMaybe` to return the original
     -- that does imply there's probably a better way of doing this...
     g' <- foldrM (\i a -> A.compute <$> A.deleteColumnsM i 1 a) g completedRows
     g'' <- A.appendM 1 (A.replicate @A.B A.Seq (A.Sz2 opts.gridWidth $ length completedRows) Unoccupied) g'
-    pure $ A.compute g''
+    pure (genericLength completedRows, A.compute g'')
   where
     -- TODO it's a bit inefficient to `compute` on every iteration - there should be a better way
     -- TODO shouldn't it be `A.ifoldOuterSlice`, `A.deleteRowsM` etc. rather than columns?
@@ -250,6 +251,8 @@ data Model = Model
     , level :: Level
     , random :: ([Piece], StdGen)
     , gameOver :: Bool
+    , pieceCount :: Word
+    , lineCount :: Word
     }
     deriving (Eq, Show, Generic)
 
@@ -276,7 +279,7 @@ gridCanvas w h attrs f = Canvas.canvas
             Canvas.fillRect (fromIntegral x, fromIntegral y, 1, 1)
 
 grid ::
-    (HasType (FLQ.Queue Piece) parent, HasType Level parent) =>
+    (HasType (FLQ.Queue Piece) parent, HasType Level parent, HasType (Word, Word) parent) =>
     Model -> Component parent Model Action
 grid initialModel =
     ( component
@@ -335,6 +338,7 @@ grid initialModel =
         , bindings =
             [ typed <--- #next
             , typed ---> #level
+            , typed <--- fanout #pieceCount #lineCount
             ]
         }
   where
@@ -343,7 +347,9 @@ grid initialModel =
         #pile %= addPieceToGrid False current
         next' <- #random %%= flip runRandomPieces (liftRandomiser opts.randomiser)
         fanout #current #next .= first newPiece (FLQ.shift next' next)
-        #pile %= removeCompletedLines
+        removed <- #pile %%= removeCompletedLines
+        #lineCount += removed
+        #pieceCount += 1
     tryMove f = tryEdit . (#pos %~ f) =<< use #current
     tryRotate f = tryEdit . (\p -> p & #rotation %~ f p.piece) =<< use #current
     tryEdit p = do
@@ -357,15 +363,15 @@ grid initialModel =
             $ shape p.piece
 
 sidebar ::
-    (HasType (FLQ.Queue Piece) parent, HasType Level parent) =>
-    (FLQ.Queue Piece, Level) -> Component parent (FLQ.Queue Piece, Level) Bool
+    (HasType (FLQ.Queue Piece) parent, HasType Level parent, HasType (Word, Word) parent) =>
+    (FLQ.Queue Piece, Level, (Word, Word)) -> Component parent (FLQ.Queue Piece, Level, (Word, Word)) Bool
 sidebar initialModel =
     ( component
         initialModel
         ( \b ->
-            modify . second . const . bool (max opts.startLevel . pred) (min opts.topLevel . succ) b =<< gets snd
+            modify . second3 . const . bool (max opts.startLevel . pred) (min opts.topLevel . succ) b =<< gets snd3
         )
-        ( \(pieces, level) ->
+        ( \(pieces, level, (pieceCount, lineCount)) ->
             div_
                 []
                 $ ( FLQ.toList pieces <&> \piece ->
@@ -380,7 +386,9 @@ sidebar initialModel =
                                 gridCanvas w h [] \f -> for_ ((- vMin) <$> ps) $ f piece False
                             ]
                   )
-                    <> [ div_
+                    <> [ div_ [class_ "line-count"] [div_ [] [text $ ms lineCount]]
+                       , div_ [class_ "piece-count"] [div_ [] [text $ ms pieceCount]]
+                       , div_
                             [class_ "level"]
                             [ button_ [onClick False] [text "-"]
                             , div_ [] [text $ ms level]
@@ -392,6 +400,7 @@ sidebar initialModel =
         { bindings =
             [ typed ---> _1
             , typed <--- _2
+            , typed ---> _3
             ]
         }
 
@@ -427,20 +436,21 @@ dummyKeyHandler =
         { subs = [keyboardSub $ Right . toList]
         }
 
-app :: StdGen -> Component parent (FLQ.Queue Piece, Level) ()
+app :: StdGen -> Component parent (FLQ.Queue Piece, Level, (Word, Word)) ()
 app random0 =
     component
-        (initialGridModel.next, initialGridModel.level)
+        (initialGridModel.next, initialGridModel.level, counts)
         (\() -> pure ())
         ( \_ ->
             div_
                 []
                 [ div_ [id_ "grid"] +> grid initialGridModel
-                , div_ [id_ "sidebar"] +> sidebar (initialGridModel.next, initialGridModel.level)
+                , div_ [id_ "sidebar"] +> sidebar (initialGridModel.next, initialGridModel.level, counts)
                 , div_ [id_ "dummy-key-handler"] +> dummyKeyHandler
                 ]
         )
   where
+    counts@(pieceCount, lineCount) = (0, 0)
     initialGridModel = Model{pile = emptyGrid, ticks = 0, level = opts.startLevel, gameOver = False, ..}
       where
         ((current, next), random) = runRandomPieces ([], random0) do

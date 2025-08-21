@@ -38,6 +38,7 @@ body {
     display: grid;
     grid-auto-rows: 1fr;
     align-items: center;
+    justify-items: center;
     > .next {
       display: flex;
       align-items: center;
@@ -46,6 +47,9 @@ body {
         height: calc(var(--canvas-height) * var(--pixel-size));
         image-rendering: pixelated;
       }
+    }
+    > .line-count, > .piece-count {
+      color: white;
     }
     > .level {
       background-color: white;
