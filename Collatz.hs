@@ -1,6 +1,5 @@
 {-# LANGUAGE GHC2024 #-}
 {-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE NoMonomorphismRestriction #-}
 {-# OPTIONS_GHC -Wall #-}
 
 module Collatz (main) where
@@ -40,25 +39,28 @@ topDownStartNumbers = [1 .. 21]
 bottomUpLayers :: Word
 bottomUpLayers = 12
 
-layerColour :: Word -> Colour Double
-layerColour s = lighten ((1 - (fromIntegral s / fromIntegral (bottomUpLayers - 1))) * 0.6) blueDark
+layerColour :: Word -> Word -> Colour Double
+layerColour maxLayer s = lighten ((1 - (fromIntegral s / fromIntegral maxLayer)) * 0.6) blueDark
 
 main :: IO ()
 main = do
-    grTopDown <- layoutGraph Fdp
-        . uncurry G.mkGraph
-        . ( map (\(n, (_, s)) -> (fromInteger n, (n, s)))
-                &&& map (\(n, (t, _)) -> (fromInteger n, fromInteger t, ()))
-          )
-        . Map.toList
-        . flip execState (Map.singleton 1 (collatzStep 1, 0))
-        $ for_ topDownStartNumbers \i -> do
-            e <- get
-            let (layer, chain) = iterateUntilJust (fmap snd . flip Map.lookup e) collatzStep i
-            traverse_ (modify . uncurry Map.insert)
-                . zip (NE.init chain)
-                . zip (NE.tail chain)
-                $ map ((layer + genericLength (NE.toList chain)) -) [1 ..]
+    let topDownMap = Map.toList
+            . flip execState (Map.singleton 1 (collatzStep 1, 0))
+            $ for_ topDownStartNumbers \i -> do
+                e <- get
+                let (layer, chain) = iterateUntilJust (fmap snd . flip Map.lookup e) collatzStep i
+                traverse_ (modify . uncurry Map.insert)
+                    . zip (NE.init chain)
+                    . zip (NE.tail chain)
+                    $ map ((layer + genericLength (NE.toList chain)) -) [1 ..]
+        maxLayer = maximum $ map (snd . snd) topDownMap
+    grTopDown <-
+        layoutGraph Fdp
+            . uncurry G.mkGraph
+            . ( map (\(n, (_, s)) -> (fromInteger n, (n, s)))
+                    &&& map (\(n, (t, _)) -> (fromInteger n, fromInteger t, ()))
+              )
+            $ topDownMap
     grBottomUp <-
         layoutGraph Dot
             . uncurry G.mkGraph
@@ -79,7 +81,7 @@ main = do
                     ( \(n, l) ->
                         place $
                             (text (show n) & fontSizeL 16 & fc white)
-                                <> (circle 18 & fc (layerColour l) & lw 0)
+                                <> (circle 18 & fc (layerColour maxLayer l) & lw 0)
                     )
                     ( \(_, l1) p1 (_, _) p2 () p ->
                         arrowBetween'
@@ -91,7 +93,7 @@ main = do
                             )
                             p1
                             p2
-                            & lc (layerColour l1)
+                            & lc (layerColour maxLayer l1)
                             & lw (local 3)
                     )
             )
