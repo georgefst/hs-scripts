@@ -21,6 +21,7 @@ import Data.List.NonEmpty qualified as NE
 import Data.Map (Map)
 import Data.Map qualified as Map
 import Data.Text (Text)
+import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import Data.Time (NominalDiffTime, nominalDiffTimeToSeconds)
 import Data.Tree (Tree (Node))
@@ -59,6 +60,9 @@ treeEdges (Node x0 ts0) =
 
 modifyFile :: (Text -> Text) -> FilePath -> IO ()
 modifyFile f file = T.writeFile file . f =<< T.readFile file
+
+safeTextIndex :: Int -> Text -> Maybe Char
+safeTextIndex i = fmap fst . T.uncons . T.drop i
 
 ($?) :: Bool -> (a -> a) -> a -> a
 ($?) = flip $ bool id
