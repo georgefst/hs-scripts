@@ -1,26 +1,31 @@
 {-# LANGUAGE GHC2024 #-}
 {-# LANGUAGE BlockArguments #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -Wall #-}
 
 module Collatz (main) where
 
 import Control.Monad.State
 import Control.Monad.Zip (mzip)
+import Data.Bifunctor
 import Data.Foldable
 import Data.Function
 import Data.Graph.Inductive qualified as G
 import Data.GraphViz (GraphvizCommand (..))
-import Data.List (genericLength)
+import Data.List (genericLength, sortOn)
 import Data.List.NonEmpty qualified as NE
 import Data.Map qualified as Map
 import Data.Maybe
 import Data.Tree qualified as Tree
-import Data.Tuple.Extra
+import Data.Tuple.Extra (both, (&&&))
+import Data.Vector qualified as V
 import Diagrams.Backend.SVG.CmdLine
 import Diagrams.Color.XKCD qualified as XKCD
-import Diagrams.Prelude hiding (both, p2)
+import Diagrams.Prelude hiding (both, duration, p2)
 import Diagrams.TwoD.GraphViz
+import Util.RepulsiveCurves
 import Util.Util
+import Vis qualified
 
 collatzStep :: Integer -> Integer
 collatzStep n = case n `divMod` 2 of
@@ -37,7 +42,7 @@ topDownStartNumbers :: [Integer]
 topDownStartNumbers = [1 .. 21]
 
 bottomUpLayers :: Word
-bottomUpLayers = 12
+bottomUpLayers = 6
 
 layerColour :: Word -> Word -> Colour Double
 layerColour maxLayer s = lighten ((1 - (fromIntegral s / fromIntegral maxLayer)) * 0.6) blueDark
@@ -55,7 +60,7 @@ main = do
                     $ map ((layer + genericLength (NE.toList chain)) -) [1 ..]
         maxLayer = maximum $ map (snd . snd) topDownMap
     grTopDown <-
-        layoutGraph Fdp
+        layoutGraph Neato
             . uncurry G.mkGraph
             . ( map (\(n, (_, s)) -> (fromInteger n, (n, s)))
                     &&& map (\(n, (t, _)) -> (fromInteger n, fromInteger t, ()))
@@ -70,6 +75,38 @@ main = do
             . flip mzip (Tree.unfoldTree (id &&& repeat . succ) 0)
             . takeTree bottomUpLayers
             $ Tree.unfoldTree (id &&& collatzStepReverse) 1
+    let (vs0, es0) = bimap (fmap (^/ 10)) (filter \(_a, _, _, _) -> True) $ getGraph $ first (second fst) grTopDown
+        toVecIndex = Map.fromList $ zipWith (\i (n, p) -> (n, (i, p))) [0 ..] $ Map.toList vs0
+        vertices = V.fromList $ map (unP . snd) $ sortOn fst $ toList toVecIndex
+        edges = V.fromList $ map (\(s, t, (), _path) -> (both (fst . (toVecIndex Map.!)) (s, t), Vis.azure)) es0 -- TODO use path
+        knot = Graph{..}
+    let
+        initialEnergy = totalCurveEnergy enParams knot
+        steps = optimizeCurve enParams optParams knot
+        finalEnergy = totalCurveEnergy enParams $ NE.last steps
+        enParams =
+            EnergyParams
+                { alpha = 2.0
+                , beta = 4.5
+                , epsilon = 1e-6
+                , finiteDiffStep = 1e-3
+                , minGradientNorm = 1e-8
+                , stepSize = 1e-3
+                , maxAdaptiveStep = 1e-1
+                }
+        optParams =
+            OptimizationParams
+                { maxIterations = 50
+                , tolerance = 1e-3
+                , preserveLength = Nothing
+                }
+        visDuration = 3
+    putStrLn $ "Initial energy: " <> show initialEnergy
+    putStrLn $ "Final energy: " <> show finalEnergy
+    putStrLn $ "Energy reduction: " <> show (100 * (1 - finalEnergy / initialEnergy)) <> "%"
+    putStrLn $ "Steps taken: " <> show (NE.length steps)
+    visCurves visDuration $ hfmapGraph (\(V2 x y) -> V3 x y 0) <$> steps
+    -- visCurves visDuration $ NE.singleton knot
     mainWith @(Diagram B)
         . bgFrame 1 (fromAlphaColour XKCD.orangeYellow)
         . font "Helvetica"
