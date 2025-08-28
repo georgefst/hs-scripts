@@ -364,6 +364,7 @@ main = shakeArgs shakeOpts do
             ("uuid" & munless wasm) -- https://github.com/haskell-hvr/uuid/issues/64, https://github.com/jacobstanley/network-info/issues/22
             ("vector-algorithms")
             ("vector")
+            ("Vis")
             ("wai-app-static" & munless (noTH || noWarp))
             ("wai")
             ("warp" & munless noWarp)
