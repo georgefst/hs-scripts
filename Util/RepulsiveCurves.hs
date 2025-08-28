@@ -6,6 +6,7 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE StrictData #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE NoFieldSelectors #-}
 {-# OPTIONS_GHC -Wall #-}
 
@@ -119,7 +120,7 @@ totalCurveEnergy EnergyParams{..} Graph{..} =
       where
         diff = p - q
         diffNorm = norm diff
-        crossNorm' = crossNorm t diff
+        crossNorm' = sqrt . abs $ quadrance t * quadrance diff - dot t diff ^ (2 :: Int)
 
 gradientDescentStep :: forall v. (RCVector v) => EnergyParams -> Graph v -> Graph v
 gradientDescentStep params curve = curve{vertices = V.zipWith (\v g -> v - (adaptiveStep *^ g)) curve.vertices gradient}
@@ -165,27 +166,13 @@ optimizeCurve energyParams OptimizationParams{..} initialCurve =
         curve' = maybe id preserveLengthConstraint preserveLength $ gradientDescentStep energyParams curve
         energy = totalCurveEnergy energyParams curve
 
--- TODO is there a better abstraction here?
--- `crossNorm @V2` can be defined as `\v1 v2 -> let emb (V2 x y) = V3 x y 0 in norm $ emb v1 \`cross\` emb v2`,
--- so we could just have an `Embeddable` class, but that feels like it gives us too much power,
--- whereas we actually do do all the computation in `V2` for the planar case rather than embedding,
--- plus this implementation is probably more performant
-class
+type RCVector v =
     ( Metric v
     , Applicative v
     , Traversable v
-    , -- , forall a. (Num a) => Num (v a)
-      -- , forall a. (Show a) => Show (v a)
-      Num (v Double)
+    , Num (v Double)
     , Show (v Double)
-    ) =>
-    RCVector v
-    where
-    crossNorm :: (Floating a) => v a -> v a -> a
-instance RCVector V2 where
-    crossNorm v1 v2 = abs $ v1 `crossZ` v2
-instance RCVector V3 where
-    crossNorm v1 v2 = norm $ v1 `cross` v2
+    )
 
 visCurves :: NominalDiffTime -> NonEmpty (Graph V3) -> IO ()
 visCurves duration vs = animate defaultOpts \t ->
