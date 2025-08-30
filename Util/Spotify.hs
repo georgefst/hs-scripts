@@ -94,7 +94,7 @@ getPlaylist p = ReaderT $ ExceptT . \t -> runMain $ getPlaylist' t p
 addToPlaylist p position uris = ReaderT $ ExceptT . \t -> runMain $ addToPlaylist' t p $ AddToPlaylistBody position uris
 getMyPlaylists pp = ReaderT $ ExceptT . \t -> runMain $ withPagingParams pp $ getMyPlaylists' t
 createPlaylist u opts = ReaderT $ ExceptT . \t -> runMain $ createPlaylist' t u opts
-search q types extra pp = ReaderT $ ExceptT . \t -> runMain $ withPagingParams pp $ flip (getSearch' t q types extra) marketFromToken
+search q types extra pp = ReaderT $ ExceptT . \t -> runMain $ withPagingParams pp $ getSearch' t q types extra marketFromToken
 getTrack trackId = ReaderT $ ExceptT . \t -> runMain $ getTrack' t trackId marketFromToken
 getSavedTracks pp = ReaderT $ ExceptT . \t -> runMain $ withPagingParams pp $ getSavedTracks' t marketFromToken
 saveTracks ids = ReaderT $ ExceptT . \t -> runMain $ noContent $ saveTracks' t $ IDs ids
@@ -103,9 +103,9 @@ getMe = ReaderT $ ExceptT . \t -> runMain $ getMe' t
 getUser userId = ReaderT $ ExceptT . \t -> runMain $ getUser' t userId
 unfollowPlaylist p = ReaderT $ ExceptT . \t -> runMain $ noContent $ unfollowPlaylist' t p
 
-refreshAccessToken'
-    :<|> requestAccessToken'
-    :<|> authorize' =
+authorize'
+    :<|> refreshAccessToken'
+    :<|> requestAccessToken' =
         client $ flatten $ Proxy @AccountsAPI
 
 getAlbum'

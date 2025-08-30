@@ -11,10 +11,18 @@ source-repository-package
     location: https://github.com/amesgen/servant-client-js
     tag: 2853fb4f26175f51ae7b9aaf0ec683c45070d06e
 
+-- https://github.com/dhall-lang/dhall-haskell/pull/2659
+allow-newer:
+    dhall:optparse-applicative
+
+-- https://github.com/Gabriella439/optparse-generic/pull/116
+allow-newer:
+    optparse-generic:optparse-applicative
+
 source-repository-package
     type: git
     location: https://github.com/georgefst/spotify
-    tag: 62af29c33b2407c3fcc9f72af1b2ab1b569827b6
+    tag: a3f0823db892d46fc8362a8f5be2d71753a6271d
 
 if impl(ghc >= 9.8)
     -- support is unreleased
