@@ -48,12 +48,7 @@ import Language.Javascript.JSaddle (liftJSM)
 import Miso hiding (for, for_)
 import Miso.Style (styleInline_)
 import Optics
-import Spotify.Types.Auth
-import Spotify.Types.Episodes
-import Spotify.Types.Misc
-import Spotify.Types.Player
-import Spotify.Types.Simple
-import Spotify.Types.Tracks
+import Spotify hiding (getPlaybackState)
 import Text.Printf
 import Prelude hiding (lines)
 
