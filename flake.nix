@@ -24,7 +24,6 @@
               text
               unix
             ]))
-            cabal-install
             fourmolu
             haskell-language-server
           ];
