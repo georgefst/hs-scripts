@@ -11,9 +11,7 @@
       {
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
-            ((pkgs.haskellPackages.override {
-              overrides = self: super: { };
-            }).ghcWithPackages (hpkgs: with hpkgs; [
+            (pkgs.haskellPackages.ghcWithPackages (hpkgs: with hpkgs; [
               colour
               directory
               extra
