@@ -27,7 +27,7 @@ shape =
                 p@Hifi{} -> drawPin p
                 p -> if hifiOnly then mempty else drawPin p
 
-drawPin :: Pin -> QDiagram B V2 Double Any
+drawPin :: Pin -> Diagram B
 drawPin = \case
     Hifi n c -> (text (show n) & scale 0.25) <> (circle 0.22 & fc white) <> (square 1 & fc c)
     Blank -> mempty
