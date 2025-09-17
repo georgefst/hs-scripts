@@ -34,10 +34,6 @@
       in
       {
         packages.default = mandelbrot;
-        apps.default = {
-          type = "app";
-          program = "${mandelbrot}/bin/mandelbrot";
-        };
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             ghcWithPkgs
