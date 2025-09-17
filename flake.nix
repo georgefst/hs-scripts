@@ -31,9 +31,22 @@
             cp mandelbrot $out/bin/
           '';
         };
+        hello = pkgs.stdenv.mkDerivation {
+          name = "hello";
+          src = ./.;
+          buildInputs = [ ghcWithPkgs ];
+          buildPhase = ''
+            ghc -O2 -o hello -main-is Hello Hello.hs
+          '';
+          installPhase = ''
+            mkdir -p $out/bin
+            cp hello $out/bin/
+          '';
+        };
       in
       {
-        packages.default = mandelbrot;
+        packages.mandelbrot = mandelbrot;
+        packages.hello = hello;
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             ghcWithPkgs
