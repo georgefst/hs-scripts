@@ -28,29 +28,27 @@
             haskell-language-server
           ];
         };
-        packages.mandelbrot = pkgs.stdenv.mkDerivation {
-          name = "mandelbrot";
-          src = ./.;
-          buildInputs = [ ghcWithPkgs ];
-          buildPhase = ''
-            ghc -O2 -o mandelbrot -main-is Mandelbrot Mandelbrot.hs
-          '';
-          installPhase = ''
-            mkdir -p $out/bin
-            cp mandelbrot $out/bin/
-          '';
-        };
-        packages.hello = pkgs.stdenv.mkDerivation {
-          name = "hello";
-          src = ./.;
-          buildInputs = [ ghcWithPkgs ];
-          buildPhase = ''
-            ghc -O2 -o hello -main-is Hello Hello.hs
-          '';
-          installPhase = ''
-            mkdir -p $out/bin
-            cp hello $out/bin/
-          '';
-        };
+      } // {
+        packages = pkgs.lib.listToAttrs (map
+          (name: {
+            inherit name;
+            value =
+              let module = pkgs.lib.strings.toUpper (pkgs.lib.substring 0 1 name) + pkgs.lib.substring 1 (-1) name;
+              in pkgs.stdenv.mkDerivation {
+                inherit name;
+                src = ./.;
+                buildInputs = [ ghcWithPkgs ];
+                buildPhase = ''
+                  ghc -O2 -o ${name} -main-is ${module} ${module}.hs
+                '';
+                installPhase = ''
+                  mkdir -p $out/bin
+                  cp ${name} $out/bin/
+                '';
+              };
+          }) [
+          "hello"
+          "mandelbrot"
+        ]);
       });
 }
