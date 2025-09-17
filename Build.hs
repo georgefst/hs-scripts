@@ -4,6 +4,7 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedRecordDot #-}
+{-# LANGUAGE PackageImports #-}
 {-# LANGUAGE RecordWildCards #-}
 {-# LANGUAGE ViewPatterns #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
@@ -38,7 +39,7 @@ import Data.Maybe
 import Data.String
 import Development.Shake
 import Development.Shake.FilePath
-import Lucid qualified
+import "lucid2" Lucid qualified
 import System.Directory qualified as Dir
 import System.IO.Error
 import System.Info qualified
