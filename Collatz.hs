@@ -1,4 +1,4 @@
-{-# LANGUAGE GHC2024 #-}
+{-# LANGUAGE GHC2021 #-}
 {-# LANGUAGE BlockArguments #-}
 {-# OPTIONS_GHC -Wall #-}
 
