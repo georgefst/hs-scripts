@@ -17,7 +17,8 @@ import Data.Tuple.Extra
 import Options.Generic
 
 data Opts = Opts
-    { width :: Int
+    { out :: FilePath
+    , width :: Int
     , height :: Int
     , centreX :: Double
     , centreY :: Double
@@ -51,7 +52,7 @@ main = do
         pixelToComplex (x, y) =
             (fromIntegral x / fromIntegral width * (xMax - xMin) + xMin)
                 :+ (fromIntegral y / fromIntegral height * (yMin - yMax) + yMax)
-    writePng "mandelbrot.png" $
+    writePng out $
         generateImage
             (curry $ convertColour . maybe setColour iterationsToColour . divergenceIterations . pixelToComplex)
             width
