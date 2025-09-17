@@ -7,21 +7,40 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        ghcWithPkgs = pkgs.haskellPackages.ghcWithPackages (hpkgs: with hpkgs;  [
+          colour
+          directory
+          extra
+          JuicyPixels
+          lucid2
+          optparse-generic
+          pretty-simple
+          shake
+          text
+          unix
+        ]);
+        mandelbrot = pkgs.stdenv.mkDerivation {
+          name = "mandelbrot";
+          src = ./.;
+          buildInputs = [ ghcWithPkgs ];
+          buildPhase = ''
+            ghc -O2 -o mandelbrot -main-is Mandelbrot Mandelbrot.hs
+          '';
+          installPhase = ''
+            mkdir -p $out/bin
+            cp mandelbrot $out/bin/
+          '';
+        };
       in
       {
+        packages.default = mandelbrot;
+        apps.default = {
+          type = "app";
+          program = "${mandelbrot}/bin/mandelbrot";
+        };
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
-            (pkgs.haskellPackages.ghcWithPackages (hpkgs: with hpkgs; [
-              colour
-              directory
-              extra
-              JuicyPixels
-              lucid2
-              pretty-simple
-              shake
-              text
-              unix
-            ]))
+            ghcWithPkgs
             fourmolu
             haskell-language-server
           ];
