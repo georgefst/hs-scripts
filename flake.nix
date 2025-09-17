@@ -7,7 +7,7 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        ghcWithPkgs = pkgs.haskellPackages.ghcWithPackages (hpkgs: with hpkgs;  [
+        ghcWithPkgs = pkgs.haskellPackages.ghcWithPackages (hpkgs: with hpkgs; [
           colour
           directory
           extra
