@@ -21,6 +21,13 @@
         ]);
       in
       {
+        devShells.default = pkgs.mkShell {
+          buildInputs = with pkgs; [
+            ghcWithPkgs
+            fourmolu
+            haskell-language-server
+          ];
+        };
         packages.mandelbrot = pkgs.stdenv.mkDerivation {
           name = "mandelbrot";
           src = ./.;
@@ -44,13 +51,6 @@
             mkdir -p $out/bin
             cp hello $out/bin/
           '';
-        };
-        devShells.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            ghcWithPkgs
-            fourmolu
-            haskell-language-server
-          ];
         };
       });
 }
