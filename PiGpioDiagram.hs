@@ -29,7 +29,7 @@ shape =
 
 drawPin :: Pin -> QDiagram B V2 Double Any
 drawPin = \case
-    Hifi n c -> (text (show n) & scale 0.25 & translateY -0.08) <> (circle 0.22 & fc white) <> (square 1 & fc c)
+    Hifi n c -> (text (show n) & scale 0.25) <> (circle 0.22 & fc white) <> (square 1 & fc c)
     Blank -> mempty
     Broken -> hrule 1 <> vrule 1 & rotateBy (1 / 8) & lc red & lw 6
     Led c -> circle 0.3 & fc c
