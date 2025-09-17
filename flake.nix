@@ -19,7 +19,9 @@
           text
           unix
         ]);
-        mandelbrot = pkgs.stdenv.mkDerivation {
+      in
+      {
+        packages.mandelbrot = pkgs.stdenv.mkDerivation {
           name = "mandelbrot";
           src = ./.;
           buildInputs = [ ghcWithPkgs ];
@@ -31,7 +33,7 @@
             cp mandelbrot $out/bin/
           '';
         };
-        hello = pkgs.stdenv.mkDerivation {
+        packages.hello = pkgs.stdenv.mkDerivation {
           name = "hello";
           src = ./.;
           buildInputs = [ ghcWithPkgs ];
@@ -43,10 +45,6 @@
             cp hello $out/bin/
           '';
         };
-      in
-      {
-        packages.mandelbrot = mandelbrot;
-        packages.hello = hello;
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             ghcWithPkgs
