@@ -10,12 +10,15 @@
         ghcWithPkgs = pkgs.haskellPackages.ghcWithPackages (hpkgs: with hpkgs; [
           colour
           directory
+          evdev
           extra
           JuicyPixels
           lucid2
+          optics
           optparse-generic
           pretty-simple
           shake
+          streamly
           text
           unix
         ]);
@@ -48,6 +51,7 @@
               };
           }) [
           "hello"
+          "magicMouse"
           "mandelbrot"
         ]);
       });
