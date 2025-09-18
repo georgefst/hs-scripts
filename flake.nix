@@ -48,6 +48,7 @@
                   mkdir -p $out/bin
                   cp ${name} $out/bin/
                 '';
+                meta.mainProgram = name;
               };
           }) [
           "hello"
