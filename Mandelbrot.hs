@@ -1,3 +1,6 @@
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 {-# OPTIONS_GHC -Wno-type-defaults #-}
@@ -10,11 +13,19 @@ import Data.Colour.SRGB
 import Data.Complex
 import Data.List
 import Data.Tuple.Extra
+import Options.Generic
 
-width = 500
-height = 500
-(xMin, xMax) = (-2, 1)
-(yMin, yMax) = (-1.5, 1.5)
+data Opts = Opts
+    { out :: FilePath
+    , width :: Int
+    , height :: Int
+    , xMin :: Double
+    , xMax :: Double
+    , yMin :: Double
+    , yMax :: Double
+    }
+    deriving (Eq, Ord, Show, Generic, ParseRecord)
+
 bound = 2
 maxIterations = 50
 power = 2
@@ -31,14 +42,16 @@ power = 2
 
 divergenceIterations c = findIndex ((>= bound) . magnitude) . take maxIterations $ iterate (\z -> z ** power + c) 0
 
-main =
-    writePng "mandelbrot.png" $
+main = do
+    Opts{..} <- getRecord ""
+    let
+        pixelToComplex (x, y) =
+            (fromIntegral x / fromIntegral width * (xMax - xMin) + xMin)
+                :+ (fromIntegral y / fromIntegral height * (yMin - yMax) + yMax)
+    writePng out $
         generateImage
             (curry $ convertColour . maybe setColour iterationsToColour . divergenceIterations . pixelToComplex)
             width
             height
   where
-    pixelToComplex (x, y) =
-        (fromIntegral x / fromIntegral width * (xMax - xMin) + xMin)
-            :+ (fromIntegral y / fromIntegral height * (yMin - yMax) + yMax)
     convertColour (RGB r g b) = PixelRGB8 (floor $ 255 * r) (floor $ 255 * g) (floor $ 255 * b)
