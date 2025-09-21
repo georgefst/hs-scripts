@@ -30,9 +30,13 @@ power = 2
     l = 1.2
     baseColour = hsv 218 0.68 1
 
-divergenceIterations c = findIndex ((>= (bound ^ 2)) . magnitudeSquared) . take maxIterations $ iterate (\z -> z ** power + c) 0
+divergenceIterations c = findIndex ((>= (bound ^ 2)) . magnitudeSquared) . take maxIterations $ iterate (\z -> (z ^! power) +! c) (0 :+ 0)
   where
     magnitudeSquared (x :+ y) = x * x + y * y
+    -- avoids requiring `RealFloat` for inner type
+    (x :+ y) +! (x' :+ y') = (x + x') :+ (y + y')
+    (x :+ y) *! (x' :+ y') = (x * x' - y * y') :+ (x * y' + y * x')
+    c' ^! n = foldr (*!) (1 :+ 0) $ replicate n c'
 
 main =
     writePng "mandelbrot.png" $
