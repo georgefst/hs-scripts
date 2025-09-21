@@ -29,7 +29,9 @@ power = 2
     l = 1.2
     baseColour = hsv 218 0.68 1
 
-divergenceIterations c = findIndex ((>= bound) . magnitude) . take maxIterations $ iterate (\z -> z ** power + c) 0
+divergenceIterations c = findIndex ((>= (bound ^ 2)) . magnitudeSquared) . take maxIterations $ iterate (\z -> z ** power + c) 0
+  where
+    magnitudeSquared (x :+ y) = x * x + y * y
 
 main =
     writePng "mandelbrot.png" $
