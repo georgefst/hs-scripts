@@ -1,3 +1,4 @@
+{-# LANGUAGE LexicalNegation #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 {-# OPTIONS_GHC -Wno-type-defaults #-}
@@ -13,8 +14,8 @@ import Data.Tuple.Extra
 
 width = 500
 height = 500
-(xMin, xMax) = (-2, 1)
-(yMin, yMax) = (-1.5, 1.5)
+centre = (-0.5, 0)
+size = 3
 bound = 2
 maxIterations = 50
 power = 2
@@ -40,6 +41,8 @@ main =
             width
             height
   where
+    (xMin, xMax) = ((- size / 2) &&& (+ size / 2)) $ fst centre
+    (yMin, yMax) = ((- size / 2) &&& (+ size / 2)) $ snd centre
     pixelToComplex (x, y) =
         (fromIntegral x / fromIntegral width * (xMax - xMin) + xMin)
             :+ (fromIntegral y / fromIntegral height * (yMin - yMax) + yMax)
