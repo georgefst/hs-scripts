@@ -71,10 +71,9 @@ instance Renderable (Path V2 Float) Gloss where
                 (\t -> G.line)
                 (\t -> G.polygon)
                 (unLoc trail)
-                . map unp2
-                . scanl (.+^) (loc trail)
-                . trailOffsets
-                $ unLoc trail
+                . concatMap (\seg -> [unp2 $ atParam seg (i / numSamples) | i <- [0 .. numSamples]])
+                $ fixTrail trail
+        numSamples = 20
 
 instance Renderable (Text Float) Gloss where
     render Gloss (Text tt ta s) =
