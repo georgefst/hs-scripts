@@ -5,8 +5,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall #-}
 
-{- HLINT ignore "Use const" -}
-
 module Diagrams.Backend.Gloss (
     B,
     Gloss (Gloss),
@@ -49,10 +47,10 @@ instance Backend Gloss V2 Float where
             G.pictures (go <$> ts) & case n of
                 RStyle s -> case getFillTexture @Float <$> getAttr s of
                     Just (SC (SomeColor c)) -> G.color $ colourToGloss c
-                    Just (LG g) -> id
+                    Just (LG _) -> id
                     Just (RG _) -> id
                     Nothing -> id
-                RAnnot a -> id
+                RAnnot _ -> id
                 RPrim p -> (p' <>)
                   where
                     R p' = render Gloss p
@@ -68,8 +66,8 @@ instance Renderable (Path V2 Float) Gloss where
       where
         renderTrail trail =
             withTrail
-                (\t -> G.line)
-                (\t -> G.polygon)
+                (const G.line)
+                (const G.polygon)
                 (unLoc trail)
                 . concatMap (\seg -> [unp2 $ atParam seg (i / numSamples) | i <- [0 .. numSamples]])
                 $ fixTrail trail
@@ -86,6 +84,6 @@ instance Renderable (Text Float) Gloss where
       where
         (ax, ay) = case ta of
             BoxAlignedText x y -> (x, y)
-            ta' -> (0, 0)
+            _ -> (0, 0)
         V2 sx sy = apply tt 1
         P (V2 tx ty) = papply tt 0
