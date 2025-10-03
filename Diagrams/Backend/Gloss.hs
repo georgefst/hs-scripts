@@ -59,7 +59,7 @@ instance Monoid (Render Gloss V2 Float) where
     mempty = R G.blank
 
 instance Renderable (Path V2 Float) Gloss where
-    render Gloss path = R . G.pictures . map renderTrail $ pathTrails path
+    render Gloss = R . G.pictures . map renderTrail . pathTrails
       where
         renderTrail trail =
             withTrail
