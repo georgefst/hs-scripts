@@ -1,4 +1,5 @@
-{-# LANGUAGE GHC2024 #-}
+{-# LANGUAGE GHC2021 #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE LexicalNegation #-}
 {-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall #-}
