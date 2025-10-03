@@ -20,7 +20,6 @@ shape =
     ]
         & map center
         & vsep 1.2
-        & bg grey
         & font "arial"
   where
     drawPins hifiOnly = map $ hcat . map drawPin'
