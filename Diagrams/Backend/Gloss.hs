@@ -14,6 +14,7 @@ module Diagrams.Backend.Gloss (
 ) where
 
 import Data.Colour
+import Data.List
 import Data.Tree
 import Diagrams.Core.Compile
 import Diagrams.Core.Transform
@@ -76,7 +77,16 @@ instance Renderable (Path V2 Float) Gloss where
                 $ unLoc trail
 
 instance Renderable (Text Float) Gloss where
-    render Gloss (Text tt ta s) = R $ G.translate tx ty $ G.scale sx sy $ G.circle 10
+    render Gloss (Text tt ta s) =
+        R
+            . G.translate tx ty
+            . G.scale sx sy
+            . G.scale 0.07 0.07
+            . G.translate (-72 * ax * genericLength s) (-100 * ay)
+            $ G.text s
       where
+        (ax, ay) = case ta of
+            BoxAlignedText x y -> (x, y)
+            ta' -> (0, 0)
         V2 sx sy = apply tt 1
         P (V2 tx ty) = papply tt 0
