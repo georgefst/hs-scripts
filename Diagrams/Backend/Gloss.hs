@@ -18,6 +18,7 @@ import Data.Tree
 import Diagrams.Core.Compile
 import Diagrams.Core.Transform
 import Diagrams.Prelude hiding (over)
+import Diagrams.TwoD.Adjust
 import Diagrams.TwoD.Text
 import Graphics.Gloss qualified as G
 
@@ -31,9 +32,9 @@ type instance N Gloss = Float
 instance Backend Gloss V2 Float where
     newtype Render Gloss V2 Float = R G.Picture
     type Result Gloss V2 Float = G.Picture
-    data Options Gloss V2 Float = GlossOptions
-    adjustDia Gloss opts d = (opts, mempty, d)
-    renderRTree Gloss GlossOptions = go
+    data Options Gloss V2 Float = GlossOptions (SizeSpec V2 Float)
+    adjustDia = adjustDia2D $ lens (\(GlossOptions s) -> s) (\(GlossOptions _) s -> GlossOptions s)
+    renderRTree Gloss (GlossOptions ss) = go
       where
         colourToGloss c = G.makeColor r g b a
           where

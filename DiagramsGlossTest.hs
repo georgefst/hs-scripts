@@ -11,7 +11,7 @@ import PiGpioDiagram qualified
 
 main :: IO ()
 main = G.animate (G.InWindow "diagrams-gloss-test" (1000, 1000) (0, 0)) G.black $ \t ->
-    G.scale 100 100 . renderDia Gloss GlossOptions $
+    renderDia Gloss (GlossOptions $ mkSizeSpec $ V2 (Just 1000) Nothing) $
         diag2
             & rotateBy (t / 4)
 
