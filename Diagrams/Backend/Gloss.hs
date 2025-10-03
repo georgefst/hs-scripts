@@ -34,8 +34,11 @@ instance Backend Gloss V2 Float where
     type Result Gloss V2 Float = G.Picture
     data Options Gloss V2 Float = GlossOptions (SizeSpec V2 Float)
     adjustDia = adjustDia2D $ lens (\(GlossOptions s) -> s) (\(GlossOptions _) s -> GlossOptions s)
-    renderRTree Gloss (GlossOptions ss) = go
+    renderRTree Gloss (GlossOptions ss) =
+        G.translate -(ssx / 2) -(ssy / 2)
+            . go
       where
+        V2 ssx ssy = specToSize 0 ss
         colourToGloss c = G.makeColor r g b a
           where
             ac = toAlphaColour c
