@@ -1,6 +1,8 @@
 {-# LANGUAGE GHC2024 #-}
 {-# LANGUAGE LexicalNegation #-}
+{-# LANGUAGE PartialTypeSignatures #-}
 {-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -Wno-partial-type-signatures #-}
 
 module PiGpioDiagram where
 
@@ -8,9 +10,9 @@ import Diagrams.Backend.SVG.CmdLine
 import Diagrams.Prelude
 
 main :: IO ()
-main = mainWith shape
+main = mainWith $ shape @B
 
-shape :: Diagram B
+shape :: (_) => Diagram b
 shape =
     [ drawPins False pins & vcat
     , map reverse pins & drawPins True & vcat & scale 0.7
@@ -27,7 +29,7 @@ shape =
                 p@Hifi{} -> drawPin p
                 p -> if hifiOnly then mempty else drawPin p
 
-drawPin :: Pin -> Diagram B
+drawPin :: (_) => Pin -> Diagram b
 drawPin = \case
     Hifi n c -> (text (show n) & scale 0.25) <> (circle 0.22 & fc white) <> (square 1 & fc c)
     Blank -> mempty
