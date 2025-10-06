@@ -1,7 +1,5 @@
 {-# LANGUAGE GHC2021 #-}
-{-# LANGUAGE GADTs #-}
 {-# LANGUAGE LexicalNegation #-}
-{-# LANGUAGE NegativeLiterals #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -Wall #-}
 
