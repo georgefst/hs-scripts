@@ -27,7 +27,7 @@ build-depends:
 module Main (main) where
 
 import Control.Arrow ((>>>))
-import Control.Monad.Extra
+import "extra" Control.Monad.Extra
 import Data.Bifunctor
 import Data.Bool
 import Data.Char
