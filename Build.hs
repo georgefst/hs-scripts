@@ -27,7 +27,6 @@ build-depends:
 module Main (main) where
 
 import Control.Arrow ((>>>))
-import "extra" Control.Monad.Extra
 import Data.Bifunctor
 import Data.Bool
 import Data.Char
@@ -44,6 +43,7 @@ import System.IO.Error
 import System.Info qualified
 import System.Posix hiding (getEnv)
 import System.Process.Extra
+import "extra" Control.Monad.Extra
 import "lucid2" Lucid qualified
 
 main :: IO ()
