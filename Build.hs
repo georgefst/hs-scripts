@@ -39,12 +39,12 @@ import Data.Maybe
 import Data.String
 import Development.Shake
 import Development.Shake.FilePath
-import "lucid2" Lucid qualified
 import System.Directory qualified as Dir
 import System.IO.Error
 import System.Info qualified
 import System.Posix hiding (getEnv)
 import System.Process.Extra
+import "lucid2" Lucid qualified
 
 main :: IO ()
 main = shakeArgs shakeOpts do
