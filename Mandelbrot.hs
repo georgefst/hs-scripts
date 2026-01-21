@@ -33,11 +33,12 @@ maxIterations = 50
 power = 2
 iterationsToColour =
     hsv 218 0.68 . \case
-        Nothing -> 1
+        Nothing -> v
         Just n ->
             let t = n / fromIntegral maxIterations
-             in t ** e * (1 - v0) + v0
+             in t ** e * (v - v0) + v0
   where
+    v = 1
     v0 = 0
     e = 1.7
 
