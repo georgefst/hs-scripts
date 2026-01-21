@@ -7,7 +7,9 @@
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 {-# OPTIONS_GHC -Wno-type-defaults #-}
 
-module Mandelbrot (main) where
+module Mandelbrot (main, test) where
+
+import Data.Foldable (for_)
 
 import Codec.Picture
 import Data.Colour.RGBSpace.HSV
@@ -53,8 +55,18 @@ divergenceIterations c =
   where
     magnitudeSquared (x :+ y) = x * x + y * y
 
-main = do
-    Opts{..} <- getRecord ""
+test = for_ [("fry", -0.6, 0, 4.8), ("crow", -0.75, -0.25, 0.5)] $ \(nm, cx, cy, sz) ->
+    main1
+        Opts
+            { out = "mandelbrot-" <> nm <> "-test.png"
+            , width = 200
+            , height = 200
+            , centreX = cx
+            , centreY = cy
+            , size = sz
+            }
+main = getRecord "" >>= main1
+main1 Opts{..} = do
     let
         (xMin, xMax) = ((- size / 2) &&& (+ size / 2)) centreX
         (yMin, yMax) = ((- size / 2) &&& (+ size / 2)) centreY
