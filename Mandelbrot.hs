@@ -38,7 +38,7 @@ iterationsToColour =
             let t = n / fromIntegral maxIterations
              in t ** e * (1 - v) + v
   where
-    v = 0.1
+    v = 0.12
     e = 1.7
 
 smooth n z = max 0 $ fromIntegral n - log (log (magnitude z) / log bound) / log power
