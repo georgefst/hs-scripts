@@ -37,17 +37,19 @@ power = 2
          in uncurry3 hsv $ third3 (* ((t ** e - 1 + l) / l)) $ hsvView baseColour
     )
   where
+    minBrightness = 1 / 6
     e = 1.5
-    l = 1.2
+    l = 1 / (1 - minBrightness)
     baseColour = hsv 218 0.68 1
 
-smooth n z = fromIntegral n + 1 - log (log (magnitude z)) / log (realPart power)
+smooth n z = max 0 $ fromIntegral n - log (log (magnitude z) / log bound) / log (realPart power)
 
 divergenceIterations c =
-    find ((>= (bound ^ 2)) . magnitudeSquared . snd)
+    fmap (second (- c))
+        . find ((> (bound ^ 2)) . magnitudeSquared . snd)
         . zip [0 :: Int ..]
         . take maxIterations
-        $ iterate (\z -> z ** power + c) 0
+        $ iterate (\z -> z ** power + c) c
   where
     magnitudeSquared (x :+ y) = x * x + y * y
 
