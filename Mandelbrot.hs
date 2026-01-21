@@ -26,7 +26,7 @@ data Opts = Opts
     }
     deriving (Eq, Ord, Show, Generic, ParseRecord)
 
-bound = 4
+bound = 16
 maxIterations = 50
 power = 2
 (setColour, iterationsToColour) =
