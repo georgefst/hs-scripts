@@ -37,8 +37,8 @@ power = 2
          in uncurry3 hsv $ third3 (* ((t ** e - 1 + l) / l)) $ hsvView baseColour
     )
   where
-    minBrightness = 1 / 6
-    e = 1.5
+    minBrightness = 0.1
+    e = 1.7
     l = 1 / (1 - minBrightness)
     baseColour = hsv 218 0.68 1
 
