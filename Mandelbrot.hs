@@ -42,7 +42,11 @@ power = 2
 
 smooth n z = fromIntegral n + 1 - log (log (magnitude z)) / log (realPart power)
 
-divergenceIterations c = find ((>= (bound ^ 2)) . magnitudeSquared . snd) . zip [0 :: Int ..] . take maxIterations $ iterate (\z -> z ** power + c) 0
+divergenceIterations c =
+    find ((>= (bound ^ 2)) . magnitudeSquared . snd)
+        . zip [0 :: Int ..]
+        . take maxIterations
+        $ iterate (\z -> z ** power + c) 0
   where
     magnitudeSquared (x :+ y) = x * x + y * y
 
@@ -56,7 +60,12 @@ main = do
                 :+ (fromIntegral y / fromIntegral height * (yMin - yMax) + yMax)
     writePng out $
         generateImage
-            (curry $ convertColour . maybe setColour (iterationsToColour . uncurry smooth) . divergenceIterations . pixelToComplex)
+            ( curry $
+                convertColour
+                    . maybe setColour (iterationsToColour . uncurry smooth)
+                    . divergenceIterations
+                    . pixelToComplex
+            )
             width
             height
   where
