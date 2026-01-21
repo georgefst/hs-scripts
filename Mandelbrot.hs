@@ -41,14 +41,14 @@ iterationsToColour =
     v = 0.1
     e = 1.7
 
-smooth n z = max 0 $ fromIntegral n - log (log (magnitude z) / log bound) / log (realPart power)
+smooth n z = max 0 $ fromIntegral n - log (log (magnitude z) / log bound) / log power
 
 divergenceIterations c =
     fmap (second (- c))
         . find ((> (bound ^ 2)) . magnitudeSquared . snd)
         . zip [0 :: Int ..]
         . take maxIterations
-        $ iterate (\z -> z ** power + c) c
+        $ iterate (\z -> z ** (power :+ 0) + c) c
   where
     magnitudeSquared (x :+ y) = x * x + y * y
 
