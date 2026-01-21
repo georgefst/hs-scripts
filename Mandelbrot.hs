@@ -14,6 +14,7 @@ import Data.Colour.SRGB
 import Data.Complex
 import Data.List
 import Data.Tuple.Extra
+import Data.Word
 import Options.Generic
 
 data Opts = Opts
@@ -69,4 +70,6 @@ main = do
             width
             height
   where
-    convertColour (RGB r g b) = PixelRGB16 (floor $ 65535 * r) (floor $ 65535 * g) (floor $ 65535 * b)
+    convertColour (RGB r g b) = PixelRGB16 (floor $ m * r) (floor $ m * g) (floor $ m * b)
+      where
+        m = fromIntegral $ maxBound @Word16
