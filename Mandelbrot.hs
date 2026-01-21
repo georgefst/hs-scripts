@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE LexicalNegation #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
@@ -30,17 +31,15 @@ data Opts = Opts
 bound = 16
 maxIterations = 50
 power = 2
-(setColour, iterationsToColour) =
-    ( baseColour
-    , \n ->
-        let t = n / fromIntegral maxIterations
-         in uncurry3 hsv $ third3 (* ((t ** e - 1 + l) / l)) $ hsvView baseColour
-    )
+iterationsToColour =
+    hsv 218 0.68 . \case
+        Nothing -> 1
+        Just n ->
+            let t = n / fromIntegral maxIterations
+             in t ** e * (1 - v) + v
   where
-    minBrightness = 0.1
+    v = 0.1
     e = 1.7
-    l = 1 / (1 - minBrightness)
-    baseColour = hsv 218 0.68 1
 
 smooth n z = max 0 $ fromIntegral n - log (log (magnitude z) / log bound) / log (realPart power)
 
@@ -65,7 +64,8 @@ main = do
         generateImage
             ( curry $
                 convertColour
-                    . maybe setColour (iterationsToColour . uncurry smooth)
+                    . iterationsToColour
+                    . fmap (uncurry smooth)
                     . divergenceIterations
                     . pixelToComplex
             )
