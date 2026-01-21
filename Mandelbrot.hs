@@ -32,7 +32,7 @@ power = 2
 (setColour, iterationsToColour) =
     ( baseColour
     , \n ->
-        let t = fromIntegral n / fromIntegral maxIterations
+        let t = n / fromIntegral maxIterations
          in uncurry3 hsv $ third3 (* ((t ** e - 1 + l) / l)) $ hsvView baseColour
     )
   where
@@ -40,7 +40,9 @@ power = 2
     l = 1.2
     baseColour = hsv 218 0.68 1
 
-divergenceIterations c = findIndex ((>= (bound ^ 2)) . magnitudeSquared) . take maxIterations $ iterate (\z -> z ** power + c) 0
+smooth n z = fromIntegral n + 1 - log (log (magnitude z)) / log (realPart power)
+
+divergenceIterations c = find ((>= (bound ^ 2)) . magnitudeSquared . snd) . zip [0 :: Int ..] . take maxIterations $ iterate (\z -> z ** power + c) 0
   where
     magnitudeSquared (x :+ y) = x * x + y * y
 
@@ -54,8 +56,8 @@ main = do
                 :+ (fromIntegral y / fromIntegral height * (yMin - yMax) + yMax)
     writePng out $
         generateImage
-            (curry $ convertColour . maybe setColour iterationsToColour . divergenceIterations . pixelToComplex)
+            (curry $ convertColour . maybe setColour (iterationsToColour . uncurry smooth) . divergenceIterations . pixelToComplex)
             width
             height
   where
-    convertColour (RGB r g b) = PixelRGB8 (floor $ 255 * r) (floor $ 255 * g) (floor $ 255 * b)
+    convertColour (RGB r g b) = PixelRGB16 (floor $ 65535 * r) (floor $ 65535 * g) (floor $ 65535 * b)
