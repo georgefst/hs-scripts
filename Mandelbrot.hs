@@ -13,6 +13,7 @@ import Codec.Picture
 import Data.Colour.RGBSpace.HSV
 import Data.Colour.SRGB
 import Data.Complex
+import Data.Function
 import Data.List
 import Data.Tuple.Extra
 import Data.Word
@@ -25,21 +26,21 @@ data Opts = Opts
     , centreX :: Double
     , centreY :: Double
     , size :: Double
+    , inverted :: Bool
     }
     deriving (Eq, Ord, Show, Generic, ParseRecord)
 
 bound = 16
 maxIterations = 50
 power = 2
-iterationsToColour =
+iterationsToColour inverted =
     hsv 213 0.77 . \case
         Nothing -> v
         Just n ->
             let t = n / fromIntegral maxIterations
              in t ** e * (v - v0) + v0
   where
-    v = 0.89
-    v0 = 0
+    (v, v0) = applyWhen inverted swap (0.89, 0)
     e = 1.7
 
 smooth n z = max 0 $ fromIntegral n - log (log (magnitude z) / log bound) / log power
@@ -65,7 +66,7 @@ main = do
         generateImage
             ( curry $
                 convertColour
-                    . iterationsToColour
+                    . iterationsToColour inverted
                     . fmap (uncurry smooth)
                     . divergenceIterations
                     . pixelToComplex
