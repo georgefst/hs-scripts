@@ -1,8 +1,11 @@
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE LexicalNegation #-}
+{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE NoFieldSelectors #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 {-# OPTIONS_GHC -Wno-type-defaults #-}
@@ -10,13 +13,13 @@
 module Mandelbrot (main) where
 
 import Codec.Picture
-import Data.Colour.RGBSpace.HSV
+import Data.Colour.RGBSpace
 import Data.Colour.SRGB
 import Data.Complex
-import Data.Function
 import Data.List
 import Data.Tuple.Extra
 import Data.Word
+import Diagrams.Color.HSV
 import Options.Generic
 
 data Opts = Opts
@@ -26,21 +29,27 @@ data Opts = Opts
     , centreX :: Double
     , centreY :: Double
     , size :: Double
-    , inverted :: Bool
+    , innerColour :: HexColour
+    , outerColour :: HexColour
     }
-    deriving (Eq, Ord, Show, Generic, ParseRecord)
+    deriving (Eq, Show, Generic, ParseRecord)
+
+newtype HexColour = HexColour {unwrap :: Colour Double}
+    deriving newtype (Eq, Show)
+    deriving stock (Generic)
+    deriving anyclass (ParseField, ParseFields)
+instance ParseRecord HexColour where parseRecord = fmap getOnly parseRecord
+instance Read HexColour where readsPrec _ = map (first HexColour) . sRGB24reads
 
 bound = 16
 maxIterations = 50
 power = 2
-iterationsToColour inverted =
-    hsv 213 0.77 . \case
-        Nothing -> v
-        Just n ->
-            let t = n / fromIntegral maxIterations
-             in t ** e * (v - v0) + v0
+iterationsToColour inner outer = \case
+    Nothing -> inner
+    Just n ->
+        let t = n / fromIntegral maxIterations
+         in hsvBlend (t ** e) outer inner
   where
-    (v, v0) = applyWhen inverted swap (0.89, 0)
     e = 1.7
 
 smooth n z = max 0 $ fromIntegral n - log (log (magnitude z) / log bound) / log power
@@ -66,7 +75,8 @@ main = do
         generateImage
             ( curry $
                 convertColour
-                    . iterationsToColour inverted
+                    . toSRGB
+                    . iterationsToColour innerColour.unwrap outerColour.unwrap
                     . fmap (uncurry smooth)
                     . divergenceIterations
                     . pixelToComplex
