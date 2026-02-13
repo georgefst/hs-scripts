@@ -14,12 +14,14 @@ module Mandelbrot (main) where
 
 import Codec.Picture
 import Data.Colour.RGBSpace
+import Data.Colour.RGBSpace.HSV
 import Data.Colour.SRGB
 import Data.Complex
+import Data.Fixed
 import Data.List
+import Data.Ord
 import Data.Tuple.Extra
 import Data.Word
-import Diagrams.Color.HSV
 import Options.Generic
 import ParseColour
 
@@ -87,3 +89,10 @@ main = do
     convertColour (RGB r g b) = PixelRGB16 (floor $ m * r) (floor $ m * g) (floor $ m * b)
       where
         m = fromIntegral $ maxBound @Word16
+
+hsvBlend :: Double -> Colour Double -> Colour Double -> Colour Double
+hsvBlend t c1 c2 = uncurryRGB sRGB $ hsv (lerpWrap 360 h1 h2) (lerp s1 s2) (lerp v1 v2)
+  where
+    ((h1, s1, v1), (h2, s2, v2)) = both (hsvView . toSRGB) (c1, c2)
+    lerp a b = (1 - t) * a + t * b
+    lerpWrap m a b = lerp a (minimumBy (comparing (abs . subtract a)) [b - m, b, b + m]) `mod'` m
