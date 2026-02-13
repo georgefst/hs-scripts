@@ -21,6 +21,7 @@ import Data.Tuple.Extra
 import Data.Word
 import Diagrams.Color.HSV
 import Options.Generic
+import ParseColour
 
 data Opts = Opts
     { out :: FilePath
@@ -29,17 +30,17 @@ data Opts = Opts
     , centreX :: Double
     , centreY :: Double
     , size :: Double
-    , innerColour :: HexColour
-    , outerColour :: HexColour
+    , innerColour :: ReadableColour
+    , outerColour :: ReadableColour
     }
     deriving (Eq, Show, Generic, ParseRecord)
 
-newtype HexColour = HexColour {unwrap :: Colour Double}
+newtype ReadableColour = ReadableColour {unwrap :: Colour Double}
     deriving newtype (Eq, Show)
     deriving stock (Generic)
     deriving anyclass (ParseField, ParseFields)
-instance ParseRecord HexColour where parseRecord = fmap getOnly parseRecord
-instance Read HexColour where readsPrec _ = map (first HexColour) . sRGB24reads
+instance ParseRecord ReadableColour where parseRecord = fmap getOnly parseRecord
+instance Read ReadableColour where readsPrec _ = maybe [] (pure . (,"") . ReadableColour) . parseColour
 
 bound = 16
 maxIterations = 50
