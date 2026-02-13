@@ -34,7 +34,6 @@ data Opts = Opts
     , outerColour :: ReadableColour
     }
     deriving (Eq, Show, Generic, ParseRecord)
-
 newtype ReadableColour = ReadableColour {unwrap :: Colour Double}
     deriving newtype (Eq, Show)
     deriving stock (Generic)
