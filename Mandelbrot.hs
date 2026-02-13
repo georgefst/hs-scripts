@@ -50,7 +50,7 @@ iterationsToColour inner outer = \case
         let t = n / fromIntegral maxIterations
          in hsvBlend (t ** e) outer inner
   where
-    e = 1.7
+    e = 1.3
 
 smooth n z = max 0 $ fromIntegral n - log (log (magnitude z) / log bound) / log power
 
