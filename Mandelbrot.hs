@@ -1,8 +1,11 @@
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE LexicalNegation #-}
+{-# LANGUAGE OverloadedRecordDot #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE NoFieldSelectors #-}
 {-# OPTIONS_GHC -Wall #-}
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 {-# OPTIONS_GHC -Wno-type-defaults #-}
@@ -10,14 +13,17 @@
 module Mandelbrot (main) where
 
 import Codec.Picture
+import Data.Colour.RGBSpace
 import Data.Colour.RGBSpace.HSV
 import Data.Colour.SRGB
 import Data.Complex
-import Data.Function
+import Data.Fixed
 import Data.List
+import Data.Ord
 import Data.Tuple.Extra
 import Data.Word
 import Options.Generic
+import ParseColour
 
 data Opts = Opts
     { out :: FilePath
@@ -26,22 +32,27 @@ data Opts = Opts
     , centreX :: Double
     , centreY :: Double
     , size :: Double
-    , inverted :: Bool
+    , innerColour :: ReadableColour
+    , outerColour :: ReadableColour
     }
-    deriving (Eq, Ord, Show, Generic, ParseRecord)
+    deriving (Eq, Show, Generic, ParseRecord)
+newtype ReadableColour = ReadableColour {unwrap :: Colour Double}
+    deriving newtype (Eq, Show)
+    deriving stock (Generic)
+    deriving anyclass (ParseField, ParseFields)
+instance ParseRecord ReadableColour where parseRecord = fmap getOnly parseRecord
+instance Read ReadableColour where readsPrec _ = maybe [] (pure . (,"") . ReadableColour) . parseColour
 
 bound = 16
 maxIterations = 50
 power = 2
-iterationsToColour inverted =
-    hsv 213 0.77 . \case
-        Nothing -> v
-        Just n ->
-            let t = n / fromIntegral maxIterations
-             in t ** e * (v - v0) + v0
+iterationsToColour inner outer = \case
+    Nothing -> inner
+    Just n ->
+        let t = n / fromIntegral maxIterations
+         in hsvBlend (t ** e) outer inner
   where
-    (v, v0) = applyWhen inverted swap (0.89, 0)
-    e = 1.7
+    e = 1.3
 
 smooth n z = max 0 $ fromIntegral n - log (log (magnitude z) / log bound) / log power
 
@@ -66,7 +77,8 @@ main = do
         generateImage
             ( curry $
                 convertColour
-                    . iterationsToColour inverted
+                    . toSRGB
+                    . iterationsToColour innerColour.unwrap outerColour.unwrap
                     . fmap (uncurry smooth)
                     . divergenceIterations
                     . pixelToComplex
@@ -77,3 +89,10 @@ main = do
     convertColour (RGB r g b) = PixelRGB16 (floor $ m * r) (floor $ m * g) (floor $ m * b)
       where
         m = fromIntegral $ maxBound @Word16
+
+hsvBlend :: Double -> Colour Double -> Colour Double -> Colour Double
+hsvBlend t c1 c2 = uncurryRGB sRGB $ hsv (lerpWrap 360 h1 h2) (lerp s1 s2) (lerp v1 v2)
+  where
+    ((h1, s1, v1), (h2, s2, v2)) = both (hsvView . toSRGB) (c1, c2)
+    lerp a b = (1 - t) * a + t * b
+    lerpWrap m a b = lerp a (minimumBy (comparing (abs . subtract a)) [b - m, b, b + m]) `mod'` m

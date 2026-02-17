@@ -24,6 +24,11 @@ source-repository-package
     location: https://github.com/georgefst/spotify
     tag: a3f0823db892d46fc8362a8f5be2d71753a6271d
 
+source-repository-package
+    type: git
+    location: https://github.com/georgefst/colour-parsers
+    tag: 57ee42e3bebb461a2a9cc0e1bd8c23b648d95147
+
 if impl(ghc >= 9.8)
     -- support is unreleased
     -- https://github.com/brendanhay/amazonka/pull/973
