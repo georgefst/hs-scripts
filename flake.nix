@@ -21,6 +21,15 @@
           streamly
           text
           unix
+          (pkgs.haskell.lib.dontCheck (callCabal2nix "colour-parsers"
+            (pkgs.fetchFromGitHub {
+              owner = "georgefst";
+              repo = "colour-parsers";
+              rev = "57ee42e3bebb461a2a9cc0e1bd8c23b648d95147";
+              sha256 = "nZSRNKL/A05yS401RP8tvcG2Ms4uNtYxoUjj15QaGIE=";
+            })
+            { }
+          ))
         ]);
       in
       {
